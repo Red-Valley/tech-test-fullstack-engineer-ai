@@ -13,8 +13,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${inter.className} bg-gray-950 text-gray-100 min-h-screen`}>
-        <nav className="border-b border-gray-800 px-6 py-4 flex items-center gap-6">
-          <span className="font-bold text-lg text-white">🎮 Indie Games</span>
+        <nav className="border-b border-gray-800 px-4 sm:px-6 py-4 flex flex-wrap items-center gap-4 sm:gap-6">
+          <span className="font-bold text-lg text-white mr-auto sm:mr-0">🎮 Indie Games</span>
           <a href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
             Dashboard
           </a>
@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             AI Chat
           </a>
         </nav>
-        <main className="px-6 py-8 max-w-7xl mx-auto">{children}</main>
+        <main className="px-4 sm:px-6 py-6 sm:py-8 max-w-7xl mx-auto">{children}</main>
       </body>
     </html>
   );

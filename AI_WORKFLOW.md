@@ -33,19 +33,40 @@ Chosen because:
 
 ---
 
-### Prompt 3 — Streaming agentic loop design
+### Prompt 3 — Responsiveness and numeric input fix
+
+> "Agrega diseño responsivo completo usando Tailwind CSS breakpoints (`sm`, `md`, `lg`):
+>
+> - **Móvil** (< 640px): layout en una sola columna, tabla reemplazada por cards apiladas,
+>   navegación colapsada o en menú hamburguesa si aplica.
+> - **Tablet** (640px–1024px): grid de 2 columnas para las cards, tabla visible pero
+>   con columnas priorizadas (ocultar columnas secundarias si es necesario).
+> - **Escritorio** (> 1024px): layout actual sin cambios.
+>
+> No uses CSS custom, todo con clases de Tailwind.
+>
+> Fix: Los campos `monthly_revenue_usd`, `monthly_downloads` y `average_rating` tienen valor
+> por defecto `0`. Al escribir un dígito, el `0` permanece pegado al inicio (ej: escribir `5`
+> resulta en `05`). El campo debe iniciar vacío (`""`), limpiarse al hacer foco si el valor es `0`,
+> y parsear el número correctamente antes del submit. Aplica este patrón a todos los campos numéricos."
+
+**Outcome:** Two separate problems solved in one prompt. For responsiveness: `GameTable` now renders stacked cards on mobile (`sm:hidden`) and a standard table on tablet/desktop (`hidden sm:block`), with the Downloads column hidden on tablet (`hidden lg:table-cell`) to reduce horizontal crowding. The nav in `layout.tsx` wraps gracefully on small screens using `flex-wrap`. For the numeric inputs: introduced a dedicated `GameFormState` type where numeric fields are typed as `number | ""`, replacing the previous `GameInput` reuse. Added `handleNumericFocus` (clears field if value is `0`) and `handleNumericChange` (preserves `""` instead of converting to `NaN`). A `buildPayload()` function normalizes to `number` before submitting, so the API always receives valid data.
+
+---
+
+### Prompt 4 — Streaming agentic loop design
 > (implicit in the chat route generation)
 
-The specific challenge was: how to correctly implement the Anthropic agentic loop (tool use → tool result → next API call) while streaming text to the client simultaneously. Claude generated a `processWithTools` function that:
-- Streams `text_delta` events directly to the SSE response.
-- Accumulates `input_json_delta` fragments to reconstruct tool inputs.
-- Loops back for a new API call with `tool_result` messages appended.
+The specific challenge was: how to correctly implement the OpenAI agentic loop (tool use → tool result → next API call) while streaming text to the client simultaneously. Claude generated a `processWithTools` function that:
+- Streams `content` deltas directly to the SSE response.
+- Accumulates `function.arguments` fragments across chunks to reconstruct tool inputs.
+- Loops back for a new API call with `role: "tool"` messages appended.
 
 **Outcome:** A clean agentic loop with proper SSE streaming, no third-party streaming libraries needed.
 
 ---
 
-### Prompt 4 — TypeScript strict mode fix
+### Prompt 5 — TypeScript strict mode fix
 > (triggered by `npx tsc --noEmit` output)
 
 **Error:** `Argument of type '{ type: "text"; text: string; }' is not assignable to parameter of type 'ContentBlock'. Property 'citations' is missing`.
@@ -54,7 +75,7 @@ The specific challenge was: how to correctly implement the Anthropic agentic loo
 
 ---
 
-### Prompt 5 — Security patch
+### Prompt 6 — Security patch
 > (triggered by `npm audit` warning about Next.js 15.3.2 CVE-2025-66478)
 
 **Outcome:** Claude ran `npm install next@latest` to patch the critical vulnerability. Verified the remaining 2 moderate findings are transitive postcss issues inside Next.js itself — fixing them would downgrade to Next 9.x, which is worse. Left with a documented trade-off.

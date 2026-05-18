@@ -3,20 +3,31 @@
 import { useState } from "react";
 import type { Game, GameInput } from "@/lib/types";
 
-const EMPTY_FORM: GameInput = {
+interface GameFormState {
+  title: string;
+  developer: string;
+  genre: string;
+  monthly_revenue_usd: number | "";
+  monthly_downloads: number | "";
+  average_rating: number | "";
+}
+
+const EMPTY_FORM: GameFormState = {
   title: "",
   developer: "",
   genre: "",
-  monthly_revenue_usd: 0,
-  monthly_downloads: 0,
-  average_rating: 0,
+  monthly_revenue_usd: "",
+  monthly_downloads: "",
+  average_rating: "",
 };
+
+type NumericField = "monthly_revenue_usd" | "monthly_downloads" | "average_rating";
 
 export default function GameTable({ initialGames }: { initialGames: Game[] }) {
   const [games, setGames] = useState<Game[]>(initialGames);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Game | null>(null);
-  const [form, setForm] = useState<GameInput>(EMPTY_FORM);
+  const [form, setForm] = useState<GameFormState>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
 
   const refresh = async () => {
@@ -43,21 +54,39 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
     setShowForm(true);
   };
 
+  const handleNumericFocus = (field: NumericField) => {
+    if (form[field] === 0) setForm((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const handleNumericChange = (field: NumericField, raw: string) => {
+    setForm((prev) => ({ ...prev, [field]: raw === "" ? "" : Number(raw) }));
+  };
+
+  const buildPayload = (): GameInput => ({
+    title: form.title,
+    developer: form.developer,
+    genre: form.genre,
+    monthly_revenue_usd: form.monthly_revenue_usd === "" ? 0 : Number(form.monthly_revenue_usd),
+    monthly_downloads: form.monthly_downloads === "" ? 0 : Number(form.monthly_downloads),
+    average_rating: form.average_rating === "" ? 0 : Math.min(5, Math.max(0, Number(form.average_rating))),
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
+      const payload = buildPayload();
       if (editing) {
         await fetch(`/api/games/${editing.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         });
       } else {
         await fetch("/api/games", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         });
       }
       await refresh();
@@ -84,14 +113,70 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
         </button>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-800">
+      {/* Mobile: Cards (< sm / < 640px) */}
+      <div className="sm:hidden space-y-3">
+        {games.map((g) => (
+          <div key={g.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-white truncate">{g.title}</h3>
+                <p className="text-sm text-gray-400 truncate">{g.developer}</p>
+              </div>
+              <span className="shrink-0 bg-indigo-900/40 text-indigo-300 text-xs px-2 py-0.5 rounded-full">
+                {g.genre}
+              </span>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
+              <div>
+                <p className="text-xs text-gray-500 mb-0.5">Revenue</p>
+                <p className="text-green-400 font-medium">${g.monthly_revenue_usd.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-0.5">Downloads</p>
+                <p className="text-gray-300">{g.monthly_downloads.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-0.5">Rating</p>
+                <p className="flex items-center gap-1">
+                  <span className="text-yellow-400">★</span>
+                  <span className="text-gray-200">{g.average_rating.toFixed(1)}</span>
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 flex gap-4 border-t border-gray-800 pt-3">
+              <button
+                onClick={() => openEdit(g)}
+                className="text-xs text-gray-400 hover:text-white transition-colors"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(g.id)}
+                className="text-xs text-red-500 hover:text-red-400 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        {games.length === 0 && (
+          <p className="text-center text-gray-500 py-12">No games found.</p>
+        )}
+      </div>
+
+      {/* Tablet + Desktop: Table (>= sm / >= 640px) */}
+      <div className="hidden sm:block overflow-x-auto rounded-xl border border-gray-800">
         <table className="w-full text-sm">
           <thead className="bg-gray-900 text-gray-400 uppercase text-xs tracking-wider">
             <tr>
-              {["Title", "Developer", "Genre", "Revenue/mo", "Downloads/mo", "Rating", ""].map((h) => (
-                <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
-              ))}
+              <th className="px-4 py-3 text-left font-medium">Title</th>
+              <th className="px-4 py-3 text-left font-medium">Developer</th>
+              <th className="px-4 py-3 text-left font-medium">Genre</th>
+              <th className="px-4 py-3 text-left font-medium">Revenue/mo</th>
+              {/* Downloads hidden on tablet, visible on desktop */}
+              <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Downloads/mo</th>
+              <th className="px-4 py-3 text-left font-medium">Rating</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800">
@@ -105,7 +190,9 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-green-400">${g.monthly_revenue_usd.toLocaleString()}</td>
-                <td className="px-4 py-3 text-gray-300">{g.monthly_downloads.toLocaleString()}</td>
+                <td className="px-4 py-3 text-gray-300 hidden lg:table-cell">
+                  {g.monthly_downloads.toLocaleString()}
+                </td>
                 <td className="px-4 py-3">
                   <span className="flex items-center gap-1">
                     <span className="text-yellow-400">★</span>
@@ -113,7 +200,7 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() => openEdit(g)}
                       className="text-xs text-gray-400 hover:text-white transition-colors"
@@ -139,8 +226,8 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
 
       {/* Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-semibold text-white mb-5">
               {editing ? "Edit Game" : "Add Game"}
             </h2>
@@ -156,14 +243,16 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
                   />
                 </div>
               ))}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-400 mb-1">Revenue (USD)</label>
                   <input
                     type="number"
                     min="0"
+                    placeholder="0"
                     value={form.monthly_revenue_usd}
-                    onChange={(e) => setForm({ ...form, monthly_revenue_usd: Number(e.target.value) })}
+                    onFocus={() => handleNumericFocus("monthly_revenue_usd")}
+                    onChange={(e) => handleNumericChange("monthly_revenue_usd", e.target.value)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
@@ -172,8 +261,10 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
                   <input
                     type="number"
                     min="0"
+                    placeholder="0"
                     value={form.monthly_downloads}
-                    onChange={(e) => setForm({ ...form, monthly_downloads: Number(e.target.value) })}
+                    onFocus={() => handleNumericFocus("monthly_downloads")}
+                    onChange={(e) => handleNumericChange("monthly_downloads", e.target.value)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
@@ -184,8 +275,10 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
                     min="0"
                     max="5"
                     step="0.1"
+                    placeholder="0.0"
                     value={form.average_rating}
-                    onChange={(e) => setForm({ ...form, average_rating: Number(e.target.value) })}
+                    onFocus={() => handleNumericFocus("average_rating")}
+                    onChange={(e) => handleNumericChange("average_rating", e.target.value)}
                     className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
