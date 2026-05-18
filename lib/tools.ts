@@ -1,5 +1,5 @@
 import type { ChatCompletionTool } from "openai/resources/chat/completions";
-import { getGames, getGameById, getStats } from "./db";
+import { getGames, getGameById, getGameByTitle, getStats } from "./db";
 import type { Game } from "./types";
 
 export const toolDefinitions: ChatCompletionTool[] = [
@@ -35,14 +35,14 @@ export const toolDefinitions: ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "compare_games",
-      description: "Compare two games side by side (revenue, downloads, rating).",
+      description: "Compare two games side by side by title (revenue, downloads, rating). Use the exact game titles as they appear in the catalog.",
       parameters: {
         type: "object",
         properties: {
-          id_a: { type: "number", description: "ID of the first game" },
-          id_b: { type: "number", description: "ID of the second game" },
+          title_a: { type: "string", description: "Title of the first game" },
+          title_b: { type: "string", description: "Title of the second game" },
         },
-        required: ["id_a", "id_b"],
+        required: ["title_a", "title_b"],
       },
     },
   },
@@ -79,9 +79,11 @@ export function runTool(name: string, input: ToolInput): string {
     }
 
     case "compare_games": {
-      const a = getGameById(input.id_a as number);
-      const b = getGameById(input.id_b as number);
-      if (!a || !b) return JSON.stringify({ error: "One or both games not found" });
+      const a = getGameByTitle(input.title_a as string);
+      const b = getGameByTitle(input.title_b as string);
+      if (!a && !b) return JSON.stringify({ error: `Neither "${input.title_a}" nor "${input.title_b}" found in catalog` });
+      if (!a) return JSON.stringify({ error: `Game not found: "${input.title_a}"` });
+      if (!b) return JSON.stringify({ error: `Game not found: "${input.title_b}"` });
       const comparison = {
         games: [a, b],
         winner_revenue: a.monthly_revenue_usd >= b.monthly_revenue_usd ? a.title : b.title,

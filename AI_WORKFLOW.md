@@ -70,7 +70,27 @@ Chosen because:
 
 ---
 
-### Prompt 5 — Streaming agentic loop design
+### Prompt 5 — Technical review and targeted fixes
+
+> "Act as a senior technical lead reviewing this project against the assessment requirements. Audit the following and give a concise verdict per item:
+>
+> - CRUD with all 6 required fields
+> - REST API routes exposed correctly
+> - AI chat using tool calling (no full DB dump in prompt)
+> - Streaming responses in chat
+> - Responsive UI (mobile, tablet, desktop)
+> - Dashboard view + chat view
+>
+> Then tell me: what's missing or incomplete, and any quick wins to improve code quality or UX before submitting."
+
+**Outcome:** The audit passed all 6 checklist items. Three issues were identified and immediately fixed in the same session:
+1. **`compare_games` accepted IDs, not titles** — the LLM receives game names from the user but had no way to look up IDs without an extra tool call. Fixed by changing the tool signature to `title_a`/`title_b` and adding a case-insensitive `getGameByTitle()` lookup in `lib/db.ts`. The "Compare Hades vs Dead Cells" suggestion now works in a single tool call.
+2. **`updateGame` had no field whitelist** — `Object.keys(body)` went directly into the SQL `SET` clause; unknown fields caused unhandled 500 errors. Fixed with a `ALLOWED_UPDATE_FIELDS` Set that filters input before building the query.
+3. **README had no setup instructions** — the assessment requires "how to run locally" in the PR. Fixed by rewriting `README.md` with prerequisites, setup steps, project structure, stack rationale, and trade-offs.
+
+---
+
+### Prompt 6 — Streaming agentic loop design
 > (implicit in the chat route generation)
 
 The specific challenge was: how to correctly implement the OpenAI agentic loop (tool use → tool result → next API call) while streaming text to the client simultaneously. Claude generated a `processWithTools` function that:
@@ -82,7 +102,7 @@ The specific challenge was: how to correctly implement the OpenAI agentic loop (
 
 ---
 
-### Prompt 6 — TypeScript strict mode fix
+### Prompt 7 — TypeScript strict mode fix
 > (triggered by `npx tsc --noEmit` output)
 
 **Error:** `Argument of type '{ type: "text"; text: string; }' is not assignable to parameter of type 'ContentBlock'. Property 'citations' is missing`.
@@ -91,7 +111,7 @@ The specific challenge was: how to correctly implement the OpenAI agentic loop (
 
 ---
 
-### Prompt 7 — Security patch
+### Prompt 8 — Security patch
 > (triggered by `npm audit` warning about Next.js 15.3.2 CVE-2025-66478)
 
 **Outcome:** Claude ran `npm install next@latest` to patch the critical vulnerability. Verified the remaining 2 moderate findings are transitive postcss issues inside Next.js itself — fixing them would downgrade to Next 9.x, which is worse. Left with a documented trade-off.

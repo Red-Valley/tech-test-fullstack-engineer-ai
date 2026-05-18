@@ -89,6 +89,12 @@ export function getGameById(id: number): Game | undefined {
   return getDb().prepare("SELECT * FROM games WHERE id = ?").get(id) as Game | undefined;
 }
 
+export function getGameByTitle(title: string): Game | undefined {
+  return getDb()
+    .prepare("SELECT * FROM games WHERE LOWER(title) = LOWER(?)")
+    .get(title) as Game | undefined;
+}
+
 export function createGame(input: GameInput): Game {
   const db = getDb();
   const result = db.prepare(`
@@ -98,11 +104,19 @@ export function createGame(input: GameInput): Game {
   return getGameById(result.lastInsertRowid as number)!;
 }
 
+const ALLOWED_UPDATE_FIELDS = new Set<string>([
+  "title", "developer", "genre",
+  "monthly_revenue_usd", "monthly_downloads", "average_rating",
+]);
+
 export function updateGame(id: number, input: Partial<GameInput>): Game | undefined {
   const db = getDb();
-  const fields = Object.keys(input).map((k) => `${k} = @${k}`).join(", ");
+  const safe = Object.fromEntries(
+    Object.entries(input).filter(([k]) => ALLOWED_UPDATE_FIELDS.has(k))
+  );
+  const fields = Object.keys(safe).map((k) => `${k} = @${k}`).join(", ");
   if (!fields) return getGameById(id);
-  db.prepare(`UPDATE games SET ${fields} WHERE id = @id`).run({ ...input, id });
+  db.prepare(`UPDATE games SET ${fields} WHERE id = @id`).run({ ...safe, id });
   return getGameById(id);
 }
 
