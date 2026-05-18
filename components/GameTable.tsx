@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import type { Game, GameInput } from "@/lib/types";
+
+const PAGE_SIZE = 10;
 
 interface GameFormState {
   title: string;
@@ -25,14 +28,20 @@ type NumericField = "monthly_revenue_usd" | "monthly_downloads" | "average_ratin
 
 export default function GameTable({ initialGames }: { initialGames: Game[] }) {
   const [games, setGames] = useState<Game[]>(initialGames);
+  const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Game | null>(null);
   const [form, setForm] = useState<GameFormState>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
 
+  const totalPages = Math.max(1, Math.ceil(games.length / PAGE_SIZE));
+  const pageGames = games.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const refresh = async () => {
     const res = await fetch("/api/games");
-    setGames(await res.json());
+    const updated: Game[] = await res.json();
+    setGames(updated);
+    setPage((p) => Math.min(p, Math.max(1, Math.ceil(updated.length / PAGE_SIZE))));
   };
 
   const openCreate = () => {
@@ -77,29 +86,48 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
     try {
       const payload = buildPayload();
       if (editing) {
-        await fetch(`/api/games/${editing.id}`, {
+        const res = await fetch(`/api/games/${editing.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+        if (!res.ok) throw new Error("Failed to update game");
+        toast.success("Game updated successfully");
       } else {
-        await fetch("/api/games", {
+        const res = await fetch("/api/games", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+        if (!res.ok) throw new Error("Failed to create game");
+        toast.success("Game created successfully");
       }
       await refresh();
       setShowForm(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Delete this game?")) return;
-    await fetch(`/api/games/${id}`, { method: "DELETE" });
-    await refresh();
+  const handleDelete = (game: Game) => {
+    toast(`Delete "${game.title}"?`, {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            const res = await fetch(`/api/games/${game.id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Failed to delete game");
+            await refresh();
+            toast("Game deleted", { description: game.title });
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to delete game");
+          }
+        },
+      },
+    });
   };
 
   return (
@@ -113,9 +141,9 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
         </button>
       </div>
 
-      {/* Mobile: Cards (< sm / < 640px) */}
+      {/* Mobile: Cards (< sm) */}
       <div className="sm:hidden space-y-3">
-        {games.map((g) => (
+        {pageGames.map((g) => (
           <div key={g.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
@@ -144,27 +172,19 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
               </div>
             </div>
             <div className="mt-3 flex gap-4 border-t border-gray-800 pt-3">
-              <button
-                onClick={() => openEdit(g)}
-                className="text-xs text-gray-400 hover:text-white transition-colors"
-              >
+              <button onClick={() => openEdit(g)} className="text-xs text-gray-400 hover:text-white transition-colors">
                 Edit
               </button>
-              <button
-                onClick={() => handleDelete(g.id)}
-                className="text-xs text-red-500 hover:text-red-400 transition-colors"
-              >
+              <button onClick={() => handleDelete(g)} className="text-xs text-red-500 hover:text-red-400 transition-colors">
                 Delete
               </button>
             </div>
           </div>
         ))}
-        {games.length === 0 && (
-          <p className="text-center text-gray-500 py-12">No games found.</p>
-        )}
+        {games.length === 0 && <p className="text-center text-gray-500 py-12">No games found.</p>}
       </div>
 
-      {/* Tablet + Desktop: Table (>= sm / >= 640px) */}
+      {/* Tablet + Desktop: Table (>= sm) */}
       <div className="hidden sm:block overflow-x-auto rounded-xl border border-gray-800">
         <table className="w-full text-sm">
           <thead className="bg-gray-900 text-gray-400 uppercase text-xs tracking-wider">
@@ -173,14 +193,13 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
               <th className="px-4 py-3 text-left font-medium">Developer</th>
               <th className="px-4 py-3 text-left font-medium">Genre</th>
               <th className="px-4 py-3 text-left font-medium">Revenue/mo</th>
-              {/* Downloads hidden on tablet, visible on desktop */}
               <th className="px-4 py-3 text-left font-medium hidden lg:table-cell">Downloads/mo</th>
               <th className="px-4 py-3 text-left font-medium">Rating</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800">
-            {games.map((g) => (
+            {pageGames.map((g) => (
               <tr key={g.id} className="hover:bg-gray-900/50 transition-colors">
                 <td className="px-4 py-3 font-medium text-white">{g.title}</td>
                 <td className="px-4 py-3 text-gray-300">{g.developer}</td>
@@ -201,16 +220,10 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => openEdit(g)}
-                      className="text-xs text-gray-400 hover:text-white transition-colors"
-                    >
+                    <button onClick={() => openEdit(g)} className="text-xs text-gray-400 hover:text-white transition-colors">
                       Edit
                     </button>
-                    <button
-                      onClick={() => handleDelete(g.id)}
-                      className="text-xs text-red-500 hover:text-red-400 transition-colors"
-                    >
+                    <button onClick={() => handleDelete(g)} className="text-xs text-red-500 hover:text-red-400 transition-colors">
                       Delete
                     </button>
                   </div>
@@ -219,10 +232,33 @@ export default function GameTable({ initialGames }: { initialGames: Game[] }) {
             ))}
           </tbody>
         </table>
-        {games.length === 0 && (
-          <p className="text-center text-gray-500 py-12">No games found.</p>
-        )}
+        {games.length === 0 && <p className="text-center text-gray-500 py-12">No games found.</p>}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between text-sm text-gray-400">
+          <span>
+            Page {page} of {totalPages} &mdash; {games.length} games
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => p - 1)}
+              disabled={page === 1}
+              className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={page === totalPages}
+              className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {showForm && (

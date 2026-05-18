@@ -54,7 +54,23 @@ Chosen because:
 
 ---
 
-### Prompt 4 — Streaming agentic loop design
+### Prompt 4 — Pagination and toast notifications
+
+> "Add pagination to the games table showing 10 rows by default. Include prev/next controls and a page indicator. Keep it simple with local state.
+>
+> Install and configure shadcn/ui. Replace all `alert()` / `confirm()` calls with toast notifications for the following actions:
+> - ✅ Game created successfully
+> - ✅ Game updated successfully
+> - 🗑️ Game deleted
+> - ❌ Error on any failed action
+>
+> Use appropriate variants: `default` for success, `destructive` for errors/delete."
+
+**Outcome:** Two features delivered together. For pagination: added `PAGE_SIZE = 10` constant and local `page` state; `pageGames` slices the array for the current page; `refresh()` clamps the page so it never lands on an empty page after a deletion. Prev/Next controls are disabled at boundaries and the indicator shows `Page X of Y — N games`. For toasts: the `shadcn@latest init` CLI required interactive input and could not run non-interactively, so the setup was done manually — installing `sonner` + `clsx` + `tailwind-merge`, creating `lib/utils.ts` with the `cn` helper, and a `components/ui/toaster.tsx` wrapper that matches the dark theme. The `<Toaster />` was added to `app/layout.tsx`. All `alert()` calls were removed; delete now shows a toast with a **Delete** action button (non-blocking UX), and every create/update/error shows a typed `toast.success()` or `toast.error()`.
+
+---
+
+### Prompt 5 — Streaming agentic loop design
 > (implicit in the chat route generation)
 
 The specific challenge was: how to correctly implement the OpenAI agentic loop (tool use → tool result → next API call) while streaming text to the client simultaneously. Claude generated a `processWithTools` function that:
@@ -66,7 +82,7 @@ The specific challenge was: how to correctly implement the OpenAI agentic loop (
 
 ---
 
-### Prompt 5 — TypeScript strict mode fix
+### Prompt 6 — TypeScript strict mode fix
 > (triggered by `npx tsc --noEmit` output)
 
 **Error:** `Argument of type '{ type: "text"; text: string; }' is not assignable to parameter of type 'ContentBlock'. Property 'citations' is missing`.
@@ -75,7 +91,7 @@ The specific challenge was: how to correctly implement the OpenAI agentic loop (
 
 ---
 
-### Prompt 6 — Security patch
+### Prompt 7 — Security patch
 > (triggered by `npm audit` warning about Next.js 15.3.2 CVE-2025-66478)
 
 **Outcome:** Claude ran `npm install next@latest` to patch the critical vulnerability. Verified the remaining 2 moderate findings are transitive postcss issues inside Next.js itself — fixing them would downgrade to Next 9.x, which is worse. Left with a documented trade-off.
