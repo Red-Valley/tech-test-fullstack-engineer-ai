@@ -42,14 +42,88 @@ Auth, deployment, production error handling, full test coverage.
 
 ---
 
+## Implementation
+
+### Stack chosen
+
+| Layer | Choice | Reason |
+|---|---|---|
+| Framework | Next.js 15 App Router + TypeScript | Matches requirement; App Router enables Server Components |
+| Styling | Tailwind CSS + shadcn/ui (Sonner) | Fast, consistent, dark-theme friendly |
+| LLM | OpenAI SDK (`gpt-4o-mini`) | Tool calling + SSE streaming, cost-efficient |
+| Storage | SQLite via `better-sqlite3` | Zero-config, synchronous API, persists between restarts |
+
+### Project structure
+
+```
+app/
+  api/
+    games/          → GET (list + filter), POST (create)
+    games/[id]/     → GET, PUT, DELETE
+    chat/           → POST — SSE streaming with tool calling
+  chat/             → Chat page
+  page.tsx          → Dashboard page
+components/
+  GameTable.tsx     → CRUD table (responsive: cards on mobile, table on desktop)
+  ChatWindow.tsx    → Streaming chat UI with suggestion pills
+  ui/toaster.tsx    → Sonner toast wrapper
+lib/
+  db.ts             → SQLite singleton, schema, seed, query helpers
+  tools.ts          → 4 LLM tool definitions + handlers
+  types.ts          → Shared TypeScript interfaces
+  utils.ts          → cn() helper (tailwind-merge + clsx)
+```
+
+### AI tools available to the LLM
+
+| Tool | Description |
+|---|---|
+| `get_games` | List all games, optionally filtered by genre or min rating |
+| `get_game_by_id` | Fetch a single game by ID |
+| `compare_games` | Compare two games by title (revenue, downloads, rating) |
+| `get_stats` | Aggregate stats: top revenue, top downloads, avg rating, genre breakdown |
+
+---
+
+## How to run locally
+
+### Prerequisites
+
+- Node.js 18+
+- An OpenAI API key
+
+### Setup
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Set your API key
+echo "APENAI_API_KEY=sk-..." >> .env.local
+
+# 3. Start the dev server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+The SQLite database (`games.db`) is created automatically on first run and seeded with 12 indie games.
+
+---
+
+## Trade-offs
+
+- **`better-sqlite3` over Prisma/Drizzle** — synchronous API is simpler in Next.js Server Components; no async/await overhead. Trade-off: less ergonomic for complex queries.
+- **Manual SSE over Vercel AI SDK** — avoided adding a dependency for a feature (streaming + tool loop) that's 60 lines of code. Trade-off: more boilerplate.
+- **`gpt-4o-mini` over GPT-4o** — cost-efficient for a demo; handles multi-step tool use correctly. Trade-off: slightly weaker reasoning on ambiguous queries.
+- **No pagination on API** — pagination is client-side only (10 rows). Trade-off: all games load on first request. Acceptable at catalog scale (~100s of games).
+- **Auth out of scope** — per assessment requirements.
+
+---
+
 ## Mandatory: `AI_WORKFLOW.md`
 
-Include a file documenting how you used AI coding tools (Claude Code, Cursor, etc.) during this assessment:
-
-1. Which tool(s) and why.
-2. 3–5 concrete prompts you used and their outcome.
-3. One moment where the AI got it wrong and how you fixed it.
-4. If you used parallel agents / subagents / worktrees, describe how.
+See [AI_WORKFLOW.md](./AI_WORKFLOW.md) for the full documentation of how AI coding tools were used during this assessment.
 
 ---
 

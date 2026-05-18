@@ -16,3 +16,16 @@ pnpm-debug.log*
 *.sqlite3
 *.db
 coverage/
+
+# SQLite WAL mode journal files
+*.db-shm
+*.db-wal
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
+
+# Claude Code session data
+.claude/
+
+# Other files to ignore
+myword.md
