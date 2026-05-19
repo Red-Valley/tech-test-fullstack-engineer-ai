@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@layer base {
+  dialog {
+    max-height: none;
+    max-width: none;
+  }
+}
