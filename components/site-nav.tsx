@@ -34,7 +34,7 @@ export function SiteNav(): ReactElement {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'transition-colors',
+                  'rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                   active
                     ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground',

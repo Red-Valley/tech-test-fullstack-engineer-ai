@@ -1,6 +1,8 @@
 'use client';
 
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { isToolPart, type MessagePart } from '@/lib/chat/parts';
 import { ToolBadge } from './tool-badge';
@@ -14,6 +16,46 @@ export interface ChatMessage {
 export interface MessageProps {
   message: ChatMessage;
 }
+
+function Passthrough({ children }: { children?: ReactNode }): ReactElement {
+  return <span>{children}</span>;
+}
+
+// Constrained markdown renderer for assistant text parts. Allows minimal
+// formatting (paragraphs, emphasis, lists, inline code), strips everything
+// else to plain text or null so the model cannot smuggle headings, links,
+// images, or block-level escapes into the conversation surface.
+const MARKDOWN_COMPONENTS: Components = {
+  p: ({ children }) => <p className="leading-relaxed">{children}</p>,
+  strong: ({ children }) => (
+    <strong className="font-semibold text-foreground">{children}</strong>
+  ),
+  em: ({ children }) => <em className="italic">{children}</em>,
+  ul: ({ children }) => (
+    <ul className="ml-4 list-disc space-y-1">{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="ml-4 list-decimal space-y-1">{children}</ol>
+  ),
+  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  code: ({ children }) => (
+    <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+      {children}
+    </code>
+  ),
+  a: Passthrough,
+  img: () => null,
+  blockquote: Passthrough,
+  h1: Passthrough,
+  h2: Passthrough,
+  h3: Passthrough,
+  h4: Passthrough,
+  h5: Passthrough,
+  h6: Passthrough,
+  hr: () => null,
+  table: Passthrough,
+  pre: Passthrough,
+};
 
 export function Message({ message }: MessageProps): ReactElement {
   if (message.role === 'user') {
@@ -48,15 +90,20 @@ export function Message({ message }: MessageProps): ReactElement {
         if (part.type === 'text') {
           const streaming = part.state === 'streaming';
           return (
-            <p
+            <div
               key={`text-${idx}`}
               className={cn(
-                'whitespace-pre-wrap break-words leading-relaxed',
+                'break-words leading-relaxed [&>*+*]:mt-2',
                 streaming && 'text-foreground/70',
               )}
             >
-              {part.text}
-            </p>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={MARKDOWN_COMPONENTS}
+              >
+                {part.text}
+              </ReactMarkdown>
+            </div>
           );
         }
         // step-start: SDK marker, not user-visible.

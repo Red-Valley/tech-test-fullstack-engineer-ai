@@ -16,9 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Indie Games — Catalog',
-  description:
-    'Internal dashboard to manage an indie games catalog, with an AI chat backed by tool calling.',
+  title: { default: 'Indie Games', template: '%s • Indie Games' },
+  description: 'Indie games catalog with AI-powered chat',
 };
 
 export default function RootLayout({
