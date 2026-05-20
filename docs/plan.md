@@ -55,6 +55,16 @@ Repository hygiene, CLAUDE.md, decisions-log initialization. Completed.
   - `updateGame(id, patch)`
   - `deleteGame(id)`
 - /lib/games/repository.test.ts — smoke test registered as npm script `smoke:repo`
+- All write operations use atomic-write semantics: write to a temporary path in the same directory (e.g., /data/games.json.tmp), then rename atomically to the final path. This prevents partial-write corruption if the process is interrupted mid-write. Implementation pattern:
+
+  ```ts
+  const tmpPath = `${path}.tmp`;
+  await writeFile(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
+  await rename(tmpPath, path);
+  ```
+
+  This does not solve true write-write race conditions (last writer still wins) — that limitation is acknowledged in the README Trade-offs section. The atomic pattern only guarantees that readers never observe a partially-written file.
+
 **Acceptance:** `npm run smoke:repo` runs cleanly; writes actually persist to the JSON file.
 
 ### Phase 3 — REST API CRUD (~20 min)
@@ -73,7 +83,30 @@ Repository hygiene, CLAUDE.md, decisions-log initialization. Completed.
   - Provider selection via LLM_PROVIDER env var (default "anthropic")
   - Model ids are hard-coded literals in /app/api/chat/route.ts: `claude-sonnet-4-5` for Anthropic, `gpt-4o-mini` for OpenAI. Each is followed by an inline comment `// latest as of May 2026; update if SDK rejects`.
   - Before invoking the LLM, the route handler checks whether the env var for the selected provider (ANTHROPIC_API_KEY or OPENAI_API_KEY) is set. If missing, return HTTP 503 with body `{ error: 'PROVIDER_NOT_CONFIGURED', provider: <name> }`. Upstream LLM failures (network, 4xx/5xx from provider) return HTTP 502 with `{ error: 'PROVIDER_UPSTREAM', detail: <short message> }`. The chat UI in Phase 6 discriminates these two states in its error banner.
-  - System prompt instructing the model to: never invent data, always resolve game titles via getGameByTitle before referencing them, present comparisons as structured short answers
+  - **System prompt (locked verbatim):** the route handler uses the following text exactly. Any change requires updating this section first.
+
+    ```
+    You are a data assistant for an indie games catalog. You answer questions about the catalog by calling the provided tools. You never invent data: if a tool returns no results, say so explicitly.
+
+    Tool selection rules:
+    - For questions about counts or list scopes ("how many games...", "list all..."), call listGames.
+    - For ranking, filtering by metric, or "top N" questions, call queryGames.
+    - For questions referring to a specific game by title (e.g., "Hollow Knight", "tell me about Celeste"), first call getGameByTitle to resolve the title to a game record. If the result is { notFound: true }, surface the suggestions to the user and ask which one they meant.
+    - For aggregate questions ("average rating across X", "total revenue", "max downloads"), call aggregateGames.
+    - For comparisons between two named games, call getGameByTitle twice in the same step to resolve both titles, then present a structured side-by-side comparison.
+
+    Response style:
+    - Be concise. One short paragraph for simple answers, a brief structured list for comparisons or rankings.
+    - Format currency as USD with thousands separators (e.g., $120,000).
+    - Format ratings to one decimal place.
+    - Never include raw tool output verbatim; phrase the answer naturally for a human reader.
+    - If a tool returns a structured error object ({ error, reason }), explain the issue plainly to the user without exposing internal details.
+
+    Constraints:
+    - Do not assume catalog state beyond what tools return.
+    - Do not call write operations: there are none, and the catalog is mutated only through the dashboard UI.
+    - Do not chain more than 5 tool calls in a single response (the runtime enforces this).
+    ```
   - `streamText` call with `stopWhen: stepCountIs(5)` to allow multi-step tool use
   - `convertToModelMessages` applied to incoming messages
   - Response: `result.toUIMessageStreamResponse()`
@@ -81,7 +114,20 @@ Repository hygiene, CLAUDE.md, decisions-log initialization. Completed.
   - **listGames** — returns a compact projection of all games (id, title, genre, average_rating). For "how many games...", "list all...", scoped enumeration. Compact projection prevents the model from being tempted to dump full DB.
   - **queryGames** — workhorse tool. Filters by genre/minRating, sorts by any numeric field asc/desc, limits to N. Covers "top revenue", "rated above 4", "Roguelikes by downloads".
   - **getGameByTitle** — fuzzy match on title. Returns `{ game: Game } | { notFound: true, suggestions: string[] }`. Uses Levenshtein or substring matching. Critical: the model will receive user input like "Hollow Knight" and must resolve to id "hollow-knight" before any other tool that takes an id.
-  - **aggregateGames** — sum/avg/min/max/count over a numeric field, optionally grouped by genre. Covers "average rating across Metroidvanias", "total revenue".
+  - **aggregateGames** — sum / avg / min / max / count over a numeric field, optionally filtered. Covers "average rating across Metroidvanias", "total revenue", "max downloads in Roguelikes". inputSchema:
+
+    ```ts
+    z.object({
+      metric: z.enum(['monthly_revenue_usd', 'monthly_downloads', 'average_rating']),
+      operation: z.enum(['sum', 'avg', 'min', 'max', 'count']),
+      filters: z.object({
+        genre: z.enum([...all 10 genres...]).optional(),
+        minRating: z.number().min(0).max(5).optional(),
+      }).optional(),
+    })
+    ```
+
+    The `filters` object shape is identical to queryGames.filters. This consistency lets the model reuse the same mental model across tools and prevents the "I can rank Metroidvanias but cannot average their ratings" gap.
 - Manual test script /scripts/test-chat.ts (registered as npm script `test:chat`) that POSTs sample messages and prints streamed output. Sample messages:
   - "Which game made the most revenue?"
   - "How many games are rated above 4?"

@@ -118,6 +118,22 @@ it pollutes the source material for AI_WORKFLOW.md.
   BigInt, no class instances. Use ISO strings for dates if needed.
 - Chat route handler must export `runtime = "nodejs"` because filesystem
   access via `fs/promises` is incompatible with the edge runtime.
+- The v6 `useChat` hook no longer exposes `input`, `handleInputChange`, or
+  `handleSubmit`. You manage the input state yourself with `useState` and
+  call `sendMessage({ text })` on submit. Code generated against pre-v6
+  patterns will fail compilation.
+- `streamText` requires an `onError` callback in addition to any external
+  try/catch. Without `onError`, upstream provider failures silently
+  truncate the stream and the client sees a half-rendered message with
+  no error signal.
+- Each `parts[]` element of type `tool-<name>` has four possible states
+  observable via its `state` field: `input-streaming`, `input-available`,
+  `output-available`, `output-error`. The Phase 6 badge renderer must
+  handle all four, not just the final state.
+- When rendering message parts in React, use `part.toolCallId` as the
+  React key for tool parts, not the array index. Parts mutate during the
+  stream as states progress; index-based keys cause React to
+  mis-reconcile and produce visual artifacts.
 
 ## Notes for AI Coding Tools
 
