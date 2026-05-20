@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "validate:data": "tsx lib/games/seed-validate.ts",
-    "smoke:repo": "tsx lib/games/repository.test.ts"
+    "smoke:repo": "tsx lib/games/repository.test.ts",
+    "test:chat": "tsx scripts/test-chat.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.78",

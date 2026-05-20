@@ -134,6 +134,12 @@ it pollutes the source material for AI_WORKFLOW.md.
   React key for tool parts, not the array index. Parts mutate during the
   stream as states progress; index-based keys cause React to
   mis-reconcile and produce visual artifacts.
+- `convertToModelMessages` is ASYNC in v6 (returns
+  `Promise<ModelMessage[]>`). Pre-v6 versions were synchronous and most
+  training data reflects the older signature. Forgetting the `await`
+  silently breaks the stream because `streamText` receives a Promise
+  where it expects an array, surfacing as `TypeError: messages.some is
+  not a function` only inside the `onError` callback. Always await it.
 
 ## Notes for AI Coding Tools
 

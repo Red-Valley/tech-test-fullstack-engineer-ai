@@ -58,6 +58,56 @@ Chronological record of meaningful technical and process decisions made during t
 **Rationale:** Vercel AI SDK has changed the parts[] discriminator format across minor versions. Documentation lags. The defensive-any approach would violate the project's no-any rule and produce verbose code. The trust-the-docs approach risks Phase 6 shipping with silently broken tool-call badges, which would invisibly tank the UX evaluation since the reviewer would see a chat that answers correctly but never displays that tools were called. The empirical approach costs one extra console.log line in Phase 4 and yields strict typing in Phase 6, against the actually installed SDK behavior.
 **Consequence:** Phase 4 smoke test includes a one-shot diagnostic log of JSON.stringify(message.parts, null, 2). The captured output is pasted into this decisions-log as evidence before Phase 6 begins. Phase 6 defines part types as a discriminated union in /lib/chat/parts.ts based on the observed shape, with type guards. No `any` types used.
 
+### Captured evidence (Phase 4)
+Date: 2026-05-20
+Sample message: "Compare Hollow Knight and Celeste."
+Observed parts[] shape (captured via the diagnostic log placed in `toUIMessageStreamResponse({ onFinish })`):
+```json
+[
+  { "type": "step-start" },
+  {
+    "type": "tool-getGameByTitle",
+    "toolCallId": "toolu_01Hh5BeoipvHRBbv1igSWovN",
+    "state": "output-available",
+    "input": { "title": "Hollow Knight" },
+    "output": {
+      "game": {
+        "id": "hollow-knight",
+        "title": "Hollow Knight",
+        "developer": "Team Cherry",
+        "genre": "Metroidvania",
+        "monthly_revenue_usd": 420000,
+        "monthly_downloads": 70000,
+        "average_rating": 4.8
+      }
+    },
+    "callProviderMetadata": { "anthropic": { "caller": { "type": "direct" } } },
+    "resultProviderMetadata": { "anthropic": { "caller": { "type": "direct" } } }
+  },
+  {
+    "type": "tool-getGameByTitle",
+    "toolCallId": "toolu_01L6HhZRzW1uJDfo2Ct6emm6",
+    "state": "output-available",
+    "input": { "title": "Celeste" },
+    "output": { "game": { "id": "celeste", "title": "Celeste", "developer": "Maddy Makes Games", "genre": "Platformer", "monthly_revenue_usd": 180000, "monthly_downloads": 45000, "average_rating": 4.7 } },
+    "callProviderMetadata": { "anthropic": { "caller": { "type": "direct" } } },
+    "resultProviderMetadata": { "anthropic": { "caller": { "type": "direct" } } }
+  },
+  { "type": "step-start" },
+  {
+    "type": "text",
+    "text": "Here's a side-by-side comparison of **Hollow Knight** and **Celeste**:\n\n**Hollow Knight** (Team Cherry)\n- **Genre:** Metroidvania\n- **Monthly Revenue:** $420,000\n- **Monthly Downloads:** 70,000\n- **Average Rating:** 4.8\n\n**Celeste** (Maddy Makes Games)\n- **Genre:** Platformer\n- **Monthly Revenue:** $180,000\n- **Monthly Downloads:** 45,000\n- **Average Rating:** 4.7\n\nBoth games are critically acclaimed indie hits with stellar ratings. Hollow Knight generates significantly higher revenue and downloads, while both maintain near-perfect player satisfaction. Hollow Knight focuses on exploration and combat in its Metroidvania style, whereas Celeste is a precision platformer centered on tight movement mechanics.",
+    "state": "done"
+  }
+]
+```
+
+Notes on the observed shape:
+- Three discriminator values seen in the captured run: `step-start`, `tool-<toolName>` (concretely `tool-getGameByTitle` here; the SDK templates the toolName into the discriminator), and `text`.
+- Tool parts carry `toolCallId` (provider-issued, e.g. Anthropic's `toolu_...`), `state` (`output-available` once the tool has resolved), `input`, and `output`. They also carry two `callProviderMetadata` / `resultProviderMetadata` blocks that are noise from a UI perspective but useful for debugging.
+- Text parts have `type: "text"`, `text: string`, and `state: "done"` after streaming completes. They do NOT carry `toolCallId`.
+- The Phase 6 badge renderer should: (1) key tool parts by `part.toolCallId`, not array index; (2) inspect `part.state` to drive visual cycling through `input-streaming` → `input-available` → `output-available` → `output-error` (only `output-available` was observed in the final snapshot, but mid-stream states will appear); (3) match the discriminator with a `startsWith("tool-")` check rather than enumerating each `tool-<name>` because the toolName is templated and adding tools later should not require changing the renderer.
+
 ## [Phase Plan] Bounded scope of AI-assisted plan review
 **Decision:** After two rounds of Claude Code plan review, apply a curated subset (4 of 11 proposed fixes) and lock the plan. Decline to run a third review.
 **Alternatives considered:** (a) Apply all 11 fixes from the second-round review as proposed. (b) Run a third review with another agent configuration to validate the second-round findings. (c) Stop at the first review (10 observations, 7 incorporated) and skip the second review entirely.
