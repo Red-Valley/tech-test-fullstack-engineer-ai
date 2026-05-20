@@ -1,0 +1,137 @@
+[
+  {
+    "id": "hollow-knight",
+    "title": "Hollow Knight",
+    "developer": "Team Cherry",
+    "genre": "Metroidvania",
+    "monthly_revenue_usd": 420000,
+    "monthly_downloads": 70000,
+    "average_rating": 4.8
+  },
+  {
+    "id": "celeste",
+    "title": "Celeste",
+    "developer": "Maddy Makes Games",
+    "genre": "Platformer",
+    "monthly_revenue_usd": 180000,
+    "monthly_downloads": 45000,
+    "average_rating": 4.7
+  },
+  {
+    "id": "hades",
+    "title": "Hades",
+    "developer": "Supergiant Games",
+    "genre": "Roguelike",
+    "monthly_revenue_usd": 480000,
+    "monthly_downloads": 90000,
+    "average_rating": 4.9
+  },
+  {
+    "id": "stardew-valley",
+    "title": "Stardew Valley",
+    "developer": "ConcernedApe",
+    "genre": "Simulation",
+    "monthly_revenue_usd": 450000,
+    "monthly_downloads": 150000,
+    "average_rating": 4.8
+  },
+  {
+    "id": "dead-cells",
+    "title": "Dead Cells",
+    "developer": "Motion Twin",
+    "genre": "Roguelike",
+    "monthly_revenue_usd": 210000,
+    "monthly_downloads": 50000,
+    "average_rating": 4.5
+  },
+  {
+    "id": "slay-the-spire",
+    "title": "Slay the Spire",
+    "developer": "Mega Crit Games",
+    "genre": "Roguelike",
+    "monthly_revenue_usd": 250000,
+    "monthly_downloads": 80000,
+    "average_rating": 4.6
+  },
+  {
+    "id": "cuphead",
+    "title": "Cuphead",
+    "developer": "Studio MDHR",
+    "genre": "Shooter",
+    "monthly_revenue_usd": 90000,
+    "monthly_downloads": 30000,
+    "average_rating": 3.8
+  },
+  {
+    "id": "undertale",
+    "title": "Undertale",
+    "developer": "Toby Fox",
+    "genre": "RPG",
+    "monthly_revenue_usd": 150000,
+    "monthly_downloads": 60000,
+    "average_rating": 4.4
+  },
+  {
+    "id": "terraria",
+    "title": "Terraria",
+    "developer": "Re-Logic",
+    "genre": "Sandbox",
+    "monthly_revenue_usd": 380000,
+    "monthly_downloads": 120000,
+    "average_rating": 4.5
+  },
+  {
+    "id": "disco-elysium",
+    "title": "Disco Elysium",
+    "developer": "ZA/UM",
+    "genre": "RPG",
+    "monthly_revenue_usd": 130000,
+    "monthly_downloads": 25000,
+    "average_rating": 4.7
+  },
+  {
+    "id": "spelunky-2",
+    "title": "Spelunky 2",
+    "developer": "Mossmouth",
+    "genre": "Roguelike",
+    "monthly_revenue_usd": 80000,
+    "monthly_downloads": 35000,
+    "average_rating": 4.2
+  },
+  {
+    "id": "outer-wilds",
+    "title": "Outer Wilds",
+    "developer": "Mobius Digital",
+    "genre": "Adventure",
+    "monthly_revenue_usd": 110000,
+    "monthly_downloads": 30000,
+    "average_rating": 4.8
+  },
+  {
+    "id": "risk-of-rain-2",
+    "title": "Risk of Rain 2",
+    "developer": "Hopoo Games",
+    "genre": "Shooter",
+    "monthly_revenue_usd": 200000,
+    "monthly_downloads": 70000,
+    "average_rating": 4.1
+  },
+  {
+    "id": "loop-hero",
+    "title": "Loop Hero",
+    "developer": "Four Quarters",
+    "genre": "Strategy",
+    "monthly_revenue_usd": 8000,
+    "monthly_downloads": 12000,
+    "average_rating": 3.7
+  },
+  {
+    "id": "inscryption",
+    "title": "Inscryption",
+    "developer": "Daniel Mullins Games",
+    "genre": "Puzzle",
+    "monthly_revenue_usd": 25000,
+    "monthly_downloads": 22000,
+    "average_rating": 4.3
+  }
+]
