@@ -11,7 +11,7 @@ natural-language questions about that catalog using **tool calling** and
 
 ## Tech Stack
 
-- **Next.js 14+** with the App Router
+- **Next.js 16.2.6 (App Router)**
 - **TypeScript**
 - **Tailwind CSS**
 - **Vercel AI SDK v6**: `ai`, `@ai-sdk/react`, `@ai-sdk/anthropic`, `@ai-sdk/openai`
@@ -41,22 +41,27 @@ natural-language questions about that catalog using **tool calling** and
 - `README.original.md` — kept as a reference copy of the original assessment
   brief. Do not modify, rename, or delete.
 
-## Development Phases
+## Development Phases (index)
 
-The project is built in 10 discrete, verifiable phases. Each phase has explicit
-acceptance criteria and produces a single focused commit. Do not skip ahead, do
-not merge phases.
+The full project plan, including goals, deliverables, and acceptance criteria
+for each phase, lives in `/docs/plan.md`. This file is the source of truth.
+Read it before starting any phase.
 
-0. Pre-flight cleanup (current)
-1. Data model and seed (Zod schema, 15-game seed)
-2. Data access layer (repository with 5 CRUD functions)
-3. REST API (CRUD endpoints under `/app/api/games`)
-4. Dashboard UI (table view with CRUD actions)
-5. Chat endpoint with tool calling (4 typed tools, streaming)
-6. Chat UI with streaming (`useChat` hook, visible tool-call badges)
-7. UX polish (focus states, currency formatting, lint clean)
+Quick index:
+
+0. Pre-flight cleanup — DONE
+1. Data: schema and seed
+2. Data: repository layer
+3. REST API CRUD
+4. Chat endpoint with tool calling ★
+5. Dashboard UI
+6. Chat UI with streaming
+7. UX polish
 8. README finalization
-9. AI_WORKFLOW.md finalization (human-authored)
+9. AI_WORKFLOW.md (human-authored)
+10. PR submission
+
+Each phase ends with a single focused commit. Phases are sequential.
 
 ## Code Quality Rules
 
@@ -76,14 +81,49 @@ refactor before moving on.
 - No `console.log` statements in production code paths. Use `console.error`
   only for genuine error logging in route handlers.
 
+### Bitácora Conventions
+
+After completing any phase, automatically update `/docs/prompts-log.md` with an
+entry. The entry format is specified in `/docs/plan.md` under "Bitácora
+Conventions". Always include the field `Decisions logged:` listing any
+decision-log entries added, or `"none (this phase did not produce decisions
+meeting the logging criteria)"`.
+
+Add an entry to `/docs/decisions-log.md` ONLY when a decision meets all three
+criteria:
+
+1. A real alternative was considered (not a default).
+2. The trade-off is articulable as "we chose X, sacrificing Y, for Z".
+3. The decision affects more than one file or is something a reviewer might
+   question.
+
+If any of the four mandatory fields (Decision, Alternatives considered,
+Rationale, Consequence) cannot be filled with substantive content, the entry
+should NOT be written. A non-decision logged is worse than a decision missed:
+it pollutes the source material for AI_WORKFLOW.md.
+
+### Validated SDK Gotchas (Vercel AI SDK v6)
+
+- Tools use `inputSchema` (Zod), not the legacy `parameters` field.
+- Multi-step tool use is controlled by `stopWhen: stepCountIs(N)`, replacing
+  the older `maxSteps`.
+- Incoming `messages` from the client must be passed through
+  `convertToModelMessages` before being given to `streamText`.
+- Stream the response with `result.toUIMessageStreamResponse()`, not
+  `toDataStreamResponse()`.
+- `useChat` lives in `@ai-sdk/react` and messages have a `parts[]` array with
+  discriminated part types (text, tool-<name>, etc.). Render each part type
+  explicitly.
+- Tool execute functions must return JSON-serializable values. No Date, no
+  BigInt, no class instances. Use ISO strings for dates if needed.
+- Chat route handler must export `runtime = "nodejs"` because filesystem
+  access via `fs/promises` is incompatible with the edge runtime.
+
 ## Notes for AI Coding Tools
 
 - Next.js 16 introduces breaking changes — APIs, conventions, and file
   structure may differ from older training data. Before writing Next.js 16
   code, consult the local documentation under `node_modules/next/dist/docs/`
   or the official site (nextjs.org/docs). Heed deprecation notices.
-- Vercel AI SDK is on v6 (package `ai` version `^6.x`). Tools use
-  `inputSchema` (not the legacy `parameters`). Streaming responses use
-  `result.toUIMessageStreamResponse()` (not `toDataStreamResponse`). The
-  `useChat` hook lives in `@ai-sdk/react` and messages have a `parts[]`
-  array with discriminated part types.
+- For Vercel AI SDK v6 specifics, see `### Validated SDK Gotchas (Vercel AI
+  SDK v6)` above (the canonical reference).
