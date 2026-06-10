@@ -1,0 +1,65 @@
+[
+  {
+    "id": "1",
+    "title": "Pixel Odyssey",
+    "developer": "Starlight Games",
+    "genre": "RPG",
+    "monthly_revenue_usd": 15200,
+    "monthly_downloads": 3400,
+    "average_rating": 4.6
+  },
+  {
+    "id": "2",
+    "title": "Cyber Rogue",
+    "developer": "Neon Byte Studio",
+    "genre": "Roguelike",
+    "monthly_revenue_usd": 48900,
+    "monthly_downloads": 12500,
+    "average_rating": 4.8
+  },
+  {
+    "id": "3",
+    "title": "Shadow Tactics: Arena",
+    "developer": "Iron Clad Games",
+    "genre": "Strategy",
+    "monthly_revenue_usd": 8500,
+    "monthly_downloads": 2100,
+    "average_rating": 3.9
+  },
+  {
+    "id": "4",
+    "title": "Cozy Farmstead",
+    "developer": "Meadow Games",
+    "genre": "Simulation",
+    "monthly_revenue_usd": 63000,
+    "monthly_downloads": 28000,
+    "average_rating": 4.7
+  },
+  {
+    "id": "5",
+    "title": "Void Runner",
+    "developer": "Quantum Leap",
+    "genre": "Platformer",
+    "monthly_revenue_usd": 3200,
+    "monthly_downloads": 1500,
+    "average_rating": 4.1
+  },
+  {
+    "id": "6",
+    "title": "Dungeon Crawler Tycoon",
+    "developer": "Starlight Games",
+    "genre": "Simulation",
+    "monthly_revenue_usd": 24000,
+    "monthly_downloads": 6800,
+    "average_rating": 4.3
+  },
+  {
+    "id": "7",
+    "title": "Echoes of the Past",
+    "developer": "Phantom Lab",
+    "genre": "Adventure",
+    "monthly_revenue_usd": 11200,
+    "monthly_downloads": 4100,
+    "average_rating": 3.5
+  }
+]
