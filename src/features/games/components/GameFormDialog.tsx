@@ -1,0 +1,265 @@
+"use client";
+
+import { useEffect, useId, useRef, useState } from "react";
+
+import type { Game, GameInput } from "@/features/games/domain/types";
+
+type Props = {
+  open: boolean;
+  game: Game | null;
+  onClose: () => void;
+  onSaved: () => void;
+  onActionError: (message: string) => void;
+};
+
+const empty: GameInput = {
+  title: "",
+  developer: "",
+  genre: "",
+  monthly_revenue_usd: 0,
+  monthly_downloads: 0,
+  average_rating: 0,
+};
+
+export function GameFormDialog({ open, game, onClose, onSaved, onActionError }: Props) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const [fields, setFields] = useState<GameInput>(empty);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setFields(
+        game
+          ? {
+              title: game.title,
+              developer: game.developer,
+              genre: game.genre,
+              monthly_revenue_usd: game.monthly_revenue_usd,
+              monthly_downloads: game.monthly_downloads,
+              average_rating: game.average_rating,
+            }
+          : empty,
+      );
+      setErrors({});
+      setFormError(null);
+    }
+  }, [open, game]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setFormError(null);
+    setErrors({});
+
+    const payload: GameInput = {
+      title: fields.title,
+      developer: fields.developer,
+      genre: fields.genre,
+      monthly_revenue_usd: Number(fields.monthly_revenue_usd),
+      monthly_downloads: Number(fields.monthly_downloads),
+      average_rating: Number(fields.average_rating),
+    };
+
+    try {
+      const response = await fetch(game ? `/api/games/${game.id}` : "/api/games", {
+        method: game ? "PUT" : "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.status === 400 || response.status === 409) {
+        const body = (await response.json()) as {
+          error?: string;
+          fields?: Record<string, string[]>;
+        };
+        setErrors(body.fields ?? {});
+        setFormError(body.error ?? "Could not save the game.");
+        return;
+      }
+
+      if (!response.ok) {
+        const message = "Could not save the game.";
+        setFormError(message);
+        onActionError(message);
+        return;
+      }
+
+      onSaved();
+      onClose();
+    } catch {
+      const message = "Could not reach the server. Try again.";
+      setFormError(message);
+      onActionError(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      className="w-[min(32rem,calc(100%-2rem))]"
+      onClose={onClose}
+    >
+      <form onSubmit={onSubmit} className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-panel p-5 text-stone-100 shadow-2xl">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-amber-300/80">
+            {game ? "Edit" : "New"}
+          </p>
+          <h2 id={titleId} className="mt-1 text-lg font-semibold">
+            {game ? game.title : "Add a game"}
+          </h2>
+        </div>
+        {formError ? (
+          <p role="alert" className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-100">
+            {formError}
+          </p>
+        ) : null}
+        <Field
+          label="Title"
+          name="title"
+          value={fields.title}
+          errors={errors.title}
+          onChange={(title) => setFields((current) => ({ ...current, title }))}
+        />
+        <Field
+          label="Developer"
+          name="developer"
+          value={fields.developer}
+          errors={errors.developer}
+          onChange={(developer) =>
+            setFields((current) => ({ ...current, developer }))
+          }
+        />
+        <Field
+          label="Genre"
+          name="genre"
+          value={fields.genre}
+          errors={errors.genre}
+          onChange={(genre) => setFields((current) => ({ ...current, genre }))}
+        />
+        <Field
+          label="Monthly revenue (USD)"
+          name="monthly_revenue_usd"
+          type="number"
+          min={0}
+          step={1}
+          value={String(fields.monthly_revenue_usd)}
+          errors={errors.monthly_revenue_usd}
+          onChange={(value) =>
+            setFields((current) => ({
+              ...current,
+              monthly_revenue_usd: Number(value),
+            }))
+          }
+        />
+        <Field
+          label="Monthly downloads"
+          name="monthly_downloads"
+          type="number"
+          min={0}
+          step={1}
+          value={String(fields.monthly_downloads)}
+          errors={errors.monthly_downloads}
+          onChange={(value) =>
+            setFields((current) => ({
+              ...current,
+              monthly_downloads: Number(value),
+            }))
+          }
+        />
+        <Field
+          label="Average rating"
+          name="average_rating"
+          type="number"
+          min={0}
+          max={5}
+          step={0.1}
+          value={String(fields.average_rating)}
+          errors={errors.average_rating}
+          onChange={(value) =>
+            setFields((current) => ({
+              ...current,
+              average_rating: Number(value),
+            }))
+          }
+        />
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            className="rounded-full px-4 py-2 text-sm text-stone-300 transition hover:bg-white/5"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-full bg-amber-400 px-4 py-2 text-sm font-semibold text-ink transition hover:bg-amber-300 disabled:opacity-60"
+          >
+            {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </form>
+    </dialog>
+  );
+}
+
+function Field({
+  label,
+  name,
+  value,
+  onChange,
+  errors,
+  type = "text",
+  min,
+  max,
+  step,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (value: string) => void;
+  errors?: string[];
+  type?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+}) {
+  const id = `field-${name}`;
+  const errorId = `${id}-error`;
+  return (
+    <label htmlFor={id} className="flex flex-col gap-1.5 text-sm">
+      <span className="font-medium text-stone-300">{label}</span>
+      <input
+        id={id}
+        name={name}
+        type={type}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        aria-invalid={Boolean(errors?.length)}
+        aria-describedby={errors?.length ? errorId : undefined}
+        onChange={(event) => onChange(event.target.value)}
+        className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white outline-none transition focus:border-amber-300/60 focus:ring-2 focus:ring-amber-300/30"
+      />
+      {errors?.length ? (
+        <span id={errorId} className="text-rose-300">
+          {errors.join(" ")}
+        </span>
+      ) : null}
+    </label>
+  );
+}
