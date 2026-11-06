@@ -88,6 +88,7 @@ The same brief included decisions already made: `strftime` timestamps, exclusive
 
 - **Wrong diagnosis:** A glued sentence ("word.Found it") looked like a rendering bug. It came from the agent's test script, which concatenated the text blocks. The UI already renders them separately.
 - **Dangerous command:** During parallel work, an agent tried `pkill -f "next-server"`, which would also have killed the other track's server. The permission classifier blocked it, and the agent then used the PID and port instead.
+- **Redesign regressions:** With 381 tests passing, the new fixed header could hide the focused control on Shift+Tab, and one long genre shrank the search box until typed text was invisible. Independent QA found both in a real browser. Code review found that a `key` on the chat input erased typed text, and that removing the Ask AI wiring broke no test. Each is fixed, and the wiring now has tests that fail without it.
 - **Wrong identity:** Early commits used the wrong email. I asked for them to be corrected, and the history was rewritten with the tree verified identical.
 
 ## 4. Parallel agents, subagents, and worktrees
@@ -122,6 +123,7 @@ Times come from the `AI_LOG.md` entries. I stopped at 00:20, so everything after
 | About 00:20 | Live tests with Anthropic, full QA, task 09 written | Claude Code, QA agent, Chrome (unattended from 00:20) |
 | 02:35 | Task 09 fixes validated live; regression QA, review, and docs | Claude Code, QA and review agents (unattended) |
 | Morning | Reviewed the result, added the Cowork history, confirmed the PR, translated the log, analyzed the hydration error (dev agent, then QA and code review) | Me + Claude Code, dev, QA, and review agents |
+| Morning, after that | UI redesign from a design I provided, then independent QA and code review | Me + Claude Code, QA and review agents |
 
 ## Reflection
 

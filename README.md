@@ -27,7 +27,9 @@ The SQLite database is created in `data/games.db` and seeded with 14 games on fi
 | Chat for natural-language questions | `/chat`, `/api/chat` |
 | Tool calling, with no catalog data in the prompt | `lib/ai/tools.ts`, `lib/ai/prompt.ts` |
 | Streaming responses | Text and tool progress arrive as they are produced |
-| Dashboard and chat views, Tailwind | KPI cards, sortable table, search and genre filter |
+| Dashboard and chat views, Tailwind | KPI cards, table and card views, sorting, search by title, developer, or genre, and a genre filter |
+
+Each game can be copied as JSON, and its Ask AI link opens the chat with a question ready to review. The link never sends it, so opening one spends no LLM credit. The UI is dark only.
 
 The chat also has Stop, Retry, New chat, suggested questions, and a chip showing each tool call. The chat keeps its conversation when you navigate to the dashboard and back, but not across a page reload.
 
@@ -105,7 +107,7 @@ The prompt contains rules and no catalog data, so every answer comes from a tool
 npm run typecheck && npm run lint && npm test
 ```
 
-The 366 tests run with no network or API key. The backend project covers the repository against real SQLite, the API, the provider factory, the tools, and the chat route with a mock model. The frontend project covers the dashboard and chat with the real `useChat` hook, using React Testing Library and MSW.
+The 388 tests run with no network or API key. The backend project covers the repository against real SQLite, the API, the provider factory, the tools, and the chat route with a mock model. The frontend project covers the dashboard and chat with the real `useChat` hook, using React Testing Library and MSW.
 
 Automated tests don't show what a real model does, so the chat was also checked live against Anthropic. See [`tasks/09-qa-findings.md`](tasks/09-qa-findings.md).
 
