@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-export type ApiErrorCode = 'VALIDATION_ERROR' | 'INVALID_JSON' | 'INVALID_ID' | 'NOT_FOUND' | 'CONFIG_ERROR' | 'INTERNAL';
+export const API_ERROR_CODES = ['VALIDATION_ERROR', 'INVALID_JSON', 'INVALID_ID', 'NOT_FOUND', 'CONFIG_ERROR', 'INTERNAL'] as const;
+
+export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
 export interface ApiError {
   code: ApiErrorCode;

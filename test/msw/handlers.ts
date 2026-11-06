@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { Game } from '@/lib/types';
+import type { Game, GameInput } from '@/lib/types';
 
 export const sampleGame: Game = {
   id: 1,
@@ -13,4 +13,15 @@ export const sampleGame: Game = {
   updated_at: '2026-11-05T21:00:00.000Z',
 };
 
-export const handlers = [http.get('*/api/games', () => HttpResponse.json([sampleGame]))];
+export const handlers = [
+  http.get('*/api/games', () => HttpResponse.json([sampleGame])),
+  http.post('*/api/games', async ({ request }) => {
+    const input = (await request.json()) as GameInput;
+    return HttpResponse.json({ ...sampleGame, ...input, id: 2 }, { status: 201 });
+  }),
+  http.put('*/api/games/:id', async ({ request, params }) => {
+    const input = (await request.json()) as Partial<GameInput>;
+    return HttpResponse.json({ ...sampleGame, ...input, id: Number(params.id) });
+  }),
+  http.delete('*/api/games/:id', () => new HttpResponse(null, { status: 204 })),
+];
