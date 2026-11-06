@@ -13,9 +13,9 @@ export function GameCard({ game, onEdit }: { game: Game; onEdit: () => void }) {
           <span className="rounded-md bg-surface-high px-2 py-1 font-mono text-xs text-secondary [overflow-wrap:anywhere]">{game.genre}</span>
           <span className="font-mono text-sm font-bold whitespace-nowrap text-tertiary">{formatRating(game.average_rating)}</span>
         </div>
-        <h3 id={titleId} className="font-display text-lg font-bold [overflow-wrap:anywhere]">
+        <h2 id={titleId} className="font-display text-lg font-bold [overflow-wrap:anywhere]">
           {game.title}
-        </h3>
+        </h2>
         <p className="text-sm text-muted [overflow-wrap:anywhere]">{game.developer}</p>
       </div>
       <dl className="grid grid-cols-2 gap-3 rounded-lg bg-surface-lowest p-3">

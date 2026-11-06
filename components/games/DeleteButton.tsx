@@ -37,7 +37,7 @@ export function DeleteButton({ game }: { game: Pick<Game, 'id' | 'title'> }) {
 
   return (
     <>
-      <Button aria-label={`Delete ${game.title}`} title="Delete" className="size-9 p-0! text-error" onClick={() => setConfirming(true)}>
+      <Button aria-label={`Delete ${game.title}`} title="Delete" variant="icon" className="text-error" onClick={() => setConfirming(true)}>
         <Icon name="trash" />
       </Button>
       {confirming && (

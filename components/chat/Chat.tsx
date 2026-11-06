@@ -50,6 +50,11 @@ export function Chat({ suggestedPrompts, transport, initialDraft }: ChatProps) {
     if (scroller && isFollowingRef.current) scroller.scrollTop = scroller.scrollHeight;
   }, [messages, status, error]);
 
+  // A question from the Ask AI link is one Enter away from being sent.
+  useEffect(() => {
+    if (initialDraft) inputRef.current?.focus();
+  }, [initialDraft]);
+
   function handleScroll() {
     const scroller = scrollerRef.current;
     if (!scroller) return;
@@ -107,7 +112,7 @@ export function Chat({ suggestedPrompts, transport, initialDraft }: ChatProps) {
         </button>
       )}
 
-      <ChatInput key={initialDraft} isBusy={isBusy} initialDraft={initialDraft} inputRef={inputRef} onSend={send} onStop={() => void stop()} />
+      <ChatInput isBusy={isBusy} initialDraft={initialDraft} inputRef={inputRef} onSend={send} onStop={() => void stop()} />
     </div>
   );
 }

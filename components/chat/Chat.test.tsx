@@ -325,4 +325,41 @@ describe('Chat', () => {
       expect(alert).not.toHaveTextContent('Bad gateway');
     });
   });
+
+  describe('initial draft', () => {
+    it('waits in the focused input and sends nothing', () => {
+      const { transport, requests } = makeTransport();
+      render(<Chat suggestedPrompts={PROMPTS} transport={transport} initialDraft="Tell me about A" />);
+
+      const input = screen.getByLabelText('Your question');
+      expect(input).toHaveValue('Tell me about A');
+      expect(input).toHaveFocus();
+      expect(requests).toHaveLength(0);
+    });
+
+    it('fills an empty input when the draft changes', () => {
+      const { transport } = makeTransport();
+      const { rerender } = render(<Chat suggestedPrompts={PROMPTS} transport={transport} />);
+
+      rerender(<Chat suggestedPrompts={PROMPTS} transport={transport} initialDraft="Tell me about B" />);
+
+      expect(screen.getByLabelText('Your question')).toHaveValue('Tell me about B');
+    });
+
+    it.each([
+      ['goes away', undefined],
+      ['changes', 'Tell me about B'],
+    ])('keeps typed text when the draft %s', async (_name, nextDraft) => {
+      const user = userEvent.setup();
+      const { transport } = makeTransport();
+      const { rerender } = render(<Chat suggestedPrompts={PROMPTS} transport={transport} initialDraft="Tell me about A" />);
+      const input = screen.getByLabelText('Your question');
+
+      await user.clear(input);
+      await user.type(input, 'My own question');
+      rerender(<Chat suggestedPrompts={PROMPTS} transport={transport} initialDraft={nextDraft} />);
+
+      expect(screen.getByLabelText('Your question')).toHaveValue('My own question');
+    });
+  });
 });

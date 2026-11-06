@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { makeGame } from '@/test/game-factory';
@@ -38,5 +38,26 @@ describe('GameActions', () => {
     await user.click(screen.getByRole('button', { name: 'Copy Moss & Marrow as JSON' }));
 
     expect(screen.getByRole('status')).toHaveTextContent('Copy failed');
+  });
+
+  it('clears the message two seconds after the last copy', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
+      render(<GameActions game={game} onEdit={vi.fn()} />);
+      const copy = screen.getByRole('button', { name: 'Copy Moss & Marrow as JSON' });
+
+      await user.click(copy);
+      act(() => vi.advanceTimersByTime(1500));
+      await user.click(copy);
+      act(() => vi.advanceTimersByTime(1500));
+      expect(screen.getByRole('status')).toHaveTextContent('Copied');
+
+      act(() => vi.advanceTimersByTime(500));
+      expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

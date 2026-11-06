@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <Nav />
         {/* Offsets the fixed header, and the fixed sidebar from lg up. */}
-        <div className="flex min-h-dvh flex-col pt-16 lg:pl-64">{children}</div>
+        <div className="flex min-h-dvh flex-col pt-16 xl:pl-64">{children}</div>
       </body>
     </html>
   );

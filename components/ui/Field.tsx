@@ -23,7 +23,7 @@ export function Field({ label, error, onChange, ...inputProps }: FieldProps) {
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}
-        className="rounded-lg border border-border bg-surface-lowest px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none aria-invalid:border-error"
+        className="rounded-lg border border-outline bg-surface-lowest px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none aria-invalid:border-error"
         {...inputProps}
       />
       {error && (

@@ -29,6 +29,7 @@ describe('GamesTable', () => {
   it('says so when the catalog has more games than the table shows', () => {
     render(<GamesTable games={games} genres={genres} total={106} />);
     expect(screen.getByText(/Showing the first 3 of 106 games/)).toBeInTheDocument();
+    expect(screen.getByText('Showing 3 of 106 games')).toBeInTheDocument();
   });
 
   it('shows no such notice when every game is listed', () => {
@@ -226,7 +227,7 @@ describe('GamesTable', () => {
       expect(within(card).getByText('$182,500.50')).toBeInTheDocument();
       expect(within(card).getByText('48,210')).toBeInTheDocument();
       expect(within(card).getByRole('button', { name: 'Edit Banana' })).toBeInTheDocument();
-      expect(screen.getAllByRole('heading', { level: 3 }).map((title) => title.textContent)).toEqual(['Banana', 'apple', 'Cherry']);
+      expect(screen.getAllByRole('heading', { level: 2 }).map((title) => title.textContent)).toEqual(['Banana', 'apple', 'Cherry']);
     });
 
     it('applies the search to the cards too', async () => {
@@ -236,7 +237,7 @@ describe('GamesTable', () => {
       await user.click(screen.getByRole('button', { name: 'Cards' }));
       await user.type(screen.getByLabelText('Search games'), 'cherry');
 
-      expect(screen.getAllByRole('heading', { level: 3 }).map((title) => title.textContent)).toEqual(['Cherry']);
+      expect(screen.getAllByRole('heading', { level: 2 }).map((title) => title.textContent)).toEqual(['Cherry']);
     });
   });
 });

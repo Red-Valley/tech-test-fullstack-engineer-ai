@@ -116,7 +116,7 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
 
       {games.length > 0 && (
         <p aria-live="polite" className="px-1 font-mono text-xs text-outline">
-          Showing {rows.length} of {games.length} games
+          Showing {rows.length} of {total} games
         </p>
       )}
 
@@ -161,7 +161,7 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
             </thead>
             <tbody>
               {rows.map((game) => (
-                <tr key={game.id} className="even:bg-surface-low hover:bg-surface">
+                <tr key={game.id} className="even:bg-surface hover:bg-surface-high">
                   <th scope="row" className="px-4 py-3 text-left font-display font-bold [overflow-wrap:anywhere]">
                     {game.title}
                   </th>

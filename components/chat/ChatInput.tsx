@@ -7,7 +7,7 @@ interface ChatInputProps {
   onSend: (text: string) => void;
   onStop: () => void;
   inputRef?: RefObject<HTMLTextAreaElement | null>;
-  /** Text to start with. It waits for the user: only sending spends LLM credit. */
+  /** Text to fill an empty input with. It waits for the user: only sending spends LLM credit. */
   initialDraft?: string;
 }
 
@@ -16,6 +16,12 @@ const BUTTON_CLASS =
 
 export function ChatInput({ isBusy, onSend, onStop, inputRef, initialDraft = '' }: ChatInputProps) {
   const [text, setText] = useState(initialDraft);
+  const [seenDraft, setSeenDraft] = useState(initialDraft);
+  // The link can change while mounted, such as with the browser's Back. Typed text always wins.
+  if (initialDraft !== seenDraft) {
+    setSeenDraft(initialDraft);
+    if (initialDraft && !text) setText(initialDraft);
+  }
   const canSend = !isBusy && text.trim().length > 0;
 
   function send() {
@@ -61,7 +67,7 @@ export function ChatInput({ isBusy, onSend, onStop, inputRef, initialDraft = '' 
         onChange={(event) => setText(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Ask about the catalog. Enter sends, Shift+Enter adds a line."
-        className="min-w-0 flex-1 resize-none rounded-xl border border-border bg-surface-lowest px-3 py-2 placeholder:text-outline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+        className="min-w-0 flex-1 resize-none rounded-xl border border-outline bg-surface-lowest px-3 py-2 placeholder:text-outline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
       />
       {/* Without keys React reuses the node, which becomes a submit button during the click on Stop and sends the draft. */}
       {isBusy ? (

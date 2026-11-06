@@ -44,6 +44,11 @@
   --font-mono: var(--font-jetbrains-mono);
 }
 
+html {
+  /* Keeps a control that receives focus clear of the fixed header. */
+  scroll-padding-top: 5rem;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

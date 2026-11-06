@@ -21,7 +21,7 @@ const VIEWS: { view: GamesView; label: string; icon: IconName }[] = [
   { view: 'cards', label: 'Cards', icon: 'cards' },
 ];
 
-const CONTROL = 'rounded-lg bg-surface-lowest px-3 py-2 font-sans text-sm font-normal tracking-normal normal-case focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none';
+const CONTROL = 'rounded-lg border border-outline bg-surface-lowest px-3 py-2 font-sans text-sm font-normal tracking-normal normal-case focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none';
 const LABEL = 'flex flex-col gap-1 font-mono text-xs font-medium tracking-wide text-muted uppercase';
 
 interface GamesFiltersProps {
@@ -43,7 +43,7 @@ export function GamesFilters({ search, onSearch, genre, genres, onGenre, sort, o
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-surface-low p-4 shadow-lg">
       <div className="flex flex-col gap-3 md:flex-row md:items-end">
-        <label className={`${LABEL} md:flex-1`}>
+        <label className={`${LABEL} min-w-0 md:flex-1`}>
           Search games
           <span className="relative">
             <Icon name="search" className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-outline" />
@@ -57,7 +57,7 @@ export function GamesFilters({ search, onSearch, genre, genres, onGenre, sort, o
           </span>
         </label>
         <div className="grid grid-cols-2 gap-3 md:flex">
-          <label className={LABEL}>
+          <label className={`${LABEL} md:w-52`}>
             Genre
             <select value={genre} onChange={(event) => onGenre(event.target.value)} className={`w-full ${CONTROL}`}>
               <option value="">All genres</option>
@@ -68,7 +68,7 @@ export function GamesFilters({ search, onSearch, genre, genres, onGenre, sort, o
               ))}
             </select>
           </label>
-          <label className={LABEL}>
+          <label className={`${LABEL} md:w-52`}>
             Sort
             <select
               value={selected?.label ?? ''}
@@ -85,7 +85,7 @@ export function GamesFilters({ search, onSearch, genre, genres, onGenre, sort, o
           </label>
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div role="group" aria-label="View" className="flex rounded-lg bg-surface-lowest p-1">
           {VIEWS.map(({ view: option, label, icon }) => (
             <button
@@ -93,7 +93,7 @@ export function GamesFilters({ search, onSearch, genre, genres, onGenre, sort, o
               type="button"
               aria-pressed={view === option}
               onClick={() => onView(option)}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none ${
                 view === option ? 'bg-brand text-on-brand' : 'text-muted hover:text-foreground'
               }`}
             >
