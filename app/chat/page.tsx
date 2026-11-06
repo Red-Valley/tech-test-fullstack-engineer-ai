@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Chat } from '@/components/chat/Chat';
-import { getSuggestedPrompts } from '@/lib/ai/suggested-prompts';
+import { getAskDraft, getSuggestedPrompts } from '@/lib/ai/suggested-prompts';
 
 export const metadata: Metadata = { title: 'Chat | Indie Games Dashboard' };
 
@@ -8,12 +8,14 @@ export const metadata: Metadata = { title: 'Chat | Indie Games Dashboard' };
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export default function ChatPage() {
+export default async function ChatPage({ searchParams }: PageProps<'/chat'>) {
+  const { ask } = await searchParams;
+
   return (
-    // 57px is the height of the Nav, so that only the message list scrolls.
-    <main className="mx-auto flex h-[calc(100dvh-57px)] w-full max-w-3xl flex-col px-4 pt-6 pb-4 sm:px-6">
+    // 4rem is the height of the header, so that only the message list scrolls.
+    <main className="mx-auto flex h-[calc(100dvh-4rem)] w-full max-w-4xl flex-col px-4 pt-6 pb-4 sm:px-6">
       <h1 className="sr-only">Chat</h1>
-      <Chat suggestedPrompts={getSuggestedPrompts()} />
+      <Chat suggestedPrompts={getSuggestedPrompts()} initialDraft={getAskDraft(ask)} />
     </main>
   );
 }

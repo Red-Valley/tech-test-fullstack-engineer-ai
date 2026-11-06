@@ -12,8 +12,8 @@ export default async function DashboardPage() {
   const stats = getStats();
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-6 lg:px-8">
+      <h1 className="font-display text-3xl font-bold tracking-tight">Dashboard</h1>
       <StatsCards stats={stats} />
       <GamesTable games={listGames()} genres={listGenres()} total={stats.count} />
     </main>

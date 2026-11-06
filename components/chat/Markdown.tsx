@@ -14,7 +14,7 @@ const COMPONENTS: Components = {
   ),
   // A model-written image would make the browser request any URL it chooses.
   img: () => null,
-  code: ({ children }) => <code className="rounded bg-background px-1 font-mono text-sm">{children}</code>,
+  code: ({ children }) => <code className="rounded bg-surface-lowest px-1 font-mono text-sm">{children}</code>,
   table: ({ children }) => (
     <div className="my-3 overflow-x-auto">
       <table className="w-full border-collapse text-sm tabular-nums">{children}</table>

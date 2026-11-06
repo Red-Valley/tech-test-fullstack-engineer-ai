@@ -1,5 +1,6 @@
 import 'server-only';
 import { listGames } from '@/lib/games';
+import { gameInputSchema } from '@/lib/schema';
 
 const FALLBACK_COMPARISON = 'Compare revenue of the two top-earning games.';
 
@@ -11,6 +12,12 @@ function getComparisonPrompt(): string {
     console.error('[chat] could not load titles for the suggested prompts', error);
     return FALLBACK_COMPARISON;
   }
+}
+
+/** The question behind the dashboard's Ask AI link. Anything but a valid title gives no draft. */
+export function getAskDraft(title: unknown): string | undefined {
+  const parsed = gameInputSchema.shape.title.safeParse(title);
+  return parsed.success ? `Tell me about ${parsed.data}: its revenue, downloads and rating.` : undefined;
 }
 
 /**

@@ -6,13 +6,17 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import type { SortField } from '@/lib/games';
 import { formatNumber, formatRating, formatUSD } from '@/lib/format';
 import type { Game } from '@/lib/types';
-import { DeleteButton } from './DeleteButton';
+import { GameActions } from './GameActions';
+import { GameCard } from './GameCard';
 import { GameFormModal } from './GameFormModal';
+import { GamesFilters, type GamesView, type Sort } from './GamesFilters';
 
-type Sort = { field: SortField; order: 'asc' | 'desc' };
 type Dialog = { kind: 'create' } | { kind: 'edit'; game: Game };
 
 const sameText = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+
+const matchesSearch = (game: Game, needle: string) =>
+  [game.title, game.developer, game.genre].some((text) => text.toLowerCase().includes(needle));
 
 function compareGames(a: Game, b: Game, field: SortField): number {
   if (field === 'title') return a.title.localeCompare(b.title, 'en', { sensitivity: 'base' });
@@ -40,7 +44,7 @@ function SortableHeader({
       <button
         type="button"
         onClick={() => onSort(field)}
-        className="inline-flex items-center gap-1 rounded hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+        className={`inline-flex items-center gap-1 rounded tracking-wider uppercase hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none ${align === 'right' ? 'flex-row-reverse' : ''}`}
       >
         {label}
         <span aria-hidden="true" className="w-3 text-xs">
@@ -64,6 +68,7 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
   const [search, setSearch] = useState('');
   const [genre, setGenre] = useState('');
   const [sort, setSort] = useState<Sort | null>(null);
+  const [view, setView] = useState<GamesView>('table');
   const [dialog, setDialog] = useState<Dialog | null>(null);
 
   // Deleting the last game of a genre removes it from the options, so the filter must let go.
@@ -72,7 +77,7 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase();
     const filtered = games.filter(
-      (game) => game.title.toLowerCase().includes(needle) && (activeGenre === '' || sameText(game.genre, activeGenre)),
+      (game) => matchesSearch(game, needle) && (activeGenre === '' || sameText(game.genre, activeGenre)),
     );
     if (!sort) return filtered;
     const direction = sort.order === 'asc' ? 1 : -1;
@@ -92,31 +97,28 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
     setGenre('');
   }
 
-  const controlClass =
-    'rounded-lg border border-border bg-surface px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none';
+  const openEdit = (game: Game) => setDialog({ kind: 'edit', game });
 
   return (
     <section aria-label="Games" className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <label className="flex flex-col gap-1 text-sm font-medium sm:flex-1">
-          Search by title
-          <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} className={`font-normal ${controlClass}`} />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Genre
-          <select value={activeGenre} onChange={(event) => setGenre(event.target.value)} className={`font-normal ${controlClass}`}>
-            <option value="">All genres</option>
-            {genres.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Button variant="primary" onClick={() => setDialog({ kind: 'create' })}>
-          Add game
-        </Button>
-      </div>
+      <GamesFilters
+        search={search}
+        onSearch={setSearch}
+        genre={activeGenre}
+        genres={genres}
+        onGenre={setGenre}
+        sort={sort}
+        onSort={setSort}
+        view={view}
+        onView={setView}
+        onAdd={() => setDialog({ kind: 'create' })}
+      />
+
+      {games.length > 0 && (
+        <p aria-live="polite" className="px-1 font-mono text-xs text-outline">
+          Showing {rows.length} of {games.length} games
+        </p>
+      )}
 
       {total > games.length && (
         <p className="text-sm text-muted">
@@ -130,11 +132,17 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
         <EmptyState title="No games match your filters.">
           <Button onClick={clearFilters}>Clear filters</Button>
         </EmptyState>
+      ) : view === 'cards' ? (
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {rows.map((game) => (
+            <GameCard key={game.id} game={game} onEdit={() => openEdit(game)} />
+          ))}
+        </ul>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+        <div className="overflow-x-auto rounded-xl bg-surface-low shadow-xl">
           <table className="w-full min-w-[56rem] text-sm">
             <caption className="sr-only">Indie games catalog</caption>
-            <thead className="border-b border-border text-muted">
+            <thead className="bg-surface-high font-mono text-xs tracking-wider text-muted uppercase">
               <tr>
                 <SortableHeader field="title" label="Title" sort={sort} onSort={toggleSort} />
                 <th scope="col" className="px-4 py-3 text-left font-medium">
@@ -153,22 +161,19 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
             </thead>
             <tbody>
               {rows.map((game) => (
-                <tr key={game.id} className="border-b border-border last:border-b-0">
-                  <th scope="row" className="px-4 py-3 text-left font-medium [overflow-wrap:anywhere]">
+                <tr key={game.id} className="even:bg-surface-low hover:bg-surface">
+                  <th scope="row" className="px-4 py-3 text-left font-display font-bold [overflow-wrap:anywhere]">
                     {game.title}
                   </th>
-                  <td className="px-4 py-3 [overflow-wrap:anywhere]">{game.developer}</td>
-                  <td className="px-4 py-3 [overflow-wrap:anywhere]">{game.genre}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{formatUSD(game.monthly_revenue_usd)}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{formatNumber(game.monthly_downloads)}</td>
-                  <td className="px-4 py-3 text-right whitespace-nowrap tabular-nums">{formatRating(game.average_rating)}</td>
+                  <td className="px-4 py-3 text-muted [overflow-wrap:anywhere]">{game.developer}</td>
+                  <td className="min-w-40 px-4 py-3 [overflow-wrap:anywhere]">
+                    <span className="inline-block rounded-md bg-surface-high px-2 py-1 font-mono text-xs text-secondary">{game.genre}</span>
+                  </td>
+                  <td className="px-4 py-3 text-right font-mono font-bold text-tertiary tabular-nums">{formatUSD(game.monthly_revenue_usd)}</td>
+                  <td className="px-4 py-3 text-right font-mono tabular-nums">{formatNumber(game.monthly_downloads)}</td>
+                  <td className="px-4 py-3 text-right font-mono whitespace-nowrap text-secondary tabular-nums">{formatRating(game.average_rating)}</td>
                   <td className="px-4 py-3">
-                    <div className="flex justify-end gap-2">
-                      <Button aria-label={`Edit ${game.title}`} onClick={() => setDialog({ kind: 'edit', game })}>
-                        Edit
-                      </Button>
-                      <DeleteButton game={game} />
-                    </div>
+                    <GameActions game={game} onEdit={() => openEdit(game)} />
                   </td>
                 </tr>
               ))}

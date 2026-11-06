@@ -46,9 +46,9 @@ export function Modal({ title, busy = false, onClose, children }: ModalProps) {
         if (busy) event.preventDefault();
       }}
       onClose={onClose}
-      className="m-auto w-full max-w-lg rounded-xl border border-border bg-surface p-6 text-foreground backdrop:bg-black/50"
+      className="m-auto w-full max-w-2xl rounded-2xl border border-brand/30 bg-surface p-6 text-foreground shadow-2xl backdrop:bg-black/70 backdrop:backdrop-blur-md"
     >
-      <h2 id={titleId} className="mb-4 text-lg font-semibold [overflow-wrap:anywhere]">
+      <h2 id={titleId} className="mb-4 border-b border-border pb-4 font-display text-xl font-bold [overflow-wrap:anywhere]">
         {title}
       </h2>
       {children}

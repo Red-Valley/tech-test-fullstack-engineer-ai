@@ -49,7 +49,7 @@ describe('GamesTable', () => {
     it('searches by title ignoring case and surrounding spaces', async () => {
       const user = userEvent.setup();
       render(<GamesTable games={games} genres={genres} />);
-      await user.type(screen.getByLabelText('Search by title'), ' CHER ');
+      await user.type(screen.getByLabelText('Search games'), ' CHER ');
       expect(shownTitles()).toEqual(['Cherry']);
     });
 
@@ -64,20 +64,20 @@ describe('GamesTable', () => {
       const user = userEvent.setup();
       render(<GamesTable games={games} genres={genres} />);
       await user.selectOptions(screen.getByLabelText('Genre'), 'Puzzle');
-      await user.type(screen.getByLabelText('Search by title'), 'ban');
+      await user.type(screen.getByLabelText('Search games'), 'ban');
       expect(shownTitles()).toEqual(['Banana']);
     });
 
     it('offers a way out when no game matches', async () => {
       const user = userEvent.setup();
       render(<GamesTable games={games} genres={genres} />);
-      await user.type(screen.getByLabelText('Search by title'), 'zzz');
+      await user.type(screen.getByLabelText('Search games'), 'zzz');
       expect(screen.getByText('No games match your filters.')).toBeInTheDocument();
 
       await user.click(screen.getByRole('button', { name: 'Clear filters' }));
 
       expect(shownTitles()).toHaveLength(3);
-      expect(screen.getByLabelText('Search by title')).toHaveValue('');
+      expect(screen.getByLabelText('Search games')).toHaveValue('');
     });
 
     it('drops the genre filter when that genre disappears from the catalog', async () => {
@@ -168,6 +168,75 @@ describe('GamesTable', () => {
       render(<GamesTable games={games} genres={genres} />);
       await user.click(screen.getByRole('button', { name: 'Delete apple' }));
       expect(screen.getByRole('dialog', { name: 'Delete apple?' })).toBeInTheDocument();
+    });
+  });
+
+  describe('search', () => {
+    it.each([
+      ['developer', 'bramble', ['Banana']],
+      ['genre', 'HORROR', ['apple']],
+    ])('matches the %s', async (_field, query, expected) => {
+      const user = userEvent.setup();
+      const catalog = [makeGame({ id: 1, title: 'Banana', developer: 'Bramble Byte' }), makeGame({ id: 2, title: 'apple', genre: 'Horror' })];
+      render(<GamesTable games={catalog} genres={genres} />);
+
+      await user.type(screen.getByLabelText('Search games'), query);
+
+      expect(shownTitles()).toEqual(expected);
+      expect(screen.getByText('Showing 1 of 2 games')).toBeInTheDocument();
+    });
+  });
+
+  describe('sort dropdown', () => {
+    it('sorts the table', async () => {
+      const user = userEvent.setup();
+      render(<GamesTable games={games} genres={genres} />);
+
+      await user.selectOptions(screen.getByLabelText('Sort'), 'Downloads: low to high');
+
+      expect(shownTitles()).toEqual(['Cherry', 'apple', 'Banana']);
+      expect(screen.getByRole('columnheader', { name: /Downloads/ })).toHaveAttribute('aria-sort', 'ascending');
+    });
+
+    it('follows a click on a table header', async () => {
+      const user = userEvent.setup();
+      render(<GamesTable games={games} genres={genres} />);
+      const sort = screen.getByLabelText<HTMLSelectElement>('Sort');
+      expect(sort.selectedOptions[0]).toHaveTextContent('Default order');
+
+      await user.click(screen.getByRole('button', { name: 'Rating' }));
+      expect(sort.selectedOptions[0]).toHaveTextContent('Rating: high to low');
+
+      await user.click(screen.getByRole('button', { name: 'Rating' }));
+      expect(sort.selectedOptions[0]).toHaveTextContent('Rating: low to high');
+    });
+  });
+
+  describe('view toggle', () => {
+    it('shows the same games as cards, with their values and actions', async () => {
+      const user = userEvent.setup();
+      render(<GamesTable games={games} genres={genres} />);
+      expect(screen.getByRole('button', { name: 'Table' })).toHaveAttribute('aria-pressed', 'true');
+
+      await user.click(screen.getByRole('button', { name: 'Cards' }));
+
+      expect(screen.getByRole('button', { name: 'Cards' })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      const card = screen.getByRole('listitem', { name: 'Banana' });
+      expect(within(card).getByText('$182,500.50')).toBeInTheDocument();
+      expect(within(card).getByText('48,210')).toBeInTheDocument();
+      expect(within(card).getByRole('button', { name: 'Edit Banana' })).toBeInTheDocument();
+      expect(screen.getAllByRole('heading', { level: 3 }).map((title) => title.textContent)).toEqual(['Banana', 'apple', 'Cherry']);
+    });
+
+    it('applies the search to the cards too', async () => {
+      const user = userEvent.setup();
+      render(<GamesTable games={games} genres={genres} />);
+
+      await user.click(screen.getByRole('button', { name: 'Cards' }));
+      await user.type(screen.getByLabelText('Search games'), 'cherry');
+
+      expect(screen.getAllByRole('heading', { level: 3 }).map((title) => title.textContent)).toEqual(['Cherry']);
     });
   });
 });

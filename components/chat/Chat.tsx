@@ -31,9 +31,11 @@ function getErrorMessage(error: Error): string {
 interface ChatProps {
   suggestedPrompts: string[];
   transport?: ChatTransport<ChatUIMessage>;
+  /** Text to place in the input, such as a question from the dashboard's Ask AI link. */
+  initialDraft?: string;
 }
 
-export function Chat({ suggestedPrompts, transport }: ChatProps) {
+export function Chat({ suggestedPrompts, transport, initialDraft }: ChatProps) {
   const [session] = useState(() => (transport ? new ChatSession<ChatUIMessage>({ transport }) : sharedSession));
   const { messages, sendMessage, setMessages, clearError, status, stop, error, regenerate } = useChat<ChatUIMessage>({ chat: session });
   const isBusy = status === 'submitted' || status === 'streaming';
@@ -79,7 +81,7 @@ export function Chat({ suggestedPrompts, transport }: ChatProps) {
       {error && (
         <div
           role="alert"
-          className="flex items-center justify-between gap-3 rounded-xl border border-red-700 px-4 py-2 text-sm text-red-700 dark:border-red-400 dark:text-red-400"
+          className="flex items-center justify-between gap-3 rounded-xl border border-error px-4 py-2 text-sm text-error"
         >
           <span className="min-w-0 break-words">{getErrorMessage(error)}</span>
           <button
@@ -105,7 +107,7 @@ export function Chat({ suggestedPrompts, transport }: ChatProps) {
         </button>
       )}
 
-      <ChatInput isBusy={isBusy} inputRef={inputRef} onSend={send} onStop={() => void stop()} />
+      <ChatInput key={initialDraft} isBusy={isBusy} initialDraft={initialDraft} inputRef={inputRef} onSend={send} onStop={() => void stop()} />
     </div>
   );
 }

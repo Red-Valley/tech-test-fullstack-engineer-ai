@@ -17,8 +17,8 @@ function getChipStatus(state: DynamicToolUIPart['state'], isActive: boolean): Ch
 
 const STATUS_VIEW: Record<ChipStatus, { label: (name: string) => string; icon: string; className: string }> = {
   running: { label: (name) => `Querying ${name}…`, icon: '', className: 'text-muted' },
-  done: { label: (name) => name, icon: '✓', className: 'text-green-700 dark:text-green-400' },
-  failed: { label: (name) => `${name} failed`, icon: '✕', className: 'text-red-700 dark:text-red-400' },
+  done: { label: (name) => name, icon: '✓', className: 'text-tertiary' },
+  failed: { label: (name) => `${name} failed`, icon: '✕', className: 'text-error' },
   stopped: { label: (name) => `${name} stopped`, icon: '■', className: 'text-muted' },
 };
 
@@ -50,7 +50,7 @@ export function ToolCallChip({ name, state, input, isActive }: ToolCallChipProps
   );
 
   return (
-    <div className="w-fit max-w-full rounded-lg border border-border bg-background px-2.5 py-1 text-xs">
+    <div className="w-fit max-w-full rounded-lg bg-surface-highest px-2.5 py-1 text-xs">
       {hasArguments ? (
         <details>
           <summary className="cursor-pointer rounded focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none">

@@ -7,13 +7,15 @@ interface ChatInputProps {
   onSend: (text: string) => void;
   onStop: () => void;
   inputRef?: RefObject<HTMLTextAreaElement | null>;
+  /** Text to start with. It waits for the user: only sending spends LLM credit. */
+  initialDraft?: string;
 }
 
 const BUTTON_CLASS =
-  'rounded-xl px-4 py-2 font-medium focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none';
+  'rounded-xl px-4 py-2 font-medium focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none';
 
-export function ChatInput({ isBusy, onSend, onStop, inputRef }: ChatInputProps) {
-  const [text, setText] = useState('');
+export function ChatInput({ isBusy, onSend, onStop, inputRef, initialDraft = '' }: ChatInputProps) {
+  const [text, setText] = useState(initialDraft);
   const canSend = !isBusy && text.trim().length > 0;
 
   function send() {
@@ -59,15 +61,15 @@ export function ChatInput({ isBusy, onSend, onStop, inputRef }: ChatInputProps) 
         onChange={(event) => setText(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Ask about the catalog. Enter sends, Shift+Enter adds a line."
-        className="min-w-0 flex-1 resize-none rounded-xl border border-border bg-surface px-3 py-2 placeholder:text-muted focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+        className="min-w-0 flex-1 resize-none rounded-xl border border-border bg-surface-lowest px-3 py-2 placeholder:text-outline focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
       />
       {/* Without keys React reuses the node, which becomes a submit button during the click on Stop and sends the draft. */}
       {isBusy ? (
-        <button key="stop" type="button" onClick={handleStop} className={`${BUTTON_CLASS} border border-border bg-surface`}>
+        <button key="stop" type="button" onClick={handleStop} className={`${BUTTON_CLASS} bg-surface-highest text-foreground`}>
           Stop
         </button>
       ) : (
-        <button key="send" type="submit" disabled={!canSend} onClick={handleSendClick} className={`${BUTTON_CLASS} bg-brand text-white dark:text-slate-900 disabled:opacity-50`}>
+        <button key="send" type="submit" disabled={!canSend} onClick={handleSendClick} className={`${BUTTON_CLASS} bg-brand text-on-brand disabled:opacity-50`}>
           Send
         </button>
       )}

@@ -15,7 +15,7 @@ export function Field({ label, error, onChange, ...inputProps }: FieldProps) {
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-medium">
+      <label htmlFor={id} className="font-mono text-xs font-medium tracking-wide text-muted uppercase">
         {label}
       </label>
       <input
@@ -23,11 +23,11 @@ export function Field({ label, error, onChange, ...inputProps }: FieldProps) {
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         onChange={(event) => onChange(event.target.value)}
-        className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none aria-invalid:border-red-700"
+        className="rounded-lg border border-border bg-surface-lowest px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none aria-invalid:border-error"
         {...inputProps}
       />
       {error && (
-        <p id={errorId} className="text-sm text-red-700 dark:text-red-300">
+        <p id={errorId} className="text-sm text-error">
           {error}
         </p>
       )}

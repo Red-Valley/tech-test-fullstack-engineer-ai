@@ -4,6 +4,7 @@ import { startTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
+import { Icon } from '@/components/ui/Icon';
 import { Modal } from '@/components/ui/Modal';
 import { deleteGame } from '@/lib/api-client';
 import type { Game } from '@/lib/types';
@@ -36,8 +37,8 @@ export function DeleteButton({ game }: { game: Pick<Game, 'id' | 'title'> }) {
 
   return (
     <>
-      <Button aria-label={`Delete ${game.title}`} onClick={() => setConfirming(true)}>
-        Delete
+      <Button aria-label={`Delete ${game.title}`} title="Delete" className="size-9 p-0! text-error" onClick={() => setConfirming(true)}>
+        <Icon name="trash" />
       </Button>
       {confirming && (
         <Modal title={`Delete ${game.title}?`} busy={pending} onClose={close}>

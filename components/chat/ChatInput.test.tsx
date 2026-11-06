@@ -53,6 +53,14 @@ describe('ChatInput', () => {
     expect(inputRef.current).toHaveFocus();
   });
 
+  it('starts with the draft and does not send it', () => {
+    const onSend = vi.fn();
+    render(<ChatInput isBusy={false} initialDraft="Tell me about A" onSend={onSend} onStop={vi.fn()} />);
+
+    expect(screen.getByLabelText('Your question')).toHaveValue('Tell me about A');
+    expect(onSend).not.toHaveBeenCalled();
+  });
+
   it('stops the answer from the keyboard, which reports no clicks', () => {
     const onStop = vi.fn();
     render(<ChatInput isBusy onSend={vi.fn()} onStop={onStop} />);

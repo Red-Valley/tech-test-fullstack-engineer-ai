@@ -11,11 +11,11 @@ export function StatsCards({ stats }: { stats: GameStats }) {
   ];
 
   return (
-    <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
       {cards.map(({ label, value }) => (
-        <div key={label} className="rounded-xl border border-border bg-surface p-4">
-          <dt className="text-sm text-muted">{label}</dt>
-          <dd className="mt-1 text-base font-semibold tabular-nums [overflow-wrap:anywhere] sm:text-xl">{value}</dd>
+        <div key={label} className="rounded-xl bg-surface p-4 shadow-md">
+          <dt className="font-mono text-[11px] leading-4 font-medium tracking-widest text-outline uppercase">{label}</dt>
+          <dd className="mt-2 font-display text-lg font-bold tracking-tight tabular-nums [overflow-wrap:anywhere] sm:text-2xl lg:text-3xl">{value}</dd>
         </div>
       ))}
     </dl>

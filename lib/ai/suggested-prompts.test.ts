@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { listGames } from '@/lib/games';
 import type { Game } from '@/lib/types';
-import { getSuggestedPrompts } from './suggested-prompts';
+import { getAskDraft, getSuggestedPrompts } from './suggested-prompts';
 
 vi.mock('@/lib/games', () => ({ listGames: vi.fn() }));
 
@@ -9,6 +9,21 @@ const game = (title: string) => ({ title }) as Game;
 
 afterEach(() => {
   vi.restoreAllMocks();
+});
+
+describe('getAskDraft', () => {
+  it('builds a question from a title', () => {
+    expect(getAskDraft(' Moss & Marrow ')).toBe('Tell me about Moss & Marrow: its revenue, downloads and rating.');
+  });
+
+  it.each([
+    ['no param', undefined],
+    ['a repeated param', ['A', 'B']],
+    ['a blank param', '   '],
+    ['an oversized param', 'x'.repeat(121)],
+  ])('gives no draft for %s', (_name, value) => {
+    expect(getAskDraft(value)).toBeUndefined();
+  });
 });
 
 describe('getSuggestedPrompts', () => {

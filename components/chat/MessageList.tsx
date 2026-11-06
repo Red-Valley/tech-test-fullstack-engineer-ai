@@ -15,14 +15,14 @@ function MessageBubble({ message, isActive }: { message: ChatUIMessage; isActive
 
   if (message.role === 'user') {
     return (
-      <li className="ml-auto max-w-[85%] rounded-2xl bg-brand px-4 py-2 break-words whitespace-pre-wrap text-white dark:text-slate-900">
+      <li className="ml-auto max-w-[85%] rounded-2xl bg-brand px-4 py-2 break-words whitespace-pre-wrap text-on-brand">
         {parts.map((part, index) => (part.type === 'text' ? <span key={index}>{part.text}</span> : null))}
       </li>
     );
   }
 
   return (
-    <li className="flex max-w-full flex-col gap-2 rounded-2xl border border-border bg-surface px-4 py-3 break-words">
+    <li className="flex max-w-full flex-col gap-2 rounded-2xl bg-surface px-4 py-3 shadow-md break-words">
       {parts.map((part, index) => {
         if (part.type === 'text') return <Markdown key={index} text={part.text} />;
         if (!isToolUIPart(part)) return null;

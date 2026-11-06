@@ -10,8 +10,8 @@ export default function Error({ error, retry }: { error: unknown; retry: () => v
   }, [error]);
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col items-start gap-4 px-6 py-8">
-      <h1 className="text-2xl font-semibold">Something went wrong</h1>
+    <main className="mx-auto flex w-full max-w-7xl flex-col items-start gap-4 px-4 py-6 lg:px-8">
+      <h1 className="font-display text-3xl font-bold tracking-tight">Something went wrong</h1>
       <p className="text-muted">This page could not load. Try again in a moment.</p>
       <Button variant="primary" onClick={() => retry()}>
         Try again
