@@ -58,15 +58,15 @@ Each reviewer was told to verify findings in the code and not to edit anything.
 
 - **What happened:** To stop the chat from resuming a request the user had stopped, the AI added a rule to the system prompt.
 - **How I detected it:** A live test with the real model: it answered both the stopped question and the new one.
-- **How I fixed it:** `app/api/chat/route.ts` now removes any question that never got an answer before calling the model, with a regression test. The live result was then correct.
-- **Lesson:** A prompt asks; code enforces. If behavior must hold, put it in code. I also recorded what remains: if a partial answer stays in the history, the model can still resume it.
+- **How I fixed it:** The first fix deleted unanswered questions in `app/api/chat/route.ts`. It passed live, but the independent code review showed that it broke follow-ups: after a stop, "try again" reached the model with no context. It also missed a stop after a tool finished. The route now closes those turns with a `[No answer: …]` marker, with a regression test per state. Live, the stopped request isn't resumed, and "try again" still works.
+- **Lesson:** A prompt asks; code enforces. If behavior must hold, put it in code, then have someone else try to break it. I also recorded what remains: if a partial answer stays in the history, the model can still resume it.
 
-### A fix that broke something else
+### The Send and Stop button
 
-- **What happened:** The double-click bug came from Stop appearing under the cursor where Send had been. The first idea, distinct React `key`s, would not have worked because the second click would still land on the new button. The second, ignoring Stop for 500 ms after sending, broke two existing tests, and rightly: a quick Stop is intentional.
-- **How I detected it:** Reasoning through the first idea, then the existing test suite for the second.
-- **How I fixed it:** The handler now checks `event.detail`, which identifies the second click of a double click without a timer.
-- **Lesson:** Keep tests that describe user intent. They caught a fix that solved the reported symptom.
+- **What happened:** A double click on Send cancelled the question, because Stop appeared under the cursor. The AI rejected distinct React `key`s, reasoning that the second click would still land on the new button. Its next fix, ignoring Stop for 500 ms after sending, broke two existing tests, and rightly: a quick Stop is intentional. Checking `event.detail` fixed that symptom.
+- **What it missed:** The rejected `key`s were needed for a worse bug. One click on Stop with a draft in the box sent the draft. React reused the same `<button>` node, which became `type="submit"` during the click, so Chrome submitted the form.
+- **How I detected it:** A scripted click in real Chrome, while verifying a smaller review finding, followed by a log of the real `click` and `submit` events. My first regression test passed with or without the fix, because jsdom doesn't reproduce the browser's timing, so I replaced it with one that checks the cause: Stop and Send must be different DOM nodes.
+- **Lesson:** Keep tests that describe user intent, and run a new test against the unfixed code. A passing test proves nothing until you have seen it fail.
 
 ### Outdated instructions in the kit
 
@@ -115,6 +115,7 @@ Times come from the `AI_LOG.md` entries.
 
 - **What worked best:** A written contract, then parallel tracks, then independent reviewers. Most of the human value went into decisions and into rejecting wrong assumptions, not into typing.
 - **What tests couldn't catch:** 341 passing tests with a mock model said nothing about burst streaming or "and" vs "&". I would run a real model earlier, and check for provider credit before starting, not at the end.
+- **What the agents missed:** The Stop draft bug got through the frontend tests, the reviews, and the QA runs. None of them clicked Stop with text in the box in a real browser.
 - **What I'd delegate again:** Scaffolding, CRUD, test writing, and first-pass reviews.
 - **What I wouldn't delegate:** Product decisions, accepting or rejecting findings, and judging whether an answer is actually right. Every figure the chat gave was checked against the database, not against the model's confidence.
 - **What's still unproven:** OpenAI was never validated live. The README says so.

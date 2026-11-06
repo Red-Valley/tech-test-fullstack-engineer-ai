@@ -14,7 +14,7 @@ Resolver lo que un evaluador notaría y dejar constancia del resto. Los bugs BUG
 |---|---|---|---|---|
 | H1 | Riesgo alto | Con `claude-sonnet-5-5`, tras una tool hay espera de 2 a 10 s y el texto llega de golpe. Es lo que se ve en las 3 preguntas del enunciado | Sin la ruta de por medio pasa igual: 2.005 caracteres en 53 ms. La doc del proveedor dice que Sonnet 5.5 no permite desactivar el reasoning. Con `claude-haiku-5-5` sin reasoning: texto fluido desde ~1,6 s | Default `claude-haiku-5-5` sin reasoning, encapsulado en la estrategia. Repetir las preguntas para confirmar exactitud |
 | H2 | Decisión | El default es OpenAI, un camino nunca validado en vivo | OpenAI sin saldo | Default `anthropic`; actualizar `.env.example`, config y documentación |
-| H3 | Minor | Doble clic en Send cancela la pregunta: el segundo clic cae en Stop | QA BUG-3 | Ignorar en Stop el segundo clic de un doble clic (`event.detail`). Con `key` distintas no basta: el clic caería igual sobre el nuevo botón |
+| H3 | Minor | Doble clic en Send cancela la pregunta: el segundo clic cae en Stop | QA BUG-3 | Ignorar el segundo clic de un doble clic (`event.detail`) y usar `key` distintas en Send y Stop: sin ellas, un clic en Stop con un borrador lo enviaba |
 | H4 | Minor | "moss and marrow" responde que no existe | QA BUG-4 | El prompt obliga a reintentar con `searchGames` y una palabra distintiva antes de decir "not found" |
 | H5 | Minor | Developer parcial ("Bramble") responde "no encontrado" e inventa un nombre | QA BUG-5 | Filtro `developer` por coincidencia parcial |
 | H6 | Minor | KPI de revenue se sale de la tarjeta en móvil desde $1M | QA BUG-7 | Texto que se ajusta a la tarjeta |
@@ -52,8 +52,23 @@ Resolver lo que un evaluador notaría y dejar constancia del resto. Los bugs BUG
 
 ## Criterios de aceptación
 
-- [ ] `npm run typecheck && npm run lint && npm test && npm run build` en verde, con tests de regresión para H3, H5, H7, H9, H12 y H13; H6 y H8 son de layout y se verifican en Chrome
-- [ ] Las 3 preguntas del enunciado, juego inexistente, "and" por "&", developer parcial y una en español correctas con el modelo por defecto
-- [ ] Texto progresivo medido en respuestas con tool, en varios fragmentos a lo largo del tiempo
-- [ ] Stop seguido de otro mensaje: sin error y sin retomar lo cancelado
-- [ ] QA de regresión y code review del diff, sin bugs blocker ni major
+- [x] `npm run typecheck && npm run lint && npm test && npm run build` en verde, con tests de regresión para H3, H5, H7, H9, H12 y H13; H6 y H8 son de layout y se verifican en Chrome
+- [x] Las 3 preguntas del enunciado, juego inexistente, "and" por "&", developer parcial y una en español correctas con el modelo por defecto
+- [x] Texto progresivo medido en respuestas con tool, en varios fragmentos a lo largo del tiempo
+- [x] Stop seguido de otro mensaje: sin error y sin retomar lo cancelado
+- [x] QA de regresión y code review del diff, sin bugs blocker ni major
+
+## Resultado
+
+Regresión sobre `812b6bb` y code review de `b86d59a..812b6bb`: sin blocker ni major. Sus hallazgos se corrigieron después. Esas correcciones se verificaron con tests y con pruebas en vivo y en Chrome, sin repetir el QA completo.
+
+**Agregado por el review y el QA:**
+- Turnos detenidos o fallidos sin texto: se cierran con un marcador en vez de borrarse, para que "try again" conserve el contexto.
+- Un clic en Stop con un borrador lo enviaba. Solo se reprodujo en Chrome real; jsdom no lo muestra.
+- `getCatalogStats` nombra los developers cuando el filtro parcial combina varios.
+- Foco tras Stop y Retry, y columnas largas de developer y genre.
+
+**Limitaciones conocidas:**
+- Una respuesta parcial tras Stop puede retomarse en la siguiente respuesta.
+- H10 queda parcial: en seguimientos elípticos ("And which one…?") tras un historial en otro idioma, Haiku responde en el idioma anterior (3 de 3). Reforzar el prompt no lo cambió.
+- Haiku a veces anuncia un reintento en una frase corta.

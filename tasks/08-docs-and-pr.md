@@ -82,7 +82,7 @@ Secciones:
 
 ## Criterios de aceptación
 
-- [ ] `AI_WORKFLOW.md` cubre los 4 puntos con ejemplos concretos
-- [ ] Alguien sin contexto clona el repo y lo corre siguiendo solo el README
+- [x] `AI_WORKFLOW.md` cubre los 4 puntos con ejemplos concretos
+- [x] Alguien sin contexto clona el repo y lo corre siguiendo solo el README
 - [ ] El PR tiene la plantilla completa y el checklist marcado
-- [ ] Decidir si `tasks/` y `AI_LOG.md` se quedan en el repo (recomendado: sí, como evidencia del proceso; menciónalos en el `AI_WORKFLOW.md`)
+- [x] Decidir si `tasks/` y `AI_LOG.md` se quedan en el repo (recomendado: sí, como evidencia del proceso; menciónalos en el `AI_WORKFLOW.md`)

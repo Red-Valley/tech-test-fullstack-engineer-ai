@@ -271,18 +271,62 @@ describe('POST /api/chat streaming', () => {
     await res.text();
     const prompt = JSON.stringify(model.doStreamCalls[0]?.prompt);
     expect(prompt).not.toContain('c1');
-    expect(prompt).not.toContain('First');
+    expect(prompt).toContain('[No answer:');
   });
 
-  it('leaves out a question that was stopped before any answer, so it is not resumed', async () => {
+  it.each([
+    ['nothing came back', []],
+    [
+      'a tool finished but no text came',
+      [
+        {
+          id: 'a1',
+          role: 'assistant',
+          parts: [{ type: 'tool-searchGames', toolCallId: 'c1', state: 'output-available', input: {}, output: { results: [] } }],
+        },
+      ],
+    ],
+    ['the text was empty', [{ id: 'a1', role: 'assistant', parts: [{ type: 'text', text: '' }] }]],
+  ])('marks a request as unanswered when %s, and keeps the question for follow-ups', async (_name, between) => {
     const model = new MockLanguageModelV4({ doStream: textStep('Ok') });
     setChatModelOverride(model);
 
-    await (await post({ messages: [userMessage('Stopped question'), { ...userMessage('New question'), id: 'u2' }] })).text();
+    await (await post({ messages: [userMessage('Stopped'), ...between, { ...userMessage('Try again'), id: 'u2' }] })).text();
+
+    const roles = model.doStreamCalls[0]?.prompt.filter((message) => message.role !== 'system').map((message) => message.role);
+    expect(roles).toEqual(['user', 'assistant', 'user']);
+    const prompt = JSON.stringify(model.doStreamCalls[0]?.prompt);
+    expect(prompt).toContain('Stopped');
+    expect(prompt).toContain('[No answer:');
+    expect(prompt).not.toContain('c1');
+  });
+
+  it('keeps a partial answer as it is', async () => {
+    const model = new MockLanguageModelV4({ doStream: textStep('Ok') });
+    setChatModelOverride(model);
+
+    await (
+      await post({
+        messages: [
+          userMessage('First'),
+          { id: 'a1', role: 'assistant', parts: [{ type: 'text', text: 'Partial' }] },
+          { ...userMessage('Second'), id: 'u2' },
+        ],
+      })
+    ).text();
 
     const prompt = JSON.stringify(model.doStreamCalls[0]?.prompt);
-    expect(prompt).not.toContain('Stopped question');
-    expect(prompt).toContain('New question');
+    expect(prompt).toContain('Partial');
+    expect(prompt).not.toContain('[No answer:');
+  });
+
+  it('bounds the length of the answer', async () => {
+    const model = new MockLanguageModelV4({ doStream: textStep('Ok') });
+    setChatModelOverride(model);
+
+    await (await post({ messages: [userMessage('Hi')] })).text();
+
+    expect(model.doStreamCalls[0]?.maxOutputTokens).toBe(4096);
   });
 
   it('accepts a history with a completed tool call, as the client resends it', async () => {
@@ -342,7 +386,7 @@ describe('POST /api/chat errors after the stream started', () => {
       type: 'error',
       errorText: 'The assistant could not finish this answer. Please try again.',
     });
-    expect(console.error).toHaveBeenCalledWith('[chat] stream failed', expect.anything());
+    expect(console.error).toHaveBeenCalledWith('[chat] stream error', expect.anything());
   });
 
   it('keeps database errors out of the UI stream and out of the model prompt', async () => {

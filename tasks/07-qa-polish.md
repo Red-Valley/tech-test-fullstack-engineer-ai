@@ -8,10 +8,10 @@ Integrar los dos tracks (merge de worktrees o ramas), verificar el flujo complet
 
 ## Checklist de integración
 
-- [ ] Merge de los tracks A y B sin conflictos (si hubo conflictos, **regístralo en `AI_LOG.md`**)
-- [ ] `rm -rf node_modules data .next && npm install && npm run dev` funciona en limpio
-- [ ] `npm run build` pasa (el evaluador puede probarlo)
-- [ ] `npm run lint` y `npx tsc --noEmit` sin errores
+- [x] Merge de los tracks A y B sin conflictos (si hubo conflictos, **regístralo en `AI_LOG.md`**)
+- [x] `rm -rf node_modules data .next && npm install && npm run dev` funciona en limpio
+- [x] `npm run build` pasa (el evaluador puede probarlo)
+- [x] `npm run lint` y `npx tsc --noEmit` sin errores
 
 ## Script de prueba manual (en este orden)
 
@@ -35,10 +35,10 @@ Integrar los dos tracks (merge de worktrees o ramas), verificar el flujo complet
 
 ## Code review rápido
 
-- [ ] No hay SQL fuera de `lib/`
-- [ ] No hay `any` innecesarios
-- [ ] No quedaron `console.log` de debug
-- [ ] No hay secretos commiteados (`git log -p | grep -i "sk-"` vacío)
-- [ ] Nombres y estructura consistentes con `00-OVERVIEW.md`
+- [x] No hay SQL fuera de `lib/`
+- [x] No hay `any` innecesarios
+- [x] No quedaron `console.log` de debug
+- [x] No hay secretos commiteados (`git log -p | grep -i "sk-"` vacío)
+- [x] Nombres y estructura consistentes con `00-OVERVIEW.md`
 
 💡 Idea para el `AI_WORKFLOW.md`: pídele a un agente/subagente **independiente** que haga un code review del diff completo y documenta qué encontró y qué aceptaste o rechazaste.

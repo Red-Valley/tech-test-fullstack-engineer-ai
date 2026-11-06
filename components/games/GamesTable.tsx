@@ -157,8 +157,8 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
                   <th scope="row" className="px-4 py-3 text-left font-medium [overflow-wrap:anywhere]">
                     {game.title}
                   </th>
-                  <td className="px-4 py-3">{game.developer}</td>
-                  <td className="px-4 py-3">{game.genre}</td>
+                  <td className="px-4 py-3 [overflow-wrap:anywhere]">{game.developer}</td>
+                  <td className="px-4 py-3 [overflow-wrap:anywhere]">{game.genre}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{formatUSD(game.monthly_revenue_usd)}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{formatNumber(game.monthly_downloads)}</td>
                   <td className="px-4 py-3 text-right whitespace-nowrap tabular-nums">{formatRating(game.average_rating)}</td>

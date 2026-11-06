@@ -52,7 +52,7 @@ export interface Game {
   title: string;
   developer: string;
   genre: string;
-  monthly_revenue_usd: number;   // >= 0, USD del último mes
+  monthly_revenue_usd: number;   // >= 0 y <= 1e12, USD del último mes
   monthly_downloads: number;     // entero >= 0
   average_rating: number;        // 0.0 – 5.0
   created_at: string;            // ISO
@@ -73,7 +73,7 @@ export type SortField = 'monthly_revenue_usd' | 'monthly_downloads' | 'average_r
 
 export interface GameFilters {
   genre?: string;
-  developer?: string;
+  developer?: string;            // coincidencia parcial, sin distinguir mayúsculas
   minRating?: number;
   maxRating?: number;
   minRevenue?: number;

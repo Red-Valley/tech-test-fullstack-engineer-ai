@@ -32,7 +32,7 @@ lib/
   ai/tools.ts      tool definitions
   ai/prompt.ts     instructions (system prompt)
   ai/model.ts      getChatModel(): resolves provider + model through the factory
-  ai/providers/    one strategy per provider + factory.ts (AI_PROVIDER, OpenAI by default); only place importing @ai-sdk/<provider>
+  ai/providers/    one strategy per provider + factory.ts (AI_PROVIDER, Anthropic by default); only place importing @ai-sdk/<provider>
 app/api/games/route.ts, app/api/games/[id]/route.ts, app/api/chat/route.ts
 ```
 

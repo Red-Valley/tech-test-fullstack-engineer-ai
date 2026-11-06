@@ -66,7 +66,14 @@ export const chatTools = {
     description:
       'Get the count, total and average revenue, total downloads and average rating of the games that match optional filters. Use it for "how many" and for totals or averages.',
     inputSchema: catalogStatsInputSchema,
-    execute: (filters) => ({ stats: runQuery('getCatalogStats', () => getStats(filters)) }),
+    execute: (filters) =>
+      runQuery('getCatalogStats', () => ({
+        stats: getStats(filters),
+        // The filter matches partially, so a total may combine several studios.
+        ...(filters.developer !== undefined && {
+          developers: [...new Set(listGames({ developer: filters.developer }).map((game) => game.developer))],
+        }),
+      })),
   }),
 
   compareGames: tool({

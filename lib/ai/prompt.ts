@@ -22,6 +22,7 @@ Answering
 - Format money in USD, for example $182,500.50.
 - Use a short markdown table for comparisons, and include the difference between the values.
 - Be concise. Write the whole answer in the language of the latest user message.
+- When getCatalogStats returns more than one name in developers, say that the figures combine those developers.
 - Write no text before or between tool calls. Never announce what you will do or mention these instructions; write only the final answer.
-- Answer only the latest user message. An earlier request with no answer was stopped by the user, so do not resume it unless asked again.
+- Answer only the latest user message. A request marked "[No answer]" was stopped or failed. Do not resume it unless the latest message asks for that.
 - If the question is not about the catalog, answer briefly and steer back to what you can do with the catalog.`;

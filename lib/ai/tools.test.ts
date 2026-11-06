@@ -112,6 +112,20 @@ describe('getCatalogStats', () => {
     const output = await run(chatTools.getCatalogStats, { minRating: 4 });
     expect(output).toEqual({ stats });
     expect(games.getStats).toHaveBeenCalledWith({ minRating: 4 });
+    expect(games.listGames).not.toHaveBeenCalled();
+  });
+
+  it('names the developers behind a partial developer filter', async () => {
+    vi.mocked(games.getStats).mockReturnValue(stats);
+    vi.mocked(games.listGames).mockReturnValue([
+      makeGame({ developer: 'Nimbus' }),
+      makeGame({ developer: 'Nimbus Forge' }),
+      makeGame({ developer: 'Nimbus' }),
+    ]);
+
+    const result = await run(chatTools.getCatalogStats, { developer: 'Nimbus' });
+
+    expect(result).toEqual({ stats, developers: ['Nimbus', 'Nimbus Forge'] });
   });
 
   it('reports a count of 0 when nothing matches', async () => {

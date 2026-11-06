@@ -6,12 +6,12 @@ const MAX_REVENUE_USD = 1e12;
 // Numbers are strict on purpose: z.coerce would turn null and "" into 0 and
 // silently overwrite a game's values. Forms and query params coerce on their side.
 export const gameInputSchema = z.object({
-  title: z.string().trim().min(1, 'Required').max(120, 'Must be 120 characters or fewer'),
-  developer: z.string().trim().min(1, 'Required').max(120, 'Must be 120 characters or fewer'),
-  genre: z.string().trim().min(1, 'Required').max(60, 'Must be 60 characters or fewer'),
-  monthly_revenue_usd: z.number().nonnegative('Must be 0 or more').max(MAX_REVENUE_USD, 'Must be 1 trillion or less'),
-  monthly_downloads: z.number().int('Must be a whole number').nonnegative('Must be 0 or more'),
-  average_rating: z.number().min(0, 'Must be between 0 and 5').max(5, 'Must be between 0 and 5'),
+  title: z.string('Required').trim().min(1, 'Required').max(120, 'Must be 120 characters or fewer'),
+  developer: z.string('Required').trim().min(1, 'Required').max(120, 'Must be 120 characters or fewer'),
+  genre: z.string('Required').trim().min(1, 'Required').max(60, 'Must be 60 characters or fewer'),
+  monthly_revenue_usd: z.number('Must be a number').nonnegative('Must be 0 or more').max(MAX_REVENUE_USD, 'Must be 1 trillion or less'),
+  monthly_downloads: z.number('Must be a number').int('Must be a whole number').nonnegative('Must be 0 or more'),
+  average_rating: z.number('Must be a number').min(0, 'Must be between 0 and 5').max(5, 'Must be between 0 and 5'),
 });
 
 export const gameUpdateSchema = gameInputSchema

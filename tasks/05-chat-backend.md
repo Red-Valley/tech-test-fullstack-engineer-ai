@@ -70,6 +70,8 @@ Cambiar de proveedor debe requerir solo una variable de entorno.
 | `factory.ts` | Registro de estrategias y `getProviderStrategy(env)` |
 | `../model.ts` | `getChatModel()`: resuelve estrategia y modelo; sobreescribible con el mock model en tests |
 
+- Anthropic usa `claude-haiku-5-5` con thinking desactivado, para que el texto se transmita tras una tool.
+- Antes de llamar al modelo, la ruta cierra con un marcador los turnos detenidos o fallidos sin texto, para que no se retomen.
 - `AI_PROVIDER` (por defecto `anthropic`) se valida con Zod. `AI_MODEL` es opcional y reemplaza el `defaultModel` de la estrategia.
 - Un proveedor desconocido o una key ausente lanzan un error de configuración tipado, que la ruta traduce a `CONFIG_ERROR`.
 - `@ai-sdk/openai` y `@ai-sdk/anthropic` solo se importan dentro de `lib/ai/providers/`.

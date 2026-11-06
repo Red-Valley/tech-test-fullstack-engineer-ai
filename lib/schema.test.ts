@@ -28,11 +28,18 @@ describe('gameInputSchema', () => {
     expect(result.error?.issues[0]?.path).toEqual([field]);
   });
 
+  it('accepts revenue at the cap', () => {
+    expect(gameInputSchema.safeParse({ ...validGame, monthly_revenue_usd: 1e12 }).success).toBe(true);
+  });
+
   it.each([
     [{ average_rating: 7 }, 'Must be between 0 and 5'],
     [{ monthly_revenue_usd: -1 }, 'Must be 0 or more'],
     [{ monthly_downloads: 1.5 }, 'Must be a whole number'],
     [{ title: '   ' }, 'Required'],
+    [{ title: undefined }, 'Required'],
+    [{ average_rating: Infinity }, 'Must be a number'],
+    [{ monthly_revenue_usd: 1e12 + 1 }, 'Must be 1 trillion or less'],
   ])('explains %j in words a user understands', (override, message) => {
     expect(gameInputSchema.safeParse({ ...validGame, ...override }).error?.issues[0]?.message).toBe(message);
   });

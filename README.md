@@ -60,7 +60,7 @@ Chat UI ── /api/chat ── tools (lib/ai) ────┘
 | Method | Path | Purpose | Success |
 |---|---|---|---|
 | `GET` | `/api/games` | List games. Query: `genre`, `developer`, `minRating`, `maxRating`, `minRevenue`, `search`, `sortBy`, `order`, `limit` | `200` |
-| `POST` | `/api/games` | Create a game | `201` |
+| `POST` | `/api/games` | Create a game. `monthly_revenue_usd` must be from 0 to 1 trillion | `201` |
 | `GET` | `/api/games/:id` | Get one game | `200` |
 | `PUT` | `/api/games/:id` | Update the fields sent (partial) | `200` |
 | `DELETE` | `/api/games/:id` | Delete a game | `204` |
@@ -88,7 +88,7 @@ curl -X PUT http://localhost:3000/api/games/1 \
 
 | Tool | Input | Purpose |
 |---|---|---|
-| `searchGames` | Filters, `sortBy`, `order`, `limit` (max 25) | Find and rank games |
+| `searchGames` | Filters, `sortBy`, `order`, `limit` (max 25) | Find and rank games. `developer` and `search` match partially |
 | `getCatalogStats` | Filters | Exact counts, totals, and averages, so the model doesn't calculate them |
 | `compareGames` | 2 to 5 `titles` | Fetch specific games, and report the titles not found |
 | `listGenres` | None | Find the exact genre name to filter by |
@@ -105,7 +105,7 @@ The prompt contains rules and no catalog data, so every answer comes from a tool
 npm run typecheck && npm run lint && npm test
 ```
 
-The 352 tests run with no network or API key. The backend project covers the repository against real SQLite, the API, the provider factory, the tools, and the chat route with a mock model. The frontend project covers the dashboard and chat with the real `useChat` hook, using React Testing Library and MSW.
+The 366 tests run with no network or API key. The backend project covers the repository against real SQLite, the API, the provider factory, the tools, and the chat route with a mock model. The frontend project covers the dashboard and chat with the real `useChat` hook, using React Testing Library and MSW.
 
 Automated tests don't show what a real model does, so the chat was also checked live against Anthropic. See [`tasks/09-qa-findings.md`](tasks/09-qa-findings.md).
 
@@ -113,7 +113,7 @@ Automated tests don't show what a real model does, so the chat was also checked 
 
 - **"Last month" means the current monthly values.** The catalog stores no history, so `monthly_revenue_usd` is the only monthly figure.
 - **"Above 4" is strict.** `minRating` excludes a rating of exactly 4.0.
-- **The default model is Haiku with thinking disabled.** After a tool call, `claude-sonnet-5-5` holds the answer while it thinks and then sends it at once, and that model can't turn thinking off. Set `AI_MODEL=claude-sonnet-5-5` if you prefer it over smooth streaming.
+- **The default model is Haiku with thinking disabled**, for faster and smoother streaming. `claude-sonnet-5-5` can't turn thinking off, so the provider uses its lowest level. In one test of the same 10-row answer, Sonnet took 9.3 s and arrived in 19 network reads; Haiku took 5.1 s and arrived in 154. Use `AI_MODEL` to change it.
 - **OpenAI has not been validated live**, because that account had no credit. Its strategy is covered by unit tests only. Anthropic is the default because it is the provider that was tested.
 - **Filtering and sorting on the dashboard run in the browser**, on up to 100 loaded rows. The table says so when the catalog is larger. There is no pagination.
 - **Money is stored as a float**, which is enough for display and these totals but not for accounting.
@@ -122,8 +122,9 @@ Automated tests don't show what a real model does, so the chat was also checked 
 
 ### Known limitations
 
-- If Stop leaves a partial answer in the conversation, the model may continue that request in its next answer. A question stopped before any answer is removed from the history, so it isn't resumed.
+- If Stop leaves a partial answer in the conversation, the model may continue that request in its next answer. A request stopped before any text is marked as unanswered, so it isn't resumed unless you ask.
 - The model sometimes announces a search retry in one short sentence, even though the prompt tells it not to.
+- A short follow-up such as "And which one…?" after messages in another language can be answered in the earlier language.
 - `npm audit` reports moderate advisories in the ESLint dependency chain, which is development-only.
 
 ## With more time

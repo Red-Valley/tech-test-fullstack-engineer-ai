@@ -127,3 +127,14 @@ Entries of the `track/chat` worktree. They get merged into `AI_LOG.md` when the 
 - **Prompt:** Implementar H1-H16 de `tasks/09-qa-findings.md` y repetir los golden prompts con el modelo por defecto
 - **Resultado:** ⚠️ parcial; cifras correctas y streaming real, pero dos instrucciones del prompt no bastaron
 - **Qué corregí:** La IA propuso una protección de 500 ms para el doble clic que rompía el Stop rápido; la cambié por `event.detail`. Haiku respondía también la pregunta detenida aunque el prompt lo prohibía, así que la ruta ahora descarta esas preguntas. Una frase "pegada" que parecía un bug de la UI venía de mi script de prueba, que concatenaba los bloques de texto. Queda sin resolver: Haiku a veces anuncia el reintento de búsqueda; lo dejo documentado.
+
+## [03:10] Tarea 09 — QA de regresión, code review y un bug que nadie había visto
+- **Herramienta:** Claude Code (subagentes `qa-engineer` y `code-reviewer`, en background) y Chrome sin interfaz controlado por script
+- **Prompt:** A cada agente se le pidió verificar sus hallazgos y no editar nada, en clon y puerto propios
+- **Resultado:** ⚠️ parcial; sin blocker ni major, pero al verificar sus hallazgos apareció un bug más grave
+- **Qué corregí:**
+  - El review mostró que borrar la pregunta detenida rompía "try again". Ahora el turno se cierra con un marcador, y lo probé en vivo.
+  - Un clic en Stop con un borrador lo enviaba: React reutilizaba el botón, que pasaba a `type="submit"` durante el clic. La causa salió de registrar los eventos reales en Chrome. Las `key` que había descartado eran la solución.
+  - Mi primer test de ese bug pasaba también sin el arreglo, porque jsdom no reproduce ese orden. Lo reemplacé por uno que falla sin las `key`.
+  - La medición con Sonnet desmintió lo que había escrito en el README (que la respuesta llegaba de golpe), así que corregí el texto con los datos.
+  - Reforzar la regla del idioma no cambió nada (3 de 3 fallos), así que la revertí y quedó como limitación conocida.

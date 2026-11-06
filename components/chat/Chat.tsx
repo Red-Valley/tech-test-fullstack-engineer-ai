@@ -84,7 +84,10 @@ export function Chat({ suggestedPrompts, transport }: ChatProps) {
           <span className="min-w-0 break-words">{getErrorMessage(error)}</span>
           <button
             type="button"
-            onClick={() => void regenerate()}
+            onClick={() => {
+              void regenerate();
+              inputRef.current?.focus();
+            }}
             className="shrink-0 rounded-lg border border-current px-3 py-1 font-medium focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
           >
             Retry

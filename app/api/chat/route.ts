@@ -2,7 +2,6 @@ import {
   convertToModelMessages,
   createUIMessageStreamResponse,
   isStepCount,
-  type ModelMessage,
   safeValidateUIMessages,
   streamText,
   toUIMessageStream,
@@ -26,10 +25,22 @@ const chatRequestSchema = z.object({
   messages: z.array(z.looseObject({ role: z.enum(['user', 'assistant']) })).min(1).max(100),
 });
 
-// A question followed by another one was stopped before any answer. Sent as is, the model
-// answers it again even when the prompt tells it not to.
-function withoutUnansweredRequests(messages: ModelMessage[]): ModelMessage[] {
-  return messages.filter((message, index) => message.role !== 'user' || messages[index + 1]?.role !== 'user');
+const noAnswer = (id: string): ChatUIMessage => ({
+  id,
+  role: 'assistant',
+  parts: [{ type: 'text', text: '[No answer: the request was stopped or failed]' }],
+});
+
+const hasText = (message: ChatUIMessage) => message.parts.some((part) => part.type === 'text' && part.text.trim() !== '');
+
+// Sent as is, a request stopped before any text gets answered again, even when the prompt
+// says not to. Deleting it would break a follow-up like "try again", so its turn is closed.
+function closeUnansweredRequests(messages: ChatUIMessage[]): ChatUIMessage[] {
+  return messages.flatMap((message, index) => {
+    if (messages[index + 1]?.role !== 'user') return [message];
+    if (message.role === 'user') return [message, noAnswer(`${message.id}-no-answer`)];
+    return hasText(message) ? [message] : [noAnswer(message.id)];
+  });
 }
 
 export async function POST(req: Request) {
@@ -56,12 +67,10 @@ export async function POST(req: Request) {
       model: getChatModel(),
       instructions: SYSTEM_PROMPT,
       // A response stopped during a tool call leaves a call without a result in the history.
-      messages: withoutUnansweredRequests(
-        await convertToModelMessages(validated.data, {
-          tools: chatTools,
-          ignoreIncompleteToolCalls: true,
-        }),
-      ),
+      messages: await convertToModelMessages(closeUnansweredRequests(validated.data), {
+        tools: chatTools,
+        ignoreIncompleteToolCalls: true,
+      }),
       tools: chatTools,
       maxOutputTokens: MAX_OUTPUT_TOKENS,
       stopWhen: isStepCount(MAX_STEPS),
@@ -77,7 +86,7 @@ export async function POST(req: Request) {
         stream: result.stream,
         tools: chatTools,
         onError: (error) => {
-          console.error('[chat] stream failed', error);
+          console.error('[chat] stream error', error);
           return STREAM_ERROR_MESSAGE;
         },
       }),

@@ -25,7 +25,7 @@ Dejar un proyecto Next.js corriendo, con las dependencias instaladas y el contra
    ```
    AI_PROVIDER=anthropic
    ANTHROPIC_API_KEY=
-   # ANTHROPIC_API_KEY=
+   # OPENAI_API_KEY=
    # AI_MODEL=
    # DATABASE_PATH=
    ```
@@ -40,7 +40,7 @@ Dejar un proyecto Next.js corriendo, con las dependencias instaladas y el contra
      title: z.string().trim().min(1).max(120),
      developer: z.string().trim().min(1).max(120),
      genre: z.string().trim().min(1).max(60),
-     monthly_revenue_usd: z.number().nonnegative(),
+     monthly_revenue_usd: z.number().nonnegative().max(1e12),
      monthly_downloads: z.number().int().nonnegative(),
      average_rating: z.number().min(0).max(5),
    });
