@@ -10,6 +10,7 @@ I worked hands-on from before 22:50 until 00:20, then left the agents running un
 |---|---|---|
 | **Claude Code** (Opus 5.5) | Planning, implementation, reviews, QA, docs | It sees the whole repo, runs the gates itself, and supports subagents and git worktrees |
 | **Claude Cowork** | Analyzing the project before coding, breaking it into tasks, and creating the agents and skills | To have the plan and the specialists ready before writing code |
+| **Google Stitch** | Creating the UI design that the final redesign is based on | To start the redesign from a complete visual design instead of having the coding agent invent one |
 | **Claude in Chrome** | Checking the UI in a real browser | Tests can't see focus, layout at 375 px, or how streaming feels |
 | **Project kit** (`CLAUDE.md`, `.claude/agents`, `.claude/skills`, `tasks/`) | Giving each agent the same rules and contract | Parallel agents could build against signatures without talking to each other |
 
@@ -123,7 +124,7 @@ Times come from the `AI_LOG.md` entries. I stopped at 00:20, so everything after
 | About 00:20 | Live tests with Anthropic, full QA, task 09 written | Claude Code, QA agent, Chrome (unattended from 00:20) |
 | 02:35 | Task 09 fixes validated live; regression QA, review, and docs | Claude Code, QA and review agents (unattended) |
 | Morning | Reviewed the result, added the Cowork history, confirmed the PR, translated the log, analyzed the hydration error (dev agent, then QA and code review) | Me + Claude Code, dev, QA, and review agents |
-| Morning, after that | UI redesign from a design I provided, then independent QA and code review | Me + Claude Code, QA and review agents |
+| Morning, after that | UI design in Google Stitch, redesign from it, then independent QA and code review | Me + Google Stitch, Claude Code, QA and review agents |
 
 ## Reflection
 

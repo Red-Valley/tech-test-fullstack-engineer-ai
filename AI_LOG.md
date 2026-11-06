@@ -168,8 +168,8 @@ I went to sleep at 00:20 and left the tasks running. The entries from that time 
 ## [~08:00] Morning: UI redesign from a provided design
 *Written by the agent in a session the user attended. "I" is the agent.*
 
-- **Tool:** Claude Code, two independent subagents (`qa-engineer` and `code-reviewer` profiles, read-only, in their own clones), and headless Chrome with a clean profile
-- **Prompt:** "Cool, then commit and push, last adjustment before finishing, [pasted static HTML design] use the source in order to provide a better UI"
+- **Tool:** Google Stitch (the user created the UI design there), Claude Code, two independent subagents (`qa-engineer` and `code-reviewer` profiles, read-only, in their own clones), and headless Chrome with a clean profile
+- **Prompt:** "Cool, then commit and push, last adjustment before finishing, [pasted static HTML design from Google Stitch] use the source in order to provide a better UI"
 - **Decisions by the user:** Take the look plus the features real data supports, dark only, and keep the plain wording.
 - **Result:** ✅ New palette, fonts, sidebar, KPI cards, filter bar, table, and modal. New Table/Cards toggle, sort dropdown, search by developer and genre, Copy JSON, and an Ask AI link that prefills the chat without sending. I left out what no data backs: trends, FPS, coffee, engine, tags, sentiment, and the design's extra pages. I also didn't copy its CDN scripts, icon font, or `confirm()` dialogs.
 - **What I fixed after review:**
