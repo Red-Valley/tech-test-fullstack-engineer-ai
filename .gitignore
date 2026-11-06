@@ -16,3 +16,13 @@ pnpm-debug.log*
 *.sqlite3
 *.db
 coverage/
+
+# local database
+data/
+
+# next.js / typescript generated
+next-env.d.ts
+*.tsbuildinfo
+
+# delivery bundle of .claude + tasks (duplicates tracked files)
+agent-kit.zip
