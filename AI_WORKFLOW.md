@@ -1,6 +1,6 @@
 # AI Workflow
 
-How I used AI coding tools on this assessment. The raw record is in [`AI_LOG.md`](AI_LOG.md), in Spanish, and most prompts below are quoted as written, also in Spanish, with a translation.
+How I used AI coding tools on this assessment. The raw record is in [`AI_LOG.md`](AI_LOG.md). Most prompts below are quoted as written, in Spanish, with a translation.
 
 I worked hands-on from before 22:50 until 00:20, then left the agents running unattended and reviewed the result in the morning. Where the work happened overnight, this document says the agent did it.
 

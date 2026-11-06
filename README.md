@@ -145,5 +145,5 @@ lib/ai/           tools, prompt, providers/ (strategy + factory)
 tasks/            Work plan and QA findings
 .claude/          Agents and skills used to build this
 AI_WORKFLOW.md    How AI tools were used
-AI_LOG.md         Raw log of prompts and fixes, in Spanish
+AI_LOG.md         Raw log of prompts and fixes
 ```
