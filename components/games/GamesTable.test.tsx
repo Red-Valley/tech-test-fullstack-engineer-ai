@@ -26,6 +26,16 @@ describe('GamesTable', () => {
     expect(shownTitles()).toEqual(['Banana', 'apple', 'Cherry']);
   });
 
+  it('says so when the catalog has more games than the table shows', () => {
+    render(<GamesTable games={games} genres={genres} total={106} />);
+    expect(screen.getByText(/Showing the first 3 of 106 games/)).toBeInTheDocument();
+  });
+
+  it('shows no such notice when every game is listed', () => {
+    render(<GamesTable games={games} genres={genres} total={games.length} />);
+    expect(screen.queryByText(/Showing the first/)).not.toBeInTheDocument();
+  });
+
   it('shows the empty state when there are no games, and still allows adding one', async () => {
     const user = userEvent.setup();
     render(<GamesTable games={[]} genres={[]} />);

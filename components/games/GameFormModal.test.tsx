@@ -178,6 +178,54 @@ describe('GameFormModal: create', () => {
     expect(screen.getByRole('button', { name: /save/i })).toBeEnabled();
   });
 
+  it('focuses the first invalid field after a failed validation', async () => {
+    const user = userEvent.setup();
+    render(<GameFormModal onClose={vi.fn()} />);
+
+    await user.type(screen.getByLabelText(LABELS.title), 'New Game');
+    await save(user);
+
+    expect(screen.getByLabelText(LABELS.developer)).toHaveFocus();
+    expect(screen.getByLabelText(LABELS.developer)).toHaveAccessibleDescription('Required');
+  });
+
+  it('focuses the field that the server rejected', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post('*/api/games', () =>
+        HttpResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Request validation failed', issues: { genre: ['Too long'] } } },
+          { status: 400 },
+        ),
+      ),
+    );
+    render(<GameFormModal onClose={vi.fn()} />);
+
+    await fill(user);
+    await save(user);
+
+    await waitFor(() => expect(screen.getByLabelText(LABELS.genre)).toHaveFocus());
+  });
+
+  it('shows the message in a banner when no issue belongs to a field of the form', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post('*/api/games', () =>
+        HttpResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'Request validation failed', issues: { other: ['Nope'] } } },
+          { status: 400 },
+        ),
+      ),
+    );
+    render(<GameFormModal onClose={vi.fn()} />);
+
+    await fill(user);
+    await save(user);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Request validation failed');
+    expect(screen.queryByText('Nope')).not.toBeInTheDocument();
+  });
+
   it('shows a banner when the network fails', async () => {
     const user = userEvent.setup();
     server.use(http.post('*/api/games', () => HttpResponse.error()));
@@ -205,10 +253,12 @@ describe('GameFormModal: create', () => {
     await save(user);
 
     const button = await screen.findByRole('button', { name: /saving/i });
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveFocus();
+    expect(screen.getByRole('dialog')).toHaveAttribute('closedby', 'none');
+    expect(screen.getByLabelText(LABELS.title)).toHaveAttribute('readonly');
     await user.click(button);
-    screen.getByLabelText(LABELS.title).focus();
-    await user.keyboard('{Escape}');
+    await user.keyboard('{Escape}{Escape}');
     expect(onClose).not.toHaveBeenCalled();
 
     release();

@@ -1,15 +1,18 @@
 'use client';
 
-import { useChat } from '@ai-sdk/react';
+import { Chat as ChatSession, useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type ChatTransport } from 'ai';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import type { ChatUIMessage } from '@/lib/ai/tools';
 import { ChatInput } from './ChatInput';
 import { MessageList } from './MessageList';
 import { SuggestedPrompts } from './SuggestedPrompts';
 
-const defaultTransport = new DefaultChatTransport<ChatUIMessage>({ api: '/api/chat' });
+// Outside the component so the conversation survives going to the dashboard and back.
+const sharedSession = new ChatSession<ChatUIMessage>({
+  transport: new DefaultChatTransport<ChatUIMessage>({ api: '/api/chat' }),
+});
 
 const GENERIC_ERROR = 'Something went wrong. Please try again.';
 const NEAR_BOTTOM_PX = 80;
@@ -30,8 +33,9 @@ interface ChatProps {
   transport?: ChatTransport<ChatUIMessage>;
 }
 
-export function Chat({ suggestedPrompts, transport = defaultTransport }: ChatProps) {
-  const { messages, sendMessage, status, stop, error, regenerate } = useChat<ChatUIMessage>({ transport });
+export function Chat({ suggestedPrompts, transport }: ChatProps) {
+  const [session] = useState(() => (transport ? new ChatSession<ChatUIMessage>({ transport }) : sharedSession));
+  const { messages, sendMessage, status, stop, error, regenerate } = useChat<ChatUIMessage>({ chat: session });
   const isBusy = status === 'submitted' || status === 'streaming';
 
   const scrollerRef = useRef<HTMLDivElement>(null);

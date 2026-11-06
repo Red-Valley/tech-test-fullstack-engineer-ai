@@ -33,13 +33,15 @@ export function Modal({ title, busy = false, onClose, children }: ModalProps) {
     <dialog
       ref={dialogRef}
       aria-labelledby={titleId}
+      // The browser ignores a repeated preventDefault on cancel and closes anyway, which
+      // would leave React with a closed dialog it still considers open.
+      closedby={busy ? 'none' : 'closerequest'}
       onKeyDown={(event) => {
         if (event.key !== 'Escape') return;
         event.preventDefault();
         if (!busy) onClose();
       }}
-      // Close requests that skip the keydown above: the back gesture on Android, or Esc
-      // when focus left the dialog because the focused button became disabled while saving.
+      // Close requests that skip the keydown above, such as the back gesture on Android.
       onCancel={(event) => {
         if (busy) event.preventDefault();
       }}

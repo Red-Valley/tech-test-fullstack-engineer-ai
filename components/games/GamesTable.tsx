@@ -54,11 +54,13 @@ function SortableHeader({
 interface GamesTableProps {
   games: Game[];
   genres: string[];
+  /** Size of the whole catalog, which can exceed the rows that listGames() returns. */
+  total?: number;
 }
 
 // Sorting and filtering run in the browser: the catalog is small and already loaded, so
 // they feel instant and need no extra requests. A larger catalog would move them to the API.
-export function GamesTable({ games, genres }: GamesTableProps) {
+export function GamesTable({ games, genres, total = games.length }: GamesTableProps) {
   const [search, setSearch] = useState('');
   const [genre, setGenre] = useState('');
   const [sort, setSort] = useState<Sort | null>(null);
@@ -115,6 +117,12 @@ export function GamesTable({ games, genres }: GamesTableProps) {
           Add game
         </Button>
       </div>
+
+      {total > games.length && (
+        <p className="text-sm text-muted">
+          Showing the first {games.length} of {total} games. Search, filters and sorting only cover these.
+        </p>
+      )}
 
       {games.length === 0 ? (
         <EmptyState title="No games yet. Create the first one." />

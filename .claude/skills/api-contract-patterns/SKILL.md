@@ -61,7 +61,7 @@ export async function createGame(input: GameInput): Promise<ApiResult<Game>> { �
 - `VALIDATION_ERROR` → field errors next to inputs. `NOT_FOUND` → "This game no longer exists" + refresh. Network/`INTERNAL` → generic banner with retry.
 
 ## 7. AI tools are part of the contract
-Tool names, input schemas and output shapes are an internal API between the model and the repository. Keep them stable, documented in the README, and covered by tests. Output shapes: `{ results: Game-subset[], count }`, `{ stats: GameStats }`, `{ games: [...], notFound: string[] }`.
+Tool names, input schemas and output shapes are an internal API between the model and the repository. Keep them stable, documented in the README, and covered by tests. Output shapes: `{ results: Game-subset[], count, truncated }`, `{ stats: GameStats }`, `{ games: [...], notFound: string[], truncated }`.
 
 ## 8. Changing the contract
 1. Update `tasks/00-OVERVIEW.md` + `lib/types.ts`/`lib/schema.ts` in the same commit.

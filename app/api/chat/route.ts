@@ -53,6 +53,8 @@ export async function POST(req: Request) {
       }),
       tools: chatTools,
       stopWhen: isStepCount(MAX_STEPS),
+      // Without this, a model still calling tools at the limit would end with no answer at all.
+      prepareStep: ({ stepNumber }) => (stepNumber === MAX_STEPS - 1 ? { toolChoice: 'none' } : {}),
       abortSignal: req.signal,
       // Logged once, in the toUIMessageStream callback below.
       onError: () => {},

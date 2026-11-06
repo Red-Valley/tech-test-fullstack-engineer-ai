@@ -9,12 +9,13 @@ export default async function DashboardPage() {
   // better-sqlite3 is synchronous, so without this the page would prerender at build time:
   // it would open the database during the build and then serve stale data.
   await connection();
+  const stats = getStats();
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <StatsCards stats={getStats()} />
-      <GamesTable games={listGames()} genres={listGenres()} />
+      <StatsCards stats={stats} />
+      <GamesTable games={listGames()} genres={listGenres()} total={stats.count} />
     </main>
   );
 }

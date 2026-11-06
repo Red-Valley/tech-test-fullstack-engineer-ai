@@ -1,6 +1,7 @@
 'use client';
 
-import { startTransition, useState, type FormEvent } from 'react';
+import { startTransition, useRef, useState, type FormEvent } from 'react';
+import { flushSync } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { ErrorBanner } from '@/components/ui/ErrorBanner';
@@ -22,6 +23,16 @@ export function GameFormModal({ game, onClose }: GameFormModalProps) {
   const [errors, setErrors] = useState<GameFormErrors>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  /** Focuses the first invalid field, so screen readers announce its error. */
+  function showFieldErrors(fieldErrors: GameFormErrors) {
+    // Flushed first: the field must already be described by its error when it gets focus.
+    flushSync(() => setErrors(fieldErrors));
+    const firstInvalid = Object.keys(EMPTY_FORM).find((field) => isGameField(field) && fieldErrors[field]);
+    const input = firstInvalid ? formRef.current?.elements.namedItem(firstInvalid) : null;
+    if (input instanceof HTMLInputElement) input.focus();
+  }
 
   const fieldProps = (name: keyof GameInput) => ({
     name,
@@ -42,7 +53,7 @@ export function GameFormModal({ game, onClose }: GameFormModalProps) {
     setBanner(null);
     const parsed = parseGameForm(values);
     if (!parsed.ok) {
-      setErrors(parsed.errors);
+      showFieldErrors(parsed.errors);
       return;
     }
 
@@ -63,13 +74,13 @@ export function GameFormModal({ game, onClose }: GameFormModalProps) {
       return;
     }
     const knownIssues = Object.fromEntries(Object.entries(issues).filter(([key]) => isGameField(key)));
-    setErrors(knownIssues);
+    showFieldErrors(knownIssues);
     if (Object.keys(knownIssues).length === 0) setBanner(message);
   }
 
   return (
     <Modal title={game ? `Edit ${game.title}` : 'Add game'} busy={pending} onClose={onClose}>
-      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
         {banner && <ErrorBanner>{banner}</ErrorBanner>}
         <Field label="Title" {...fieldProps('title')} />
         <div className="grid gap-4 sm:grid-cols-2">

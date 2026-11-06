@@ -2,7 +2,7 @@ import 'server-only';
 import { tool, type InferUITools, type UIDataTypes, type UIMessage } from 'ai';
 import { z } from 'zod';
 import { findGamesByTitles, getStats, listGames, listGenres } from '@/lib/games';
-import { gameFiltersSchema } from '@/lib/schema';
+import { gameFiltersSchema, sortOrderSchema } from '@/lib/schema';
 import type { Game } from '@/lib/types';
 
 const DEFAULT_LIMIT = 10;
@@ -11,6 +11,7 @@ const MAX_LIMIT = 25;
 // Optional fields are fine for OpenAI: @ai-sdk/openai sends `strict: tool.strict ?? false`,
 // and its "use .nullable()" warning is about strictJsonSchema, which applies to structured output.
 export const searchGamesInputSchema = gameFiltersSchema.extend({
+  order: sortOrderSchema.optional().describe('Sort direction. Defaults to asc, so use desc for the highest values first'),
   limit: z
     .number()
     .int()
@@ -53,9 +54,11 @@ export const chatTools = {
       'Find games in the catalog with optional filters, sorting and a limit. Use it to list games or to find the top games by revenue, downloads or rating.',
     inputSchema: searchGamesInputSchema,
     execute: ({ limit = DEFAULT_LIMIT, ...filters }) => {
-      const games = runQuery('searchGames', () => listGames({ ...filters, limit }));
+      // One extra row reveals whether more games match, so a partial list is not taken as complete.
+      const games = runQuery('searchGames', () => listGames({ ...filters, limit: limit + 1 }));
       if (games.length === 0) return { results: [], note: 'No games matched' };
-      return { results: games.map(toGameSummary), count: games.length };
+      const results = games.slice(0, limit).map(toGameSummary);
+      return { results, count: results.length, truncated: games.length > limit };
     },
   }),
 
@@ -78,7 +81,7 @@ export const chatTools = {
       const notFound = titles.filter(
         (title) => !lowerCaseTitles.some((gameTitle) => gameTitle.includes(title.toLowerCase())),
       );
-      return { games: games.slice(0, MAX_LIMIT).map(toGameSummary), notFound };
+      return { games: games.slice(0, MAX_LIMIT).map(toGameSummary), notFound, truncated: games.length > MAX_LIMIT };
     },
   }),
 

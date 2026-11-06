@@ -51,20 +51,27 @@ describe('searchGames', () => {
         },
       ],
       count: 1,
+      truncated: false,
     });
   });
 
-  it('applies a limit of 10 by default', async () => {
+  it('asks for one row beyond the default limit of 10', async () => {
     vi.mocked(games.listGames).mockReturnValue([]);
     await search({ genre: 'Horror' });
-    expect(games.listGames).toHaveBeenCalledWith({ genre: 'Horror', limit: 10 });
+    expect(games.listGames).toHaveBeenCalledWith({ genre: 'Horror', limit: 11 });
   });
 
-  it('forwards filters, sorting and an explicit limit', async () => {
+  it('forwards filters and sorting, and asks for one row beyond an explicit limit', async () => {
     vi.mocked(games.listGames).mockReturnValue([]);
     const input = { minRating: 4, sortBy: 'monthly_revenue_usd', order: 'desc', limit: 1 } as const;
     await search(input);
-    expect(games.listGames).toHaveBeenCalledWith(input);
+    expect(games.listGames).toHaveBeenCalledWith({ ...input, limit: 2 });
+  });
+
+  it('returns at most the limit and flags that more games matched', async () => {
+    vi.mocked(games.listGames).mockReturnValue([makeGame({ title: 'A' }), makeGame({ title: 'B' })]);
+    const output = await search({ limit: 1 });
+    expect(output).toMatchObject({ count: 1, truncated: true, results: [{ title: 'A' }] });
   });
 
   it('says so explicitly when nothing matches', async () => {
@@ -153,7 +160,7 @@ describe('compareGames', () => {
 
   it('returns every title in notFound when nothing matches', async () => {
     vi.mocked(games.findGamesByTitles).mockReturnValue([]);
-    expect(await compare(['A', 'B'])).toEqual({ games: [], notFound: ['A', 'B'] });
+    expect(await compare(['A', 'B'])).toEqual({ games: [], notFound: ['A', 'B'], truncated: false });
   });
 
   it.each([

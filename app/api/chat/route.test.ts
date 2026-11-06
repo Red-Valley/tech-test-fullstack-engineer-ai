@@ -175,7 +175,7 @@ describe('POST /api/chat streaming', () => {
     expect(types.indexOf('tool-output-available')).toBeLessThan(types.indexOf('text-delta'));
     expect(types.at(-1)).toBe('finish');
 
-    expect(listGames).toHaveBeenCalledWith({ sortBy: 'monthly_revenue_usd', order: 'desc', limit: 1 });
+    expect(listGames).toHaveBeenCalledWith({ sortBy: 'monthly_revenue_usd', order: 'desc', limit: 2 });
     expect(model.doStreamCalls).toHaveLength(2);
     expect(JSON.stringify(model.doStreamCalls[1]?.prompt)).toContain('182500.5');
   });
@@ -236,6 +236,19 @@ describe('POST /api/chat streaming', () => {
     await (await post({ messages: [userMessage('Loop forever')] })).text();
 
     expect(model.doStreamCalls).toHaveLength(5);
+  });
+
+  it('forbids tools only on the last step, so the model has to answer', async () => {
+    vi.mocked(listGames).mockReturnValue([]);
+    const model = new MockLanguageModelV4({
+      doStream: async () => toolCallStep('searchGames', {}),
+    });
+    setChatModelOverride(model);
+
+    await (await post({ messages: [userMessage('Loop forever')] })).text();
+
+    const toolChoices = model.doStreamCalls.map((call) => call.toolChoice?.type);
+    expect(toolChoices).toEqual(['auto', 'auto', 'auto', 'auto', 'none']);
   });
 
   it('accepts a history where a stopped response left a tool call without a result', async () => {
