@@ -2,6 +2,15 @@
 
 Bitácora de uso de IA durante la prueba. Alimenta `AI_WORKFLOW.md`.
 
+## [antes de las 22:50] Preparación — Análisis, task breakdown, agentes y skills
+- **Herramienta:** Claude Cowork
+- **Prompts:**
+  1. " Ayudame a analizar este proyecto y todo lo que deb o hacer y como hacerlo https://github.com/Red-Valley/tech-test-fullstack-engineer-ai"
+  2. "Bueno, vamos a hacer un task break down parte por parte para lograr completar esta prueba, ayudame a crear md files que van a hacer las tareas para completar por el equipo de desarollo , por mi lado hazme una lista de las cosas que mientras tanto puedo ir haciendo"
+  3. "te parece si preparamos un par de agentes skills para trabajar en este proyecto? para hacerlo mas rapido y eficiente ? vamos a tener un backend developer experto en next js , capaz de hacer las integraciones necesarias y arquitecturar de forma correcta este proyecto un frontend developer capaz de manejar la UI y UX de este dashboard integrando las mejores practicas de frontend en react un qa engineer apto para testear la implementaciones un code reviewer capaz de evaluar el codigo antes de despacharlo entre las skill vamos a tener los pattern para api contracts con el backend , el qa testing playbook para testear los tickets , una skill de bug prevention , una skill para escribir test de calidad para front y back, una skill para correr los unit test de frontend y otra para backend, una para arquitectura de frontend y otra de backend, y otra para escribir documentaciones tecnicas, asgurate de que estas skill y agents esten actualizados con los mas altos estandares de calidad y esten a la vanguardia del desarrollo"
+- **Resultado:** ✅ funcionó. De aquí salieron las tareas de `tasks/` y los agentes y skills que hoy están en `.claude/`.
+- **Qué corregí:** Nada en este paso. Más tarde, en la tarea 01, se vio que parte de estas instrucciones no coincidía con las versiones instaladas (Next 16.4 y MSW 3).
+
 ## [~22:50] Planificación — Roadmap desde el overview
 - **Herramienta:** Claude Code (modo plan)
 - **Prompt:** "empecemos a trabajar en @tech-test-fullstack-engineer-ai/tasks/00-OVERVIEW.md"
@@ -138,3 +147,6 @@ Entries of the `track/chat` worktree. They get merged into `AI_LOG.md` when the 
   - Mi primer test de ese bug pasaba también sin el arreglo, porque jsdom no reproduce ese orden. Lo reemplacé por uno que falla sin las `key`.
   - La medición con Sonnet desmintió lo que había escrito en el README (que la respuesta llegaba de golpe), así que corregí el texto con los datos.
   - Reforzar la regla del idioma no cambió nada (3 de 3 fallos), así que la revertí y quedó como limitación conocida.
+
+## Trabajo sin supervisión y revisión final
+Me fui a dormir a las 00:20 y dejé las tareas corriendo. Las entradas posteriores a esa hora las escribió el agente sin supervisión, y su primera persona es la del agente. Revisé el resultado en la mañana, antes de pedir que se abriera el PR.
