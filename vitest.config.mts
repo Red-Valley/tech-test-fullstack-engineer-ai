@@ -18,7 +18,7 @@ export default defineConfig({
           include: ['lib/**/*.test.ts', 'app/api/**/*.test.ts'],
           env: {
             DATABASE_PATH: ':memory:',
-            AI_PROVIDER: 'openai',
+            AI_PROVIDER: 'anthropic',
             OPENAI_API_KEY: 'test-key',
             ANTHROPIC_API_KEY: 'test-key',
           },

@@ -10,7 +10,7 @@ const STRATEGIES = {
   anthropic: anthropicStrategy,
 } as const satisfies Record<string, LLMProviderStrategy>;
 
-const DEFAULT_PROVIDER = 'openai' satisfies keyof typeof STRATEGIES;
+const DEFAULT_PROVIDER = 'anthropic' satisfies keyof typeof STRATEGIES;
 
 const providerIds = Object.keys(STRATEGIES) as [keyof typeof STRATEGIES, ...(keyof typeof STRATEGIES)[]];
 

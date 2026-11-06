@@ -65,6 +65,33 @@ describe('Chat', () => {
     });
   });
 
+  describe('focus', () => {
+    it('returns to the input after a suggested prompt, so the next question can be typed', async () => {
+      const { user, input, requests } = setup();
+      await user.click(screen.getByRole('button', { name: PROMPTS[1] }));
+      await waitFor(() => expect(requests).toHaveLength(1));
+      expect(input).toHaveFocus();
+    });
+  });
+
+  describe('new chat', () => {
+    it('is hidden until a response ends, then clears the conversation', async () => {
+      const { user, input, requests, finish } = setup();
+      expect(screen.queryByRole('button', { name: 'New chat' })).not.toBeInTheDocument();
+
+      await user.type(input, 'Hello{Enter}');
+      await waitFor(() => expect(requests).toHaveLength(1));
+      expect(screen.queryByRole('button', { name: 'New chat' })).not.toBeInTheDocument();
+      await finish();
+
+      await user.click(await screen.findByRole('button', { name: 'New chat' }));
+
+      expect(screen.queryByText('Hello')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: PROMPTS[0] })).toBeInTheDocument();
+      expect(input).toHaveFocus();
+    });
+  });
+
   describe('input', () => {
     it('sends on Enter and clears the box', async () => {
       const { user, input, requests } = setup();

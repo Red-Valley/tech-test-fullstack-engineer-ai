@@ -23,8 +23,8 @@ Dejar un proyecto Next.js corriendo, con las dependencias instaladas y el contra
    Configura Vitest (`vitest.config.mts`, `test/setup-frontend.ts`, `test/server-only-stub.ts` y los scripts `test`, `test:back`, `test:front`, `typecheck`) siguiendo las skills `run-backend-tests` y `run-frontend-tests`.
 3. Crea `.env.example`:
    ```
-   AI_PROVIDER=openai
-   OPENAI_API_KEY=
+   AI_PROVIDER=anthropic
+   ANTHROPIC_API_KEY=
    # ANTHROPIC_API_KEY=
    # AI_MODEL=
    # DATABASE_PATH=

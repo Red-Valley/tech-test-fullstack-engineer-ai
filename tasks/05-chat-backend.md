@@ -56,7 +56,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- Si falta la API key del proveedor activo, responde `500 CONFIG_ERROR` con un mensaje claro ("Set OPENAI_API_KEY in .env.local").
+- Si falta la API key del proveedor activo, responde `500 CONFIG_ERROR` con un mensaje claro ("Set ANTHROPIC_API_KEY in .env.local").
 
 ## Proveedores: strategy + factory (`lib/ai/providers/`)
 
@@ -65,12 +65,12 @@ Cambiar de proveedor debe requerir solo una variable de entorno.
 | Archivo | Responsabilidad |
 |---|---|
 | `types.ts` | Interfaz `LLMProviderStrategy`: `id`, `apiKeyEnv`, `defaultModel`, `createModel(modelId)` |
-| `openai.ts` | Estrategia OpenAI (por defecto) |
+| `openai.ts` | Estrategia OpenAI |
 | `anthropic.ts` | Estrategia Anthropic |
 | `factory.ts` | Registro de estrategias y `getProviderStrategy(env)` |
 | `../model.ts` | `getChatModel()`: resuelve estrategia y modelo; sobreescribible con el mock model en tests |
 
-- `AI_PROVIDER` (por defecto `openai`) se valida con Zod. `AI_MODEL` es opcional y reemplaza el `defaultModel` de la estrategia.
+- `AI_PROVIDER` (por defecto `anthropic`) se valida con Zod. `AI_MODEL` es opcional y reemplaza el `defaultModel` de la estrategia.
 - Un proveedor desconocido o una key ausente lanzan un error de configuración tipado, que la ruta traduce a `CONFIG_ERROR`.
 - `@ai-sdk/openai` y `@ai-sdk/anthropic` solo se importan dentro de `lib/ai/providers/`.
 - Agregar un proveedor es un archivo de estrategia y una línea en el registro.
@@ -85,7 +85,7 @@ Prueba con curl o con la UI de la tarea 06:
 - [ ] Revisando los logs del request, el prompt **no** contiene el catálogo completo
 - [ ] Una pregunta sobre un juego inexistente → el modelo dice que no lo encontró
 - [ ] Tests: cada tool vía `execute` + chat route con el mock model de `ai/test` (sin red)
-- [ ] Tests de la factory: elige cada estrategia, `openai` por defecto, proveedor desconocido, key ausente y `AI_MODEL` que reemplaza el default
+- [ ] Tests de la factory: elige cada estrategia, `anthropic` por defecto, proveedor desconocido, key ausente y `AI_MODEL` que reemplaza el default
 
 ## Prompt sugerido
 

@@ -13,7 +13,7 @@ Internal dashboard to CRUD a catalog of indie games (`title`, `developer`, `genr
 | Styling | Tailwind CSS v4 | CSS-first config (`@import "tailwindcss"`, `@theme`) |
 | Data | SQLite via `better-sqlite3` | `serverExternalPackages: ['better-sqlite3']`; `runtime = 'nodejs'` |
 | Validation | Zod | Single source of truth for API bodies **and** tool inputs |
-| LLM | Vercel AI SDK **7** (`ai`, `@ai-sdk/react`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) | OpenAI by default; strategy + factory in `lib/ai/providers/`, selected with `AI_PROVIDER`. Read `node_modules/ai/docs` for the installed major before coding |
+| LLM | Vercel AI SDK **7** (`ai`, `@ai-sdk/react`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) | Anthropic by default; strategy + factory in `lib/ai/providers/`, selected with `AI_PROVIDER`. Read `node_modules/ai/docs` for the installed major before coding |
 | Tests | Vitest (projects: `backend` = node, `frontend` = jsdom), React Testing Library 16, user-event, MSW | See `run-*-tests` skills |
 
 ## Non-negotiables

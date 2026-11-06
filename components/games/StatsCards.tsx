@@ -15,7 +15,7 @@ export function StatsCards({ stats }: { stats: GameStats }) {
       {cards.map(({ label, value }) => (
         <div key={label} className="rounded-xl border border-border bg-surface p-4">
           <dt className="text-sm text-muted">{label}</dt>
-          <dd className="mt-1 text-xl font-semibold tabular-nums">{value}</dd>
+          <dd className="mt-1 text-base font-semibold tabular-nums [overflow-wrap:anywhere] sm:text-xl">{value}</dd>
         </div>
       ))}
     </dl>

@@ -154,7 +154,7 @@ export function GamesTable({ games, genres, total = games.length }: GamesTablePr
             <tbody>
               {rows.map((game) => (
                 <tr key={game.id} className="border-b border-border last:border-b-0">
-                  <th scope="row" className="px-4 py-3 text-left font-medium">
+                  <th scope="row" className="px-4 py-3 text-left font-medium [overflow-wrap:anywhere]">
                     {game.title}
                   </th>
                   <td className="px-4 py-3">{game.developer}</td>

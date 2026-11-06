@@ -34,7 +34,7 @@ export default defineConfig({
     projects: [
       { extends: true, test: { name: 'backend', environment: 'node',
           include: ['lib/**/*.test.ts', 'app/api/**/*.test.ts'],
-          env: { DATABASE_PATH: ':memory:', AI_PROVIDER: 'openai', OPENAI_API_KEY: 'test-key', ANTHROPIC_API_KEY: 'test-key' } } },
+          env: { DATABASE_PATH: ':memory:', AI_PROVIDER: 'anthropic', OPENAI_API_KEY: 'test-key', ANTHROPIC_API_KEY: 'test-key' } } },
       { extends: true, test: { name: 'frontend', environment: 'jsdom',
           include: ['components/**/*.test.tsx', 'app/**/*.test.tsx'],
           setupFiles: ['./test/setup-frontend.ts'] } },

@@ -75,7 +75,8 @@ function buildWhere(filters: StatsFilters): { where: string; params: SqlParam[] 
   };
 
   if (filters.genre !== undefined) add('genre = ? COLLATE NOCASE', filters.genre);
-  if (filters.developer !== undefined) add('developer = ? COLLATE NOCASE', filters.developer);
+  // Partial on purpose: people and the LLM rarely write the full studio name.
+  if (filters.developer !== undefined) add(`developer LIKE ? ESCAPE '\\'`, containsPattern(filters.developer));
   // Exclusive on purpose: "rated above 4" must not include 4.0.
   if (filters.minRating !== undefined) add('average_rating > ?', filters.minRating);
   if (filters.maxRating !== undefined) add('average_rating <= ?', filters.maxRating);

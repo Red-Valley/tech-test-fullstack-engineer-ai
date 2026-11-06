@@ -16,6 +16,8 @@ export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 const MAX_STEPS = 5;
+// Enough for a table of 25 games plus commentary, without the provider's huge default.
+const MAX_OUTPUT_TOKENS = 4096;
 const STREAM_ERROR_MESSAGE = 'The assistant could not finish this answer. Please try again.';
 
 const chatRequestSchema = z.object({
@@ -52,6 +54,7 @@ export async function POST(req: Request) {
         ignoreIncompleteToolCalls: true,
       }),
       tools: chatTools,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
       stopWhen: isStepCount(MAX_STEPS),
       // Without this, a model still calling tools at the limit would end with no answer at all.
       prepareStep: ({ stepNumber }) => (stepNumber === MAX_STEPS - 1 ? { toolChoice: 'none' } : {}),

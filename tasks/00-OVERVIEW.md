@@ -127,7 +127,7 @@ La base de datos lee `DATABASE_PATH` (por defecto `data/games.db`; `:memory:` en
 - **Bodies y tools con números estrictos:** `z.number()`, no `z.coerce`, porque `null` y `""` se convertirían en `0`. Solo coercionan los query params y el formulario.
 - **`gameUpdateSchema` exige al menos un campo:** un update vacío responde `400`.
 - **`minRating` es exclusivo y `maxRating` inclusivo:** "rated above 4" no incluye 4.0.
-- **Proveedor del chat:** OpenAI por defecto, con strategy + factory en `lib/ai/providers/`. Se elige con `AI_PROVIDER`, y `AI_MODEL` es opcional.
+- **Proveedor del chat:** Anthropic por defecto, con strategy + factory en `lib/ai/providers/`. Se elige con `AI_PROVIDER`, y `AI_MODEL` es opcional.
 - **`cacheComponents` desactivado:** esa opción prohíbe el export `runtime` que usan las rutas.
 
 ### Estructura de carpetas

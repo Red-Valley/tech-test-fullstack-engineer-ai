@@ -21,10 +21,20 @@ describe('gameInputSchema', () => {
     ['negative revenue', { monthly_revenue_usd: -1 }, 'monthly_revenue_usd'],
     ['fractional downloads', { monthly_downloads: 1.5 }, 'monthly_downloads'],
     ['rating above 5', { average_rating: 7 }, 'average_rating'],
+    ['revenue above the cap', { monthly_revenue_usd: 1e21 }, 'monthly_revenue_usd'],
   ])('rejects %s', (_name, override, field) => {
     const result = gameInputSchema.safeParse({ ...validGame, ...override });
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.path).toEqual([field]);
+  });
+
+  it.each([
+    [{ average_rating: 7 }, 'Must be between 0 and 5'],
+    [{ monthly_revenue_usd: -1 }, 'Must be 0 or more'],
+    [{ monthly_downloads: 1.5 }, 'Must be a whole number'],
+    [{ title: '   ' }, 'Required'],
+  ])('explains %j in words a user understands', (override, message) => {
+    expect(gameInputSchema.safeParse({ ...validGame, ...override }).error?.issues[0]?.message).toBe(message);
   });
 
   it('accepts the boundary ratings 0 and 5', () => {

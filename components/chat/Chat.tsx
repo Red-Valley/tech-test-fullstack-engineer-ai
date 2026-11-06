@@ -35,11 +35,12 @@ interface ChatProps {
 
 export function Chat({ suggestedPrompts, transport }: ChatProps) {
   const [session] = useState(() => (transport ? new ChatSession<ChatUIMessage>({ transport }) : sharedSession));
-  const { messages, sendMessage, status, stop, error, regenerate } = useChat<ChatUIMessage>({ chat: session });
+  const { messages, sendMessage, setMessages, clearError, status, stop, error, regenerate } = useChat<ChatUIMessage>({ chat: session });
   const isBusy = status === 'submitted' || status === 'streaming';
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const isFollowingRef = useRef(true);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Follows the stream unless the user has scrolled up to read something.
   useEffect(() => {
@@ -56,6 +57,13 @@ export function Chat({ suggestedPrompts, transport }: ChatProps) {
   function send(text: string) {
     isFollowingRef.current = true;
     void sendMessage({ text });
+    inputRef.current?.focus();
+  }
+
+  function startNewChat() {
+    clearError();
+    setMessages([]);
+    inputRef.current?.focus();
   }
 
   return (
@@ -84,7 +92,17 @@ export function Chat({ suggestedPrompts, transport }: ChatProps) {
         </div>
       )}
 
-      <ChatInput isBusy={isBusy} onSend={send} onStop={() => void stop()} />
+      {messages.length > 0 && !isBusy && (
+        <button
+          type="button"
+          onClick={startNewChat}
+          className="self-end rounded-lg px-2 py-1 text-sm text-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+        >
+          New chat
+        </button>
+      )}
+
+      <ChatInput isBusy={isBusy} inputRef={inputRef} onSend={send} onStop={() => void stop()} />
     </div>
   );
 }

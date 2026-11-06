@@ -48,7 +48,7 @@ export function Modal({ title, busy = false, onClose, children }: ModalProps) {
       onClose={onClose}
       className="m-auto w-full max-w-lg rounded-xl border border-border bg-surface p-6 text-foreground backdrop:bg-black/50"
     >
-      <h2 id={titleId} className="mb-4 text-lg font-semibold">
+      <h2 id={titleId} className="mb-4 text-lg font-semibold [overflow-wrap:anywhere]">
         {title}
       </h2>
       {children}

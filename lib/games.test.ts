@@ -112,10 +112,16 @@ describe('listGames filters', () => {
     expect(titles(listGames({ genre: 'pUZZLE' }))).toEqual(['A']);
   });
 
-  it('matches developer exactly, ignoring case', () => {
+  it('matches part of the developer name, ignoring case', () => {
     createGame(makeGameInput({ title: 'A', developer: 'Nimbus' }));
     createGame(makeGameInput({ title: 'B', developer: 'Nimbus Forge' }));
-    expect(titles(listGames({ developer: 'NIMBUS' }))).toEqual(['A']);
+    createGame(makeGameInput({ title: 'C', developer: 'Other' }));
+    expect(titles(listGames({ developer: 'NIMBUS' }))).toEqual(['A', 'B']);
+  });
+
+  it('treats a percent sign in the developer filter as text', () => {
+    createGame(makeGameInput({ title: 'A', developer: 'Nimbus' }));
+    expect(listGames({ developer: '%' })).toEqual([]);
   });
 
   it('treats minRating as exclusive: 4.0 is out, 4.1 is in', () => {

@@ -14,7 +14,7 @@ Resolver lo que un evaluador notaría y dejar constancia del resto. Los bugs BUG
 |---|---|---|---|---|
 | H1 | Riesgo alto | Con `claude-sonnet-5-5`, tras una tool hay espera de 2 a 10 s y el texto llega de golpe. Es lo que se ve en las 3 preguntas del enunciado | Sin la ruta de por medio pasa igual: 2.005 caracteres en 53 ms. La doc del proveedor dice que Sonnet 5.5 no permite desactivar el reasoning. Con `claude-haiku-5-5` sin reasoning: texto fluido desde ~1,6 s | Default `claude-haiku-5-5` sin reasoning, encapsulado en la estrategia. Repetir las preguntas para confirmar exactitud |
 | H2 | Decisión | El default es OpenAI, un camino nunca validado en vivo | OpenAI sin saldo | Default `anthropic`; actualizar `.env.example`, config y documentación |
-| H3 | Minor | Doble clic en Send cancela la pregunta: el segundo clic cae en Stop | QA BUG-3 | Ignorar Stop justo después de enviar. Con `key` distintas no basta: el segundo clic caería igual sobre el nuevo botón |
+| H3 | Minor | Doble clic en Send cancela la pregunta: el segundo clic cae en Stop | QA BUG-3 | Ignorar en Stop el segundo clic de un doble clic (`event.detail`). Con `key` distintas no basta: el clic caería igual sobre el nuevo botón |
 | H4 | Minor | "moss and marrow" responde que no existe | QA BUG-4 | El prompt obliga a reintentar con `searchGames` y una palabra distintiva antes de decir "not found" |
 | H5 | Minor | Developer parcial ("Bramble") responde "no encontrado" e inventa un nombre | QA BUG-5 | Filtro `developer` por coincidencia parcial |
 | H6 | Minor | KPI de revenue se sale de la tarjeta en móvil desde $1M | QA BUG-7 | Texto que se ajusta a la tarjeta |
