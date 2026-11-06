@@ -129,7 +129,7 @@ Automated tests don't show what a real model does, so the chat was also checked 
 
 ## Troubleshooting
 
-**"Hydration failed" with `__next_metadata_boundary__` and `display:contents` in the diff:** A browser extension is adding an element to `<body>` before React hydrates. The app's HTML is correct, and this happens in `next dev` and, as React error #418, in `next start`. To confirm, open the page in a Chrome profile with no extensions. To fix it, exclude `localhost` from that extension's site access.
+**"Hydration failed" with `__next_metadata_boundary__` and `display:contents` in the diff:** Something in the browser, most likely an extension, is adding an element to `<body>` before React hydrates. The app's HTML is correct, and this happens in `next dev` and, as React error #418, in `next start`. To confirm, open the page in a Chrome profile with no extensions. To find the extension, turn yours off one at a time and reload. You can then exclude `localhost` from its site access, though that step wasn't tested here.
 
 ## With more time
 
