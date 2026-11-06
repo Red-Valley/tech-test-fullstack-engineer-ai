@@ -48,7 +48,7 @@ Resolver lo que un evaluador notaría y dejar constancia del resto. Los bugs BUG
 | Atrás muestra datos viejos (QA BUG-14) | Caché del router; un recargar lo resuelve |
 | 405 y 404 de Next sin envelope, id `007` (QA BUG-16) | Respuestas fuera de nuestras rutas; `007` es el juego 7 sin ambigüedad |
 | Foco tras borrar, `?minRating=0x2`, helpers de error duplicados, cabeceras desalineadas 12 px | Bajo impacto para el tiempo restante |
-| "Hydration failed" en `next dev` | 0 errores con perfil limpio y en producción. Apunta a una extensión del navegador |
+| "Hydration failed" en `next dev` y #418 en `next start` | Causa: una extensión agrega `<div style="display: contents">` como primer hijo de `<body>` antes de hidratar, también en una página sin React. 0 errores en 38 cargas con perfil limpio; 8 de 8 con el perfil del usuario. El código coincide con la extensión Directo, sin prueba de apagarla. Sin cambios en el código; nota en el README |
 
 ## Criterios de aceptación
 

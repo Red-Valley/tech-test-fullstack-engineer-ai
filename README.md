@@ -127,6 +127,10 @@ Automated tests don't show what a real model does, so the chat was also checked 
 - A short follow-up such as "And which one…?" after messages in another language can be answered in the earlier language.
 - `npm audit` reports moderate advisories in the ESLint dependency chain, which is development-only.
 
+## Troubleshooting
+
+**"Hydration failed" with `__next_metadata_boundary__` and `display:contents` in the diff:** A browser extension is adding an element to `<body>` before React hydrates. The app's HTML is correct, and this happens in `next dev` and, as React error #418, in `next start`. To confirm, open the page in a Chrome profile with no extensions. To fix it, exclude `localhost` from that extension's site access.
+
 ## With more time
 
 - Add monthly revenue history, so "last month" is a real query.
