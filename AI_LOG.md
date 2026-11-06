@@ -115,3 +115,9 @@ Entries of the `track/chat` worktree. They get merged into `AI_LOG.md` when the 
 - **Prompt:** las 3 preguntas del enunciado, un juego inexistente y una pregunta fuera de tema, contra `/api/chat`
 - **Resultado:** ❌ falló por causa externa: `insufficient_quota` / `credit_balance_exhausted` en la cuenta de OpenAI
 - **Qué corregí:** Nada en el código. La ruta registró la causa en el servidor y envió un mensaje genérico al cliente. Los criterios con LLM real siguen sin verificar hasta que la cuenta tenga créditos.
+
+## [00:22] Tarea 07 — Pruebas reales con Anthropic y QA completo
+- **Herramienta:** Claude Code (subagente `qa-engineer`) y Claude in Chrome
+- **Prompt:** "Listo, ya cargue dinero en anthropic y cambie el ai provider , procede a las pruebas, documentemos los hallazgos , y programemos un nuevo task para resolverlos , corre de nuevo el qa engineer para evaluar toda la implementacion y continuar para cerrar las tareas pendientes"
+- **Resultado:** ⚠️ parcial; las respuestas son correctas, pero aparecieron problemas que los 341 tests en verde no podían ver
+- **Qué corregí:** Consolidé todo en `tasks/09-qa-findings.md`. Lo más útil: tras una tool el texto llegaba de golpe. Medí el modelo sin la ruta para descartar un buffer propio, y la doc del proveedor confirmó que Sonnet 5.5 no permite desactivar el reasoning. También descarté mi primer arreglo del doble clic en Send (`key` distintas) antes de aplicarlo, porque el segundo clic caería igual sobre el botón Stop nuevo.

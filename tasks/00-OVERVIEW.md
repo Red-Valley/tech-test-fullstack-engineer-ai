@@ -28,11 +28,12 @@ Dashboard interno con CRUD de juegos indie + chat con IA que responde preguntas 
 | 05 | [Chat backend (tools + streaming)](./05-chat-backend.md) | 01 (+02 para integrar) | B | 30 min |
 | 06 | [Chat UI](./06-chat-ui.md) | 05 (o contrato) | B | 30 min |
 | 07 | [QA, integración y pulido](./07-qa-polish.md) | 04, 06 | Común | 15 min |
-| 08 | [README, AI_WORKFLOW.md y Pull Request](./08-docs-and-pr.md) | 07 | Común | 25 min |
+| 09 | [Hallazgos de QA con LLM real](./09-qa-findings.md) | 07 | Común | 30 min |
+| 08 | [README, AI_WORKFLOW.md y Pull Request](./08-docs-and-pr.md) | 09 | Común | 25 min |
 
 ```
             ┌─► 02 ─► 03 ─► 04 ─┐   Track A: CRUD
- 01 setup ──┤                   ├─► 07 QA ─► 08 Docs + PR
+ 01 setup ──┤                   ├─► 07 QA ─► 09 Hallazgos ─► 08 Docs + PR
             └─► 05 ─────► 06 ───┘   Track B: AI Chat
 ```
 
