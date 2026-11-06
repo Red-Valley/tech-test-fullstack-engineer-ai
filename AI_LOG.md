@@ -153,12 +153,14 @@ The log was first written in Spanish and later translated. Prompts stay verbatim
   - The Sonnet measurement contradicted what I had written in the README (that the answer arrived all at once), so I corrected the text with the data.
   - Strengthening the language rule changed nothing (3 failures out of 3), so I reverted it and it stayed as a known limitation.
 
-## Morning: hydration error analysis
+## Unattended work and final review
+I went to sleep at 00:20 and left the tasks running. The entries from that time until the morning were written by the agent unattended, and their first person is the agent's. I reviewed the result in the morning, before asking for the PR to be opened.
+
+## [~07:40] Morning: hydration error analysis
+*Written by the agent in a session the user attended. "I" is the agent.*
+
 - **Tool:** Claude Code (subagent, `frontend-developer` profile), headless Chrome, and Claude in Chrome
 - **Prompt:** "Let's work in 2 points, first one, lets update the @AI_LOG.md file and translate it to english, and use the dev agent to analyze this error [...] then check the fix with the qa engineer and lastly use the code reviewer"
 - **Result:** ⚠️ Partial. The mechanism is proven and it isn't the app or Next, so there's no code change. It's very likely an extension, but which one is unconfirmed.
-- **What I fixed:** Earlier entries blamed an unidentified extension without proof. The agent showed that the server's HTML is correct, that a clean profile gives 0 errors in 38 loads, and that the user's Chrome fails 8 of 8 loads. On every failing load an extension adds an empty `<div style="display: contents">` as the first child of `<body>`, even on a page with no React. Only that injection reproduced the exact error. The diff is misleading: nothing changes Next's wrapper, and React compares the wrapper against the foreign div. The code matches the Directo extension, but it wasn't confirmed by turning it off. I added a Troubleshooting note to the README and corrected `tasks/09-qa-findings.md`.
-- **QA:** An independent `qa-engineer` agent tried to disprove this and couldn't: 0 errors in 32 clean-profile loads, the failure on 11 of 11 loads in the user's Chrome, and injecting that div into a clean profile reproduced the exact error on 20 of 20 loads. It also corrected the conclusion: FastApply is present too, so Directo is only a lead, and "extension" remains an inference because nothing was turned off. I softened the docs to match.
-
-## Unattended work and final review
-I went to sleep at 00:20 and left the tasks running. The entries after that time were written by the agent unattended, and their first person is the agent's. I reviewed the result in the morning, before asking for the PR to be opened.
+- **What I fixed:** Earlier entries only suspected an extension, and the `tasks/09` row pointed to one without proof. The agent showed that the server's HTML is correct, that a clean headless profile gives 0 errors in 38 loads, and that the user's Chrome fails 8 of 8 loads. On every failing load something outside the app, very likely an extension, adds an empty `<div style="display: contents">` as the first child of `<body>`, even on a page with no React. Only that injection reproduced the exact error. The diff is misleading: nothing changes Next's wrapper, and React compares the wrapper against the foreign div. The code matches the Directo extension, but it wasn't confirmed by turning it off. I added a Troubleshooting note to the README and corrected `tasks/09-qa-findings.md`.
+- **QA:** An independent `qa-engineer` agent tried to disprove this and couldn't: 0 errors in 32 clean-profile headless loads, the failure on 11 of 11 loads in the user's Chrome, and injecting that div into a clean profile reproduced the exact error on 20 of 20 loads. It also corrected the conclusion: FastApply is present too, so Directo is only a lead, and "extension" remains an inference because nothing was turned off. I softened the docs to match.
