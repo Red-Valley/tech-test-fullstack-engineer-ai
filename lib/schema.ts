@@ -32,3 +32,20 @@ export const gameFiltersSchema = z.object({
   order: sortOrderSchema.optional().describe('Sort direction'),
   limit: z.number().int().positive().max(100).optional().describe('Maximum number of games to return'),
 });
+
+// A blank query param means "absent". Without this, z.coerce would read ?minRating= as 0.
+const blankAsAbsent = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (typeof value === 'string' && value.trim() === '' ? undefined : value), schema);
+
+// Query params arrive as strings, so this is the one place besides the form where numbers coerce.
+export const gameQuerySchema = z.object({
+  genre: blankAsAbsent(gameFiltersSchema.shape.genre),
+  developer: blankAsAbsent(gameFiltersSchema.shape.developer),
+  minRating: blankAsAbsent(z.coerce.number().min(0).max(5).optional()),
+  maxRating: blankAsAbsent(z.coerce.number().min(0).max(5).optional()),
+  minRevenue: blankAsAbsent(z.coerce.number().nonnegative().optional()),
+  search: blankAsAbsent(gameFiltersSchema.shape.search),
+  sortBy: blankAsAbsent(sortFieldSchema.optional()),
+  order: blankAsAbsent(sortOrderSchema.optional()),
+  limit: blankAsAbsent(z.coerce.number().int().positive().max(100).optional()),
+});
