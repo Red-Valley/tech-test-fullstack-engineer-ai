@@ -121,3 +121,9 @@ Entries of the `track/chat` worktree. They get merged into `AI_LOG.md` when the 
 - **Prompt:** "Listo, ya cargue dinero en anthropic y cambie el ai provider , procede a las pruebas, documentemos los hallazgos , y programemos un nuevo task para resolverlos , corre de nuevo el qa engineer para evaluar toda la implementacion y continuar para cerrar las tareas pendientes"
 - **Resultado:** ⚠️ parcial; las respuestas son correctas, pero aparecieron problemas que los 341 tests en verde no podían ver
 - **Qué corregí:** Consolidé todo en `tasks/09-qa-findings.md`. Lo más útil: tras una tool el texto llegaba de golpe. Medí el modelo sin la ruta para descartar un buffer propio, y la doc del proveedor confirmó que Sonnet 5.5 no permite desactivar el reasoning. También descarté mi primer arreglo del doble clic en Send (`key` distintas) antes de aplicarlo, porque el segundo clic caería igual sobre el botón Stop nuevo.
+
+## [02:35] Tarea 09 — Validación en vivo con Haiku
+- **Herramienta:** Claude Code
+- **Prompt:** Implementar H1-H16 de `tasks/09-qa-findings.md` y repetir los golden prompts con el modelo por defecto
+- **Resultado:** ⚠️ parcial; cifras correctas y streaming real, pero dos instrucciones del prompt no bastaron
+- **Qué corregí:** La IA propuso una protección de 500 ms para el doble clic que rompía el Stop rápido; la cambié por `event.detail`. Haiku respondía también la pregunta detenida aunque el prompt lo prohibía, así que la ruta ahora descarta esas preguntas. Una frase "pegada" que parecía un bug de la UI venía de mi script de prueba, que concatenaba los bloques de texto. Queda sin resolver: Haiku a veces anuncia el reintento de búsqueda; lo dejo documentado.

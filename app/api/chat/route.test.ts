@@ -269,7 +269,20 @@ describe('POST /api/chat streaming', () => {
 
     expect(res.status).toBe(200);
     await res.text();
-    expect(JSON.stringify(model.doStreamCalls[0]?.prompt)).not.toContain('c1');
+    const prompt = JSON.stringify(model.doStreamCalls[0]?.prompt);
+    expect(prompt).not.toContain('c1');
+    expect(prompt).not.toContain('First');
+  });
+
+  it('leaves out a question that was stopped before any answer, so it is not resumed', async () => {
+    const model = new MockLanguageModelV4({ doStream: textStep('Ok') });
+    setChatModelOverride(model);
+
+    await (await post({ messages: [userMessage('Stopped question'), { ...userMessage('New question'), id: 'u2' }] })).text();
+
+    const prompt = JSON.stringify(model.doStreamCalls[0]?.prompt);
+    expect(prompt).not.toContain('Stopped question');
+    expect(prompt).toContain('New question');
   });
 
   it('accepts a history with a completed tool call, as the client resends it', async () => {

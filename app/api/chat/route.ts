@@ -2,6 +2,7 @@ import {
   convertToModelMessages,
   createUIMessageStreamResponse,
   isStepCount,
+  type ModelMessage,
   safeValidateUIMessages,
   streamText,
   toUIMessageStream,
@@ -24,6 +25,12 @@ const chatRequestSchema = z.object({
   // Clients never get to set the system prompt, so only these two roles are accepted.
   messages: z.array(z.looseObject({ role: z.enum(['user', 'assistant']) })).min(1).max(100),
 });
+
+// A question followed by another one was stopped before any answer. Sent as is, the model
+// answers it again even when the prompt tells it not to.
+function withoutUnansweredRequests(messages: ModelMessage[]): ModelMessage[] {
+  return messages.filter((message, index) => message.role !== 'user' || messages[index + 1]?.role !== 'user');
+}
 
 export async function POST(req: Request) {
   let body: unknown;
@@ -49,10 +56,12 @@ export async function POST(req: Request) {
       model: getChatModel(),
       instructions: SYSTEM_PROMPT,
       // A response stopped during a tool call leaves a call without a result in the history.
-      messages: await convertToModelMessages(validated.data, {
-        tools: chatTools,
-        ignoreIncompleteToolCalls: true,
-      }),
+      messages: withoutUnansweredRequests(
+        await convertToModelMessages(validated.data, {
+          tools: chatTools,
+          ignoreIncompleteToolCalls: true,
+        }),
+      ),
       tools: chatTools,
       maxOutputTokens: MAX_OUTPUT_TOKENS,
       stopWhen: isStepCount(MAX_STEPS),
