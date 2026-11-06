@@ -1,6 +1,6 @@
 # 08 — README, AI_WORKFLOW.md y Pull Request
 
-**Track:** Común · **Depende de:** 07 · **Estimado:** 25 min
+**Track:** Común · **Depende de:** 09 · **Estimado:** 25 min
 
 > El `AI_WORKFLOW.md` vale **30%** y el README **10%**: 40% de la nota está en esta tarea. No la recortes.
 
@@ -66,8 +66,8 @@ Secciones:
 4. **Arquitectura**: diagrama corto (UI → API/route handlers → `lib/games.ts` → SQLite; chat → LLM ⇄ tools → `lib/games.ts`)
 5. **API reference**: tabla de endpoints + ejemplos curl de la tarea 03
 6. **Tools del chat**: tabla de la tarea 05 y por qué ese diseño
-7. **Trade-offs y supuestos**: "last month" = valores mensuales actuales; SQLite local; filtrado client-side; sin auth ni tests (fuera de alcance)
-8. **Qué haría con más tiempo**: tests de las tools, historial mensual, persistencia del chat, deploy
+7. **Trade-offs y supuestos**: "last month" = valores mensuales actuales; SQLite local; filtrado client-side; sin auth (fuera de alcance); OpenAI no validado en vivo
+8. **Qué haría con más tiempo**: evaluación de las preguntas contra cada proveedor, historial mensual, persistencia del chat, deploy
 
 ## 4. Pull Request
 
