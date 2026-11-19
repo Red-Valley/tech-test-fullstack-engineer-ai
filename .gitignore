@@ -14,5 +14,14 @@ pnpm-debug.log*
 .idea/
 *.sqlite
 *.sqlite3
+*.sqlite-shm
+*.sqlite-wal
 *.db
+*.db-shm
+*.db-wal
+data/
 coverage/
+*.tsbuildinfo
+next-env.d.ts
+.agents/
+skills-lock.json
