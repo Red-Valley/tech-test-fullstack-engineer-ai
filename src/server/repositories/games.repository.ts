@@ -3,8 +3,10 @@ import { getDb, type Db } from '@/server/db/client';
 import { ConflictError } from '@/server/http/errors';
 import type { GameDto, GameInputDto } from '@/shared/types/game.dto';
 
-export type GameSortBy = 'revenue' | 'downloads' | 'rating' | 'title';
-export type SortOrder = 'asc' | 'desc';
+export const GAME_SORT_FIELDS = ['revenue', 'downloads', 'rating', 'title'] as const;
+export const SORT_ORDERS = ['asc', 'desc'] as const;
+export type GameSortBy = (typeof GAME_SORT_FIELDS)[number];
+export type SortOrder = (typeof SORT_ORDERS)[number];
 
 export type GameFilters = {
   genre?: string;

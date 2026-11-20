@@ -246,3 +246,17 @@ Adding `groupBy: 'genre'` to the aggregate. This changes `ARCHITECTURE.md` §6.1
 94 tests pass. Prettier also reformatted `ARCHITECTURE.md`, so I'm checking it only changed that one table:
 
 Only the §6.1 tools table changed; the other rows just have new column padding. Adding the log entry:
+
+---
+
+## 2026-11-20 00:48:09 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> lets commit
+
+**Claude:**
+
+All three routes build as dynamic (`ƒ`), and typecheck, lint and tests pass. The build also printed a line about `stats/route.ts`, so I'm checking what it says:
+
+The build is clean now. Next, the plan's `curl` check against a real dev server. I'm pointing it at a scratch database so your `data/games.db` isn't touched.

@@ -108,3 +108,15 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **Issues:** none. Without this, "which genre has the highest average revenue" would have needed one tool call per genre (10 genres, with a 5-step limit on the chat), and the model would have compared the numbers itself, against the "all math in code" rule.
 **Review:** not run yet; runs at the end of Phase 3.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 20:10 · Phase 3: API route handlers + fuzzy-match fixes (C3.2, not committed yet; C3.1 committed as b179656)
+**Tool / session:** Claude Code, main + subagent code-reviewer
+**Prompt (excerpt):** "lets commit"
+**What Claude did:** Committed C3.1 (`b179656`). Built C3.2: `/api/games` (GET with Zod-validated query params, POST), `/api/games/[id]` (GET, PUT full replacement, DELETE), `/api/games/stats` (`force-dynamic`), and `server/http/request.ts` (JSON-body and id parsing). Checked every endpoint with curl against a dev server on a scratch DB: 200/201/204/400 (field errors, malformed JSON, bad id, partial PUT)/404/409, and stats matching sqlite. Then applied the review fixes; 118 tests.
+**Issues:**
+- `next build` warned that `path.resolve` in `client.ts` made Turbopack trace the whole project into the server bundle. Removed it (mkdirSync already resolves relative paths).
+- Claude's first two curl runs were broken by its own zsh scripting (an unmatched glob aborted the setup; an unquoted header variable wasn't split), giving `000` and bodiless 400s that looked like API failures. Re-run with fixed commands; the API was fine.
+- **The fuzzy matcher from C3.1 was wrong, and its tests didn't show it.** The reviewer found that plausible invented titles resolved confidently to real games: "x" → Hexmarch, "the" → Bellwether, "Irony" → Iron Psalm, "Rune" → Ashfall Run, "Hexmarch 2" → Hexmarch, "Starlight" → Starlit Atlas. Claude's code comment claimed "lantren" matched Lantern Drift; it didn't (a swapped pair counted as 2 edits). Root cause: substring matching with no minimum length or word boundary, and per-word scoring that ignored the rest of the query; the tests only checked positive matches. In the chat this would have made the model report another game's numbers for a title that doesn't exist. Fixed: exact → word-prefix partial (≥ 4 chars) → typo match only if every query word fits a title word (swapped letters count as 1 edit), threshold 0.8 with a clear margin; results now say `matchedBy`. All six false positives are now negative tests.
+- Also from the review: comparing a game with itself returned a tie (now an error); `limit: NaN` returned no games (now 5); weak tests that passed regardless of output were tightened.
+**Review:** needs changes → fixed: fuzzy false positives, same-game compare, NaN limit, weak tests; nits fixed: `minRating > maxRating` → 400, ids must be digits only (`0x1A`, `1e1` rejected), `sortBy`/`order` lists shared with the repository. Carried forward to Phase 6: rating filters are inclusive, so the `query_games`/`aggregate_games` descriptions must say so ("above 4" only works on the fixture because nothing is exactly 4.0).
+**My call:** _TODO (Cristian)_

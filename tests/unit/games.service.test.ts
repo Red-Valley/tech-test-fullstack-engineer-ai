@@ -65,9 +65,10 @@ describe('queryGames', () => {
     expect(titles(games)).toEqual(['Lantern Drift', 'Kitebound', 'Ashfall Run']);
   });
 
-  it('caps the limit at 10 and floors it at 1', () => {
+  it('caps the limit at 10, floors it at 1, and falls back to 5 for NaN', () => {
     expect(service.queryGames({ limit: 50 }).games).toHaveLength(10);
     expect(service.queryGames({ limit: 0 }).games).toHaveLength(1);
+    expect(service.queryGames({ limit: NaN }).games).toHaveLength(5);
   });
 
   it('returns an empty list with total 0 when nothing matches', () => {
@@ -137,28 +138,51 @@ describe('aggregateByGenre', () => {
 
 describe('findGame', () => {
   it.each([
-    ['exact', 'Lantern Drift'],
-    ['different case and spacing', '  lantern DRIFT '],
-    ['a misspelling', 'Lantren Drift'],
-    ['a partial title', 'Lantern'],
-    ['a missing letter', 'Lantern Drft'],
-  ])('matches %s', (_label, query) => {
-    expect(service.findGame(query)).toMatchObject({ game: { title: 'Lantern Drift' } });
+    ['exact', 'Lantern Drift', 'Lantern Drift', 'exact'],
+    ['different case and spacing', '  lantern DRIFT ', 'Lantern Drift', 'exact'],
+    ['a partial title', 'Lantern', 'Lantern Drift', 'partial'],
+    ['a partial last word', 'Copper Tide', 'Copper Tides', 'partial'],
+    ['a swapped-letter typo', 'Lantren Drift', 'Lantern Drift', 'fuzzy'],
+    ['a missing letter', 'Lantern Drft', 'Lantern Drift', 'fuzzy'],
+    ['one misspelled long word', 'Lantren', 'Lantern Drift', 'fuzzy'],
+    ['a typo in a short word', 'Coper Tides', 'Copper Tides', 'fuzzy'],
+  ])('matches %s', (_label, query, title, matchedBy) => {
+    expect(service.findGame(query)).toMatchObject({ game: { title }, matchedBy });
   });
 
-  it('matches a partial title missing its last letter', () => {
-    expect(service.findGame('Copper Tide')).toMatchObject({ game: { title: 'Copper Tides' } });
-  });
+  // Plausible invented titles must NOT resolve to a real game: the model would report that
+  // game's numbers as fact. Each of these matched confidently in the first version.
+  it.each(['x', 'the', 'Irony', 'Rune', 'Hexmarch 2', 'Starlight', 'Crystal Fortress Online'])(
+    'does not confidently match %s',
+    (query) => {
+      expect(service.findGame(query)).toMatchObject({ notFound: true });
+    },
+  );
 
-  it('returns notFound with 3 suggestions for an invented title', () => {
-    const result = service.findGame('Crystal Fortress Online');
+  it('suggests the closest real titles when not found', () => {
+    const result = service.findGame('Hexmarch 2');
     expect(result).toMatchObject({ notFound: true });
-    expect('suggestions' in result && result.suggestions).toHaveLength(3);
+    expect('suggestions' in result && result.suggestions[0]).toBe('Hexmarch');
   });
 
-  it('treats a partial string shared by several titles as ambiguous', () => {
-    // "er" appears in Lantern Drift, Copper Tides, Neon Burrow, ...
-    expect(service.findGame('er')).toMatchObject({ notFound: true });
+  it('suggests the near title for a misspelled single word it cannot be sure about', () => {
+    const result = service.findGame('Kitebond');
+    expect('suggestions' in result ? result.suggestions : [result.game.title]).toContain(
+      'Kitebound',
+    );
+  });
+
+  it('treats a partial word that starts several titles as ambiguous and lists them', () => {
+    // The fixture has no shared title words by design, so this needs its own catalog.
+    const repo = createGamesRepository(openDatabase(':memory:'));
+    repo.createMany([
+      { ...GAMES_FIXTURE[0], title: 'Star Racer' },
+      { ...GAMES_FIXTURE[1], title: 'Star Miner' },
+    ]);
+    expect(createGamesService(repo).findGame('Star')).toEqual({
+      notFound: true,
+      suggestions: ['Star Miner', 'Star Racer'],
+    });
   });
 
   it('returns notFound with no suggestions for an empty title', () => {
@@ -166,8 +190,7 @@ describe('findGame', () => {
   });
 
   it('returns the injection game as plain data', () => {
-    const result = service.findGame(INJECTION_GAME_TITLE);
-    expect(result).toMatchObject({ game: { average_rating: 2.1 } });
+    expect(service.findGame(INJECTION_GAME_TITLE)).toMatchObject({ game: { average_rating: 2.1 } });
   });
 });
 
@@ -189,8 +212,16 @@ describe('compareGames', () => {
     expect(result).toMatchObject({ winner: 'Ashfall Run', ratio: 1.21 });
   });
 
-  it('reports which title was not found, with suggestions', () => {
+  it('reports only the title that was not found, with suggestions', () => {
     const result = service.compareGames('Lantern Drift', 'Crystal Fortress Online', 'revenue');
-    expect(result).toMatchObject({ notFound: [{ title: 'Crystal Fortress Online' }] });
+    expect(result).toEqual({
+      notFound: [{ title: 'Crystal Fortress Online', suggestions: expect.any(Array) }],
+    });
+  });
+
+  it('refuses to compare a game with itself', () => {
+    expect(service.compareGames('Lantern', 'Lantern Drift', 'revenue')).toEqual({
+      error: 'Both titles refer to the same game: Lantern Drift',
+    });
   });
 });

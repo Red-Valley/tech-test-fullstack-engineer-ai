@@ -15,7 +15,7 @@ export function dbPath(): string {
 
 /** Opens a database and creates the table if it's missing. Pass ':memory:' in tests. */
 export function openDatabase(file: string = dbPath()): Db {
-  if (file !== ':memory:') mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+  if (file !== ':memory:') mkdirSync(path.dirname(file), { recursive: true });
   const db = new Database(file);
   db.pragma('journal_mode = WAL');
   db.exec(readFileSync(SCHEMA_PATH, 'utf8'));

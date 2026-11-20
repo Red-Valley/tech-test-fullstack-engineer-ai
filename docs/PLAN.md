@@ -43,10 +43,10 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 
 ## Phase 3: Services + REST API
 
-- [x] **C3.1 `feat(api): games service + http helpers`**: `server/services/games.service.ts` (filter and sort rules, stats, aggregates, fuzzy title match, compare) and `server/http/responses.ts`, with tests.
+- [x] **C3.1 `feat(api): games service + http helpers`** (`b179656`): `server/services/games.service.ts` (filter and sort rules, stats, aggregates, fuzzy title match, compare) and `server/http/responses.ts`, with tests.
   - **Verify:** `npm test` checks exact stats against the fixture, fuzzy match on a misspelled title, and that a compare ratio is computed in code.
 
-- [ ] **C3.2 `feat(api): games route handlers`**: `api/games`, `api/games/[id]`, `api/games/stats`.
+- [x] **C3.2 `feat(api): games route handlers`**: `api/games`, `api/games/[id]`, `api/games/stats`.
   - **Verify:** with `npm run dev` running, curl each endpoint and check the status code:
     - `GET /api/games?genre=Roguelike&sortBy=revenue&order=desc` → 200
     - `POST` a valid game → 201, the same title in different case → 409, a bad body → 400 with `fieldErrors`
