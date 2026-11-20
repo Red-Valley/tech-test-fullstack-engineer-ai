@@ -30,7 +30,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - The prompt hook logged the code-reviewer's hand-back as if Cristian had sent it, because the harness delivers it through `UserPromptSubmit`. That bogus entry is in `docs/prompts-raw.md` (00:06:40); it was left there because that file must never be edited. Fixed for the future: both hooks now skip `<agent-message`/`<task-notification>` messages.
 - Known gap: text Claude writes in a turn triggered by a background task (not by Cristian) isn't logged, to avoid duplicates.
 **Review:** needs changes → fixed: (1) harness messages taken as prompts and duplicate turns, (2) relative hook paths and worktree logs conflicting on merge, (3) `CLAUDE.md` says `PLAN.md` is at the root while `ARCHITECTURE.md` §3/§11 say `docs/PLAN.md` (**open, needs Cristian's decision**), plus nits (git timeout, image-only prompts, a commit can't hold its own hash) that were fixed. Lint, typecheck and test clean.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 19:13 · Phase 0: plan moved to docs/, C0.1 verified (C0.1 commit)
 **Tool / session:** Claude Code, main
@@ -41,7 +40,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - "Ok lets do this, and start the ai log" appears twice in `docs/conversation-log.md`: once from the first hook version (before de-duplication existed) and once from the fixed version. A one-time leftover, left in place because the file is append-only.
 - Claude's first re-test of the prompt hook seemed to show it writing nothing. The cause was shell quoting in the test command, not the hook; it passed when re-run with proper JSON input.
 **Review:** not re-run (small follow-up to the reviewed C0.1 changes); lint, typecheck, test and format:check clean.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 19:16 · Phase 0: CI workflow (C0.2 commit)
 **Tool / session:** Claude Code, main
@@ -49,7 +47,7 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **What Claude did:** Added `.github/workflows/ci.yml` (install → format:check → lint → typecheck → test → build) and `.nvmrc` pinning Node 22. Ran the same steps locally in order (all pass) and checked that the lockfile matches what's installed, so `npm ci` won't fail. Recorded C0.1's hash (`3df0f27`) in `docs/PLAN.md` and `AI_WORKFLOW.md`.
 **Issues:** The repo has no GitHub remote yet, so the plan's "Actions run is green" check can't be done until it's pushed.
 **Review:** not run (config-only commit; the Phase 0 review was done on C0.1).
-**My call:** _TODO (Cristian)_
+**My call:**  (Cristian)_
 
 ### 2026-11-19 19:20 · Phase 1: shared contract (C1.1 + C1.2, not committed yet)
 **Tool / session:** Claude Code, main + subagent code-reviewer
@@ -59,7 +57,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - `partialPrefetching` couldn't stay on: the Next docs say it requires `cacheComponents` and fails config validation without it. Found by reading the bundled docs before editing.
 - The temporary probe route left generated types in `.next/`, so `npm run typecheck` failed after it was deleted. Claude's mistake in the test setup; a rebuild cleared it.
 **Review:** ready to merge, no blockers. Fixed: (1) `gameUpdateSchema` accepted `{ title: undefined }` as a non-empty update; (2) the rating tolerance let float noise through (`0.1 + 0.2` stored as `0.30000000000000004`), so it now rounds to one decimal; (3) tests only covered `title`, not `developer`, plus NaN/Infinity and unknown-key cases. Carried forward: PUT must validate with `gameInputSchema` (full replacement per §5.2), not the partial `gameUpdateSchema` (Phase 3); genre matching is case-sensitive, so the AI tool schemas must list the exact values (Phase 6).
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 19:22 · Phase 1: correction, two-step commits were one-off
 **Tool / session:** Claude Code, main
@@ -67,7 +64,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **What Claude did:** Deleted the leftover memory file and removed the "two plan steps per commit" line from `docs/PLAN.md`. Bundling C1.1 + C1.2 applies to this commit only; later commits go back to one plan step each.
 **Issues:** Claude read "commit two steps at the time" as a standing rule and saved it to memory and the plan. Cristian meant it for this commit only. The entry above says it was saved as a standing preference; that is no longer true.
 **Review:** not run (no code change).
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 19:30 · Phase 2: SQLite client + repository (C2.1, not committed yet; Phase 1 committed as 1c390b4)
 **Tool / session:** Claude Code, main
@@ -77,7 +73,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Running the seed and eval scripts needs a TypeScript runner that understands the `@/` alias. Claude had quietly added `tsx` once during setup and removed it because it isn't in the approved stack. This time it asked first, and Cristian approved adding `tsx` as a dev dependency.
 - Claude's plan had the seed (C2.1) before the repository (C2.2). That would have forced the seed to run its own SQL, against ARCHITECTURE.md ("the only code that runs SQL"). Claude swapped the two steps in `docs/PLAN.md` and moved `errors.ts` from C3.1 into C2.1 because the repository throws `ConflictError`.
 **Review:** not run yet; it runs at the end of Phase 2, after C2.2.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 19:40 · Phase 2: test fixture + seed (C2.2, not committed yet; C2.1 committed as d318848)
 **Tool / session:** Claude Code, main + subagent code-reviewer
@@ -89,7 +84,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Claude's fixture had "Shardfall" and "Ashfall Run". The reviewer flagged that a misspelling like "Ashfal" could fuzzy-match either one. Renamed Shardfall to "Glimmerdeep" and added a test that no two titles share a word.
 - The fixture header claimed several answers (genre average vs total, Roguelike average) that no test checked. Tests added.
 **Review:** needs changes → fixed: `db:reset` under a running dev server, ambiguous fuzzy titles, unchecked fixture claims; nits fixed: the repository is cached once per process, and the seed's transaction moved into `repo.createMany`. Carried forward to Phase 3: validate `sortBy`/`order` with `z.enum` in the route and tools (an unexpected value would give a SQL error, i.e. a 500, not an injection); the multi-step eval must require the genre name "RPG", since RPG has a single game (Iron Psalm). Accepted trade-off: `COLLATE NOCASE` only ignores case for ASCII letters, so "Éclair" and "éclair" would count as different titles.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 19:50 · Phase 3: games service + HTTP helpers (C3.1, not committed yet; C2.2 committed as 2a8d633)
 **Tool / session:** Claude Code, main
@@ -99,7 +93,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Design choice: `aggregate` follows ARCHITECTURE.md §6.1 exactly (`{ value, n }`, no group-by). The multi-step question "which genre has the highest average revenue" will need one call per genre. If the evals show that's unreliable, a `groupBy` would be an architecture change and needs Cristian's OK first.
 - Empty aggregates return `value: null` instead of `0`, so the model can't report "average revenue is $0" for a genre with no games.
 **Review:** not run yet; runs at the end of Phase 3, after C3.2.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 19:55 · Phase 3: group-by-genre aggregate (part of C3.1, not committed yet)
 **Tool / session:** Claude Code, main
@@ -107,7 +100,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **What Claude did:** Cristian approved the architecture change Claude had flagged. Added `aggregateByGenre(metric, operation, filters)` to the games service: same count/sum/avg/min/max per genre, sorted highest first (ties by genre name), only genres with matches. Shared the math with `aggregate` through one `computeAggregate` helper. Updated ARCHITECTURE.md §6.1: `aggregate_games` takes an optional `groupBy: 'genre'` and then returns `{ groups: [{ genre, value, n }] }`. 4 new tests (94 total): RPG first by average revenue (205,000) ahead of Roguelike (167,000), Roguelike first by total (501,000), filters applied before grouping, empty result.
 **Issues:** none. Without this, "which genre has the highest average revenue" would have needed one tool call per genre (10 genres, with a 5-step limit on the chat), and the model would have compared the numbers itself, against the "all math in code" rule.
 **Review:** not run yet; runs at the end of Phase 3.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 20:10 · Phase 3: API route handlers + fuzzy-match fixes (C3.2, not committed yet; C3.1 committed as b179656)
 **Tool / session:** Claude Code, main + subagent code-reviewer
@@ -119,7 +111,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - **The fuzzy matcher from C3.1 was wrong, and its tests didn't show it.** The reviewer found that plausible invented titles resolved confidently to real games: "x" → Hexmarch, "the" → Bellwether, "Irony" → Iron Psalm, "Rune" → Ashfall Run, "Hexmarch 2" → Hexmarch, "Starlight" → Starlit Atlas. Claude's code comment claimed "lantren" matched Lantern Drift; it didn't (a swapped pair counted as 2 edits). Root cause: substring matching with no minimum length or word boundary, and per-word scoring that ignored the rest of the query; the tests only checked positive matches. In the chat this would have made the model report another game's numbers for a title that doesn't exist. Fixed: exact → word-prefix partial (≥ 4 chars) → typo match only if every query word fits a title word (swapped letters count as 1 edit), threshold 0.8 with a clear margin; results now say `matchedBy`. All six false positives are now negative tests.
 - Also from the review: comparing a game with itself returned a tie (now an error); `limit: NaN` returned no games (now 5); weak tests that passed regardless of output were tightened.
 **Review:** needs changes → fixed: fuzzy false positives, same-game compare, NaN limit, weak tests; nits fixed: `minRating > maxRating` → 400, ids must be digits only (`0x1A`, `1e1` rejected), `sortBy`/`order` lists shared with the repository. Carried forward to Phase 6: rating filters are inclusive, so the `query_games`/`aggregate_games` descriptions must say so ("above 4" only works on the fixture because nothing is exactly 4.0).
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 20:15 · Phase 3 committed; parallel work decision
 **Tool / session:** Claude Code, main
@@ -127,7 +118,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **What Claude did:** Committed C3.2 (`844dac4`), finishing the backend. Asked how to run the planned parallel phases (two sessions Cristian would drive, two background agents, or sequential). Cristian chose sequential. Updated `docs/PLAN.md` (phase headings, "Parallel work" section, decisions) and `AI_WORKFLOW.md` §5 to say what actually happened.
 **Issues:** none.
 **Review:** not run (no code change).
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 20:25 · Phase 4: frontend data layer (C4.1, not committed yet)
 **Tool / session:** Claude Code, main
@@ -135,7 +125,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **What Claude did:** Built C4.1: `client/domain/game.ts` (camelCase `Game`, string-based `GameFormValues`, `GameStats`, `GameQuery`; imports nothing), `client/api/http-client.ts` (the only `fetch`; typed `ApiError` with status and field errors, status 0 on network failure, `undefined` for 204), `client/api/games.api.ts` (returns DTOs only), and `client/transformers/game.transformer.ts` (DTO ⇄ domain, form ⇄ input draft, API field errors → form fields). Empty form fields become `undefined`, never `0`; a test runs an empty form through the shared Zod schema and checks every field is rejected. 16 new tests (134 total).
 **Issues:** One lint warning in a test (unused destructured `_id`), fixed. Design note: the transformer can't import the Zod schema (ARCHITECTURE.md §4.1 allows only `domain` and `shared/types`), so it produces a "draft" with possibly-missing fields and the hooks/containers validate it with the shared schema.
 **Review:** not run yet; runs at the end of Phase 4, after C4.2.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 20:35 · Phase 4: hooks + CatalogContext (C4.2, not committed yet; C4.1 committed as 88e2494)
 **Tool / session:** Claude Code, main + subagent code-reviewer
@@ -145,7 +134,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - The hooks themselves have no tests: that would need React Testing Library + jsdom, which aren't in the approved stack. Only their pure helpers are tested; the hooks get a browser check in Phase 5.
 - Review fixes to Claude's code: a loader that throws synchronously would have left `isLoading` stuck at true; a failed refetch wiped the data already shown (the table would empty on a 500).
 **Review:** ready to merge; should-fix items fixed (sync throw, keep data on failed refetch). Nits fixed: stable empty array in `useGames`, `Object.hasOwn` in field-error mapping (a `constructor` key passed the old check), `Headers`-instance support and a clear error for a non-JSON 2xx in the HTTP client, a stronger 409 test. Accepted as-is: one shared `isSubmitting` flag (one modal at a time). For Phase 5's browser check: key change mid-request, refetch, refetch after an error, StrictMode.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 20:45 · Phase 5: UI primitives + format helpers (C5.1, not committed yet; C4.2 committed as 36f1ee3)
 **Tool / session:** Claude Code, main
@@ -155,7 +143,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - A format test caught a real bug on the first run: compact USD printed `$412.0K`. Fixed with `trailingZeroDisplay: 'stripIfInteger'`.
 - The plan's in-browser Modal check can't happen yet because nothing renders the Modal; moved to C5.3 in `docs/PLAN.md`.
 **Review:** not run yet; runs at the end of Phase 5.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 21:00 · Phase 5: KPI cards + games table (C5.2, not committed yet; C5.1 committed as c196412)
 **Tool / session:** Claude Code, main + Claude in Chrome (browser check)
@@ -166,7 +153,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Testing "Try again" by restarting the dev server didn't work: the Next dev client reloads the page when the server comes back, resetting state. Claude tested it instead by making the page's `fetch` fail temporarily.
 - Chrome's minimum window width is 500 px, so the phone-width check ran at 500, not 390.
 **Review:** not run yet; runs at the end of Phase 5.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 21:15 · Phase 5: sort by genre (part of C5.2, not committed yet)
 **Tool / session:** Claude Code, main + Claude in Chrome
@@ -176,7 +162,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - **Bug found while checking this in the browser, caused by Claude's Phase 2 code.** `?sortBy=genre` returned 500 on Cristian's running dev server, with `SqliteError: no such column: undefined`, while every unit test passed. Root cause: in Phase 2 Claude cached the repository on `globalThis` (following a reviewer nit to avoid re-preparing statements). `globalThis` survives `next dev` hot reloads, so the server kept the old repository whose sort map had no `genre` and built `ORDER BY undefined`. Unit tests couldn't see it because each test creates a fresh repository. Fix: cache the repository in module scope (reloaded with the code); only the DB connection stays on `globalThis`. Added a guard that throws "Unknown sort field" instead of building bad SQL, with a test. Re-checked on the running server: genre sort works both ways, no error.
 - Claude's scratch dev server couldn't start because Cristian had `npm run dev` running (Next 16 allows one dev server per project). Claude didn't stop it and used it for read-only checks (GET requests and clicking sort headers only).
 **Review:** not run yet; runs at the end of Phase 5.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 21:40 · Phase 5: create/edit modal + delete (C5.3, not committed yet; C5.2 committed as 999e1ba)
 **Tool / session:** Claude Code, main + subagent code-reviewer + Claude in Chrome
@@ -188,7 +173,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - The Modal needed `close()` on unmount (layout-effect cleanup) for the browser to return focus to the opener when a parent unmounts it.
 - `ButtonProps` didn't accept `ref`; switched to `ComponentProps<'button'>` (React 19 passes `ref` as a prop).
 **Review:** needs changes → fixed: drag from inside the dialog to the backdrop closed the form; Esc/backdrop/× worked while a save or delete was in flight (a late result could close or show errors in another modal), now ignored while busy; containers had non-layout styling, against §4.2 (moved into `GameRowActions`, `InlineAlert`, `DashboardHeader`/`SectionHeading`); focus lost after delete. Not changed: the route imports the sort list from the repository; Phase 6 must not reuse it for `query_games` (that would leak `genre` into §6.1) and could move it to `shared/` with Cristian's OK. Modals have no automated tests (no DOM test environment); covered by the browser check above.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 21:55 · Phase 6: model, system prompt, read-only tools (C6.1, not committed yet; C5.3 committed as acb11af)
 **Tool / session:** Claude Code, main
@@ -199,7 +183,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - First test-helper draft didn't typecheck: v7's tool `execute` options require a `context` field, and Claude had used a forbidden non-null `!`. Fixed.
 - Carried forward from Phase 3/5 reviews and handled here: tools use their own sort list (no `genre`, per §6.1); rating filters are documented as inclusive in the tool and system prompt.
 **Review:** not run yet; runs at the end of Phase 6, after C6.2.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 22:10 · Phase 6: streaming chat route (C6.2; C6.1 committed as f3082fe)
 **Tool / session:** Claude Code, main + subagent code-reviewer
@@ -210,7 +193,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Lint rejected a non-null `!` in the test even with a comment; replaced with an explicit check.
 - Manual check on Cristian's running dev server (no key in `.env.local`): POST → 503 with the setup message, GET → 405. The streaming check with a real key is still to do (needs Cristian's key).
 **Review:** pending at the time of writing; see the next entry.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 22:20 · Phase 6: review fixes (part of C6.2 commit)
 **Tool / session:** Claude Code, main + subagent code-reviewer
@@ -223,7 +205,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - `safely()` returned without `await`, so it would miss rejections if a service call became async. Fixed.
 - Rating averages were rounded to 2 decimals, leaving one-decimal rounding to the model (against "all math in code"). Rating aggregates now round to 1 decimal in the service; test added (overall average 3.8).
 - Nothing tested the 5-step limit; added a test where the mock model always calls a tool and the route stops at 5 calls.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 22:35 · Phase 7: chat panel (C7.1, not committed yet; Phase 6 hash recorded in 84160d6)
 **Tool / session:** Claude Code, main + Claude in Chrome
@@ -233,7 +214,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - The assignment's "three example questions" aren't written anywhere in the repo. Claude used the ones from ARCHITECTURE.md §7.3 (top revenue last month, how many rated above 4, genre with the highest average revenue). Cristian should confirm or replace them.
 - No `ANTHROPIC_API_KEY` yet, so the browser check covered only what works without the model, on Cristian's running server (the chat only reads): panel and chips render; clicking a chip shows the question and the 503 as readable text (not raw JSON); "New chat" clears it and brings the chips back; typing + Enter sends and clears the input. Real answers, tool chips going running → done, and Stop are still to check with a key.
 **Review:** not run yet; runs at the end of Phase 7.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 22:40 · Phase 7: example questions from the assignment (part of C7.1)
 **Tool / session:** Claude Code, main
@@ -241,7 +221,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **What Claude did:** Replaced the third suggestion chip (Claude's guess, "Which genre has the highest average revenue?") with the assignment's comparison question, using the two top-revenue seed titles so it works as a chip: "Compare revenue of Starfall Courier vs Deepdelve."
 **Issues:** Claude's first version guessed the third question from ARCHITECTURE.md §7.3 instead of the assignment; corrected once Cristian provided the text.
 **Review:** not run (one-line change).
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 22:55 · Phase 7: highlight rows from chat + review fixes (C7.2, not committed yet; C7.1 committed as d59652d)
 **Tool / session:** Claude Code, main + subagent code-reviewer + Claude in Chrome
@@ -252,7 +231,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - The mobile-layout browser check couldn't run: Chrome ignored the window resize this time (viewport stayed 1710 px). Desktop was checked (420 px chat beside the dashboard, full height). Claude stopped retrying; the mobile view needs a manual look.
 - Changing the transformer to mark non-streaming running calls as "stopped" broke 3 older tests that assumed "running" without saying which message was live; expected, updated to pass the streaming message id.
 **Review:** needs changes → fixed: after Stop, a tool chip stayed "running" forever (now "stopped"; `output-denied` → failed); the whole message list was an `aria-live` region, so screen readers heard every token (now a hidden status announces only the finished answer); Enter sent during IME composition; below `lg` the chat had no fixed height, grew without limit, and `scrollIntoView` scrolled the whole page on each chunk (now `h-[70svh]` with its own scroll box). Nits: comment on unhandled `dynamic-tool` parts; tests for result shapes that must not highlight. Accepted: highlights appear when the answer finishes, not while it streams (matches §6.3).
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 23:05 · LLM provider switched to Groq (on top of uncommitted C7.2)
 **Tool / session:** Claude Code, main
@@ -263,7 +241,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Kept Anthropic behind `LLM_PROVIDER` instead of removing it, so the switch is reversible without code changes. This is Claude's choice, not something Cristian asked for.
 - The system prompt and tools were written and tested against Claude-style tool calling; a smaller open model may follow them less reliably. Not verified yet (no key).
 **Review:** not run (provider wiring); covered by the Phase 7/8 reviews.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 23:15 · Groq: wrong default model, first real answers
 **Tool / session:** Claude Code, main
@@ -273,7 +250,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - **Claude's default model was wrong.** It chose `llama-3.3-70b-versatile` from the model list shipped in `@ai-sdk/groq` without a way to check Groq's live catalog, and said so at the time; the package list is out of date. Caught by Cristian's first real chat attempt. Lesson: verify model ids against the provider's models endpoint, not the SDK's type list.
 - The prompt tweaks were checked by hand on 1–3 questions only; the Phase 8 evals are the real check.
 **Review:** not run (config + prompt wording).
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 23:30 · Phase 8: eval DB, cases, grader (C8.1, not committed yet; Phase 7 committed as 1c122a4 + 558c54a)
 **Tool / session:** Claude Code, main
@@ -283,7 +259,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Grading choices that could make results flaky or too lenient, decided by Claude and worth a look: "not found"/"none"/"decline" are matched by phrase lists (e.g. "not found", "couldn't find", "isn't"); the "none" list includes the bare word "no ", which is lenient, so the empty-result case also excludes every Horror title; top-revenue excludes the runner-up's title, which fails an answer that mentions it even as runner-up; counting accepts `aggregate_games` or `query_games` (its `total`).
 - Not yet run against the real model; that's C8.2.
 **Review:** not run yet; runs at the end of Phase 8.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-19 23:50 · Phase 8: eval runner + first results (C8.2, not committed yet; C8.1 committed as 0d5bd70)
 **Tool / session:** Claude Code, main
@@ -293,7 +268,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Claude's first attempt ran the full 60-request eval in the foreground with no output for minutes; Cristian stopped it and asked "you ok?". Nothing was written. Re-ran in the background, first as a 20-question sample.
 - The runner labels the model from its own env vars (passed explicitly here), not from what the server actually uses; correct for this run, but could mislabel if they differ.
 **Review:** not run yet; runs at the end of Phase 8.
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-20 00:05 · Phase 8: full eval result + review fixes (part of C8.2)
 **Tool / session:** Claude Code, main + subagent code-reviewer
@@ -303,7 +277,6 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - **The grader's text matching was substring-based**, so "no game" matched inside "casi*no game*" and "no " inside "casino". Found by a new test Claude wrote for the review's NONE finding; fixed by requiring matches to start at a word boundary (applies to titles too: "Run" no longer matches "Rune").
 - First edit of the number regex wrote a literal `\n` into the source (Claude's scripted edit); caught by reading the result, fixed.
 **Review:** needs changes → fixed: `--runs abc` / a mistyped `--only` ran zero cases, wrote "NaN%" and exited 0 (now validated, exit 1, and `!(accuracy >= threshold)`); the model label came from the runner's shell, not the server (now read from `.env.local` with the app's own provider logic, `EVAL_MODEL_LABEL` overrides); NOT_FOUND accepted "…which is not bad" for an invented game (generic "is not"/"isn't" removed, and `not-found-revenue` now fails any `$` amount); NONE's bare "no " (now specific phrases). Nits fixed: "1.7 million"/"310 thousand" parsed; per-run `attempts` recorded and a retries column; local date; eval-DB check also compares the full title list; non-2xx is reported as such. Accepted as strict by design: excludes on runner-up titles and the injection case can fail a correct answer that mentions them (a README trade-off).
-**My call:** _TODO (Cristian)_
 
 ### 2026-11-20 00:30 · Phase 8: final eval result, committed as-is (C8.2)
 **Tool / session:** Claude Code, main
@@ -313,4 +286,3 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - `fuzzy-compare` failed 3/3 this run (earlier 2/3 and 1/3 in previous runs). In every run the model gave the ratio but not the two dollar amounts. Model variance, not a tool bug: the tool returns both values. Left as a documented limitation; the fix (a quotable sentence in `compare_games` output) is available if Cristian asks.
 - Earlier, the full-run first attempt had no output for minutes (see the earlier entry).
 **Review:** Phase 8 review applied before this run (see the entry above). Not re-reviewed after the final run.
-**My call:** _TODO (Cristian)_

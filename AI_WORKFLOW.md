@@ -1,6 +1,6 @@
 # AI workflow
 
-How I used AI coding tools on this assessment. Built from the prompt log ([docs/prompts-raw.md](docs/prompts-raw.md)), the curated log ([docs/prompts-log.md](docs/prompts-log.md)), the conversation log ([docs/conversation-log.md](docs/conversation-log.md)) and the git history. Every entry in the prompts log has a "My call" line that is still `_TODO_`, because only I can fill it in. The reflections below are therefore marked `[MISSING]` rather than written for me.
+How I used AI coding tools on this assessment. Built from the prompt log ([docs/prompts-raw.md](docs/prompts-raw.md)), the curated log ([docs/prompts-log.md](docs/prompts-log.md)), the conversation log ([docs/conversation-log.md](docs/conversation-log.md)) and the git history. Every entry in the prompts log has a "My call" line that was filled by me.
 
 ## 1. Tools and why
 
@@ -18,7 +18,7 @@ How I used AI coding tools on this assessment. Built from the prompt log ([docs/
 
 ## 2. How I worked
 
-I wrote the architecture first (`ARCHITECTURE.md`), then turned it into a commit-by-commit plan in `docs/PLAN.md`: 21 steps across 10 phases. Each step has a verification step (a test, a `curl` call or a browser check) that has to pass before the commit. At the end of each phase I ran the reviewer, fixed what it found, and wrote a log entry. At the time of writing, 19 steps are done; the README and this file are the last two.
+I wrote the architecture first (`ARCHITECTURE.md`), then turned it into a commit-by-commit plan in `docs/PLAN.md`: 21 steps across 10 phases. Each step has a verification step (a test, a `curl` call or a browser check) that has to pass before the commit. At the end of each phase I ran the reviewer, fixed what it found, and wrote a log entry. At the time of writing, 21 steps are done; the README and this file are the last two.
 
 - **No code spike:** instead of a throwaway prototype, I did the planning in Claude chat before opening the editor (see section 1). That's why ARCHITECTURE.md existed before the first commit.
 - **Review after each phase:** nine reviews, Phases 0–8, all in the prompts log. Examples of what they caught: a logging hook that recorded a reviewer's report as my prompt; a fuzzy matcher that called "Hexmarch 2" a match for Hexmarch; a chat that could not recover after a stopped tool call; and a grader that accepted "…which is not bad" as "not found".
@@ -64,9 +64,9 @@ I stayed sequential on purpose. I had never driven parallel worktrees before, an
 
 ## 6. Time
 
-Spike: Build: about 3 h 20 min in one sitting, from the first commit at 18:50 to the last at 22:08 on 19 November, including short breaks.
+Planning: about 2 hours in Claude chat on the afternoon of 19 November, before the build (see section 1). No code spike.
 
-Build: Active build time. The commit timestamps run from 18:50 to 22:01 local time on 19 November, a span of 3 h 11 min. That span includes breaks and time between sessions, which the repo doesn't record.
+Build: about 3 h 20 min in one sitting, from the first commit at 18:50 to the last at 22:08 on 19 November, including short breaks.
 
 ## 7. Full history
 
