@@ -189,3 +189,14 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - `ButtonProps` didn't accept `ref`; switched to `ComponentProps<'button'>` (React 19 passes `ref` as a prop).
 **Review:** needs changes → fixed: drag from inside the dialog to the backdrop closed the form; Esc/backdrop/× worked while a save or delete was in flight (a late result could close or show errors in another modal), now ignored while busy; containers had non-layout styling, against §4.2 (moved into `GameRowActions`, `InlineAlert`, `DashboardHeader`/`SectionHeading`); focus lost after delete. Not changed: the route imports the sort list from the repository; Phase 6 must not reuse it for `query_games` (that would leak `genre` into §6.1) and could move it to `shared/` with Cristian's OK. Modals have no automated tests (no DOM test environment); covered by the browser check above.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 21:55 · Phase 6: model, system prompt, read-only tools (C6.1, not committed yet; C5.3 committed as acb11af)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "commit"
+**What Claude did:** Committed C5.3 (`acb11af`), finishing Phase 5. Read the AI SDK v7 docs bundled in `node_modules/ai/docs` before writing anything. Built `server/ai/model.ts` (Anthropic provider, `LLM_MODEL` with default `claude-haiku-5-5`, `hasAnthropicKey()` for the 503 check), `system-prompt.ts` (tools-only answers, "last month" = monthly fields, groupBy for genre questions, "above 4" = minRating 4.1, exact genre list, not-found/empty/out-of-scope behavior, formatting, and an instruction to treat game fields as data), and `tools.ts` (`query_games`, `aggregate_games` with optional `groupBy: 'genre'`, `find_game` returning `matchedBy`, `compare_games`; each calls the service, returns `{ error }` instead of throwing, never more than 10 games). 19 Level 1 tool tests (174 total), each validating input through the tool's own schema like the SDK does.
+**Issues:**
+- AI SDK v7 differs from what ARCHITECTURE.md was written against: the docs use `isStepCount` (but `stepCountIs` still exists), `system` is deprecated in favor of `instructions`, and the mock is `MockLanguageModelV4`. `result.toUIMessageStreamResponse()` still exists. Checked in the installed package before coding; no architecture change needed.
+- First test-helper draft didn't typecheck: v7's tool `execute` options require a `context` field, and Claude had used a forbidden non-null `!`. Fixed.
+- Carried forward from Phase 3/5 reviews and handled here: tools use their own sort list (no `genre`, per §6.1); rating filters are documented as inclusive in the tool and system prompt.
+**Review:** not run yet; runs at the end of Phase 6, after C6.2.
+**My call:** _TODO (Cristian)_

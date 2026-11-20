@@ -69,12 +69,12 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 - [x] **C5.2 `feat(ui): KPI cards + games table`** (`999e1ba`): dashboard and table containers with loading, error and empty states.
   - **Verify:** in the browser, the KPI values equal `curl /api/games/stats`. Stop the server to see the error state, and empty the DB to see the empty state. At ≤768px the dashboard and chat stack.
 
-- [x] **C5.3 `feat(ui): create/edit modal + delete`**
+- [x] **C5.3 `feat(ui): create/edit modal + delete`** (`acb11af`)
   - **Verify:** in the browser, create a game (row appears, KPIs update), edit it, enter a duplicate title (409 shown on the field), and delete it. Modal: Tab stays inside, Esc and the backdrop close it, focus returns to the button that opened it.
 
 ## Phase 6: AI tools + chat route _(worktree `feat/ai`, parallel with Phases 4–5)_
 
-- [ ] **C6.1 `feat(ai): model, system prompt, read-only tools`**: `query_games`, `aggregate_games`, `find_game`, `compare_games`, all calling the service. Level 1 tests.
+- [x] **C6.1 `feat(ai): model, system prompt, read-only tools`**: `query_games`, `aggregate_games`, `find_game`, `compare_games`, all calling the service. Level 1 tests.
   - **Verify:** `npm test` shows `limit` capped at 10, `total` given before the limit, `notFound` with suggestions, `{ error }` on bad input, and no tool returning more than 10 games.
 
 - [ ] **C6.2 `feat(ai): streaming chat route`**: `streamText` with `stopWhen: stepCountIs(5)`, a 503 when there's no API key, and a 400 on a bad body. Level 2 tests use the mock model from `ai/test` (confirm the exact export first).

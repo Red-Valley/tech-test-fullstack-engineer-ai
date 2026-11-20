@@ -387,3 +387,19 @@ The confirmation opens with focus on Cancel and names the game. Confirming the d
 Lint and typecheck are clean. Re-testing the delete focus: I'll create a throwaway game through the API on the scratch DB, then delete it with real clicks.
 
 Fixed: after the delete, focus is on "Add game" and the scratch DB is back to 25 games. Cleaning up, then final gates and the log:
+
+---
+
+## 2026-11-20 01:52:01 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> commit
+
+**Claude:**
+
+Both `stepCountIs` and `isStepCount` exist, so `ARCHITECTURE.md`'s `stepCountIs(5)` works as written. Reading the route pattern and the error handling:
+
+`result.toUIMessageStreamResponse()` still exists, so the route can follow `ARCHITECTURE.md` exactly. One more check, on `system` vs `instructions`:
+
+All 174 tests pass, and typecheck, lint and format are clean. Recording C6.1:
