@@ -12,7 +12,7 @@ How I used AI tools to build this project. This file is filled in phase by phase
 
 **`code-reviewer` subagent** (`.claude/agents/code-reviewer.md`). A read-only reviewer that checks the diff for correctness, types, API status codes and Zod validation, the AI-tool rules (no full-catalog dumps, math in code, structured errors, prompt-injection awareness), streaming, `CLAUDE.md` conventions and missing tests. It reports findings ranked by severity, only ones it can point to in the code, and never edits. `CLAUDE.md` makes it a required step before every phase's commit, and its findings go into that phase's log entry.
 
-**Logging hooks** (`.claude/settings.json`). A `UserPromptSubmit` hook (`log-prompt.mjs`) appends every prompt I send to `docs/prompts-raw.md`. A `Stop` hook (`log-conversation.mjs`) appends each prompt together with Claude's text reply to `docs/conversation-log.md`. Both always exit 0, so they can never block a prompt. They're there so this document is built from a record and not from memory. Capture started with commit [MISSING: hash of the Phase 0 commit]; earlier prompts (project setup and planning) were not recorded.
+**Logging hooks** (`.claude/settings.json`). A `UserPromptSubmit` hook (`log-prompt.mjs`) appends every prompt I send to `docs/prompts-raw.md`. A `Stop` hook (`log-conversation.mjs`) appends each prompt together with Claude's text reply to `docs/conversation-log.md`. Both always exit 0, so they can never block a prompt. They're there so this document is built from a record and not from memory. Capture started with commit `3df0f27`; earlier prompts (project setup and planning) were not recorded.
 
 ## 2. How I worked
 

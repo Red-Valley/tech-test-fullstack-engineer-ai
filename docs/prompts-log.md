@@ -42,3 +42,11 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Claude's first re-test of the prompt hook seemed to show it writing nothing. The cause was shell quoting in the test command, not the hook; it passed when re-run with proper JSON input.
 **Review:** not re-run (small follow-up to the reviewed C0.1 changes); lint, typecheck, test and format:check clean.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 19:16 · Phase 0: CI workflow (C0.2 commit)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "lets commit"
+**What Claude did:** Added `.github/workflows/ci.yml` (install → format:check → lint → typecheck → test → build) and `.nvmrc` pinning Node 22. Ran the same steps locally in order (all pass) and checked that the lockfile matches what's installed, so `npm ci` won't fail. Recorded C0.1's hash (`3df0f27`) in `docs/PLAN.md` and `AI_WORKFLOW.md`.
+**Issues:** The repo has no GitHub remote yet, so the plan's "Actions run is green" check can't be done until it's pushed.
+**Review:** not run (config-only commit; the Phase 0 review was done on C0.1).
+**My call:** _TODO (Cristian)_

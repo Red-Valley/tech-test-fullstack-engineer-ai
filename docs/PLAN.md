@@ -13,14 +13,14 @@ Step-by-step plan to build everything in [ARCHITECTURE.md](../ARCHITECTURE.md), 
 
 ## Phase 0: Workflow capture
 
-- [x] **C0.1 `chore: capture prompts and replies, start AI_WORKFLOW.md`**
+- [x] **C0.1 `chore: capture prompts and replies, start AI_WORKFLOW.md`** (`3df0f27`)
   - Copy the kit's `.claude/` into the repo: the prompt hook, `settings.json` and the `code-reviewer` agent.
   - Add a Stop hook, `.claude/hooks/log-conversation.mjs`, that appends each prompt and Claude's text reply to `docs/conversation-log.md`.
   - Create `AI_WORKFLOW.md` with its 7 sections. §1 is filled from real files; the rest are `[MISSING: …]` until there's history.
   - Update `CLAUDE.md` so the logs and `AI_WORKFLOW.md` are updated after every phase.
   - **Verify:** pipe a test payload into each hook and check the appended markdown. Restart the Claude Code session (hooks load at startup), send one prompt, and confirm it shows up in `docs/prompts-raw.md` and `docs/conversation-log.md`.
 
-- [ ] **C0.2 `ci: add GitHub Actions workflow`**: `.github/workflows/ci.yml` runs install → format:check → lint → typecheck → test → build.
+- [x] **C0.2 `ci: add GitHub Actions workflow`**: `.github/workflows/ci.yml` runs install → format:check → lint → typecheck → test → build.
   - **Verify:** run the same commands locally in that order. After a push, the Actions run is green.
 
 ## Phase 1: Shared contract
