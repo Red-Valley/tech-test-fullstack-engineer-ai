@@ -77,7 +77,7 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 - [x] **C6.1 `feat(ai): model, system prompt, read-only tools`** (`f3082fe`): `query_games`, `aggregate_games`, `find_game`, `compare_games`, all calling the service. Level 1 tests.
   - **Verify:** `npm test` shows `limit` capped at 10, `total` given before the limit, `notFound` with suggestions, `{ error }` on bad input, and no tool returning more than 10 games.
 
-- [x] **C6.2 `feat(ai): streaming chat route`**: `streamText` with `stopWhen: stepCountIs(5)`, a 503 when there's no API key, and a 400 on a bad body. Level 2 tests use the mock model from `ai/test` (confirm the exact export first).
+- [x] **C6.2 `feat(ai): streaming chat route`** (`0ea6508`): `streamText` with `stopWhen: stepCountIs(5)`, a 503 when there's no API key, and a 400 on a bad body. Level 2 tests use the mock model from `ai/test` (confirm the exact export first).
   - **Verify:** `npm test` shows the tool executes, text arrives in more than one chunk, and the 503 and 400 cases. Manually, curl without a key → 503, then with a key: `curl -N -X POST localhost:3000/api/chat …` streams the answer.
 
 ## Phase 7: Chat UI _(after both worktrees are merged)_
