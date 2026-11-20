@@ -175,7 +175,30 @@ they happen.
 - **Lesson:** when a check fails, find out which side is wrong before changing the product. And never patch
   regexes through layers of shell escaping.
 
-### 3.8 Minor slips (no impact)
+### 3.8 What an independent review found that my own 139 passing tests had not (end of stage 5)
+
+All the stage checks were green when I ran a fresh-eyes review. It found real defects in code I had already
+"verified". Each row says how the claim was checked before I acted on it.
+
+| # | Finding (severity per the reviewer) | Verified how | Fix |
+|---|---|---|---|
+| 1 | **Important.** Filter the dashboard by a genre, then delete (or re-genre) its last game: the table goes empty ("No games match") while the dropdown *looks* like "All genres" | **Reproduced in the browser before the fix: 5 checks failed**, including a second bug the review did not mention — re-adding that genre silently revived the old filter | Reset the selected genre in state, in render, when it vanishes. (An earlier thought — just derive an "effective genre" — would have left the resurrection bug; the reproduction ruled it out.) |
+| 2 | `aggregate_games` silently cut grouped results at 50 rows and sorted `min` largest-first | Failing test | `min` sorts smallest-first; the tool says when a result was cut off |
+| 3 | The history sent back to the model glued the pre-tool narration onto the answer ("I'll look that up.The top game is X.") | Failing test | Parts are joined with a blank line |
+| 4 | Server-side search / genre / title matching only folds ASCII case, so "édition" found a game on the dashboard but not through the chat | Failing test (relevant: the catalog is for a Spanish-speaking team, titles will have accents) | A tiny SQL function (`lower_unicode`) used for matching; the duplicate-title check is Unicode-aware too |
+| 5 | Genre names (free text, editable by anyone) were pasted raw into the **system prompt** — a prompt-injection path | Failing test with a hostile genre containing a newline and a fake `## New rules` heading | Genres are written as JSON-quoted strings, so they stay on one line as data |
+| 6 | `compare_games` of two titles that resolve to the same game returned no comparison and no explanation; blank titles matched the whole catalog | Failing tests | A note explains it; titles are trimmed and blanks rejected |
+| 7 | Opening a pre-existing DB file that already holds games tried to insert the samples and crashed the whole app on a duplicate title; a DB from a newer version was silently re-seeded | Failing tests | Seed only an empty table; refuse a newer schema with a clear message |
+| 8 | Pressing Stop before the first token left an empty grey bubble in the chat | Failing reducer test (+ browser check) | The reducer drops a reply that never got content |
+| 9 | A rejected chat request showed just "Validation failed" | Failing test | The first validation message is appended |
+| 10 | `getGames()` re-prepares four SQL statements per call | Read the code | **Declined.** It costs microseconds, and caching the repository on `globalThis` would pin stale code through Next's hot reload for no measurable gain |
+
+**Why this matters for the process:** my tests were written by the same author as the code, so they shared its
+blind spots (Unicode, an empty-state path, an interaction between two features). The independent pass found
+them cheaply. The red-then-green order mattered too: seeing the tests fail first proved each finding was real
+and that the fix, not a mistake in the test, made it pass.
+
+### 3.9 Minor slips (no impact)
 
 - A chained `cat a && cat b` command stopped at the missing `postcss.config.mjs` and truncated the
   output I wanted — re-ran the reads separately.
@@ -205,8 +228,17 @@ they happen.
 
 ## 4. Parallel agents / subagents / worktrees
 
-None so far. Work has been sequential in a single Claude Code session. This section is updated at the
-end with whatever was actually used (for example an independent review pass) and what it found.
+- **Worktrees and parallel agents: not used.** The build was sequential in one Claude Code session; the
+  stages depend on each other and share one working tree, so parallel writers would have mostly created
+  merge work.
+- **One independent review pass: used, at the end of the build.** I ran the bundled `code-review` skill at
+  `high` effort over `src/`. It reported running as a *forked execution* (isolated from my session's
+  context, so it was reading the code cold rather than inheriting my assumptions); I did not control its
+  internals. It returned **10 findings (1 rated important, 9 nits)**.
+- **How I used its output:** as claims to verify, not as truth. For each one I read the code, and where
+  possible I made a failing test *before* touching the fix (16 tests failed in that "red" run, one cluster
+  per finding), reproduced the important one in the browser, then fixed and re-ran everything. 9 were real
+  and fixed; 1 was declined with a reason. Details in 3.8.
 
 ---
 
@@ -325,7 +357,7 @@ results — so numbers on screen can be compared with the database.
 | Dashboard regression on the final build | ✅ | **50 / 50** |
 | Same suites against `next dev` (what the README tells people to run) | ✅ | dashboard **50 / 50**, chat **52 / 52**; no hydration warnings (dev mode shows ones production hides), no dev-server warnings, and **no `AGENTS.md` generated** (`agentRules: false` works) |
 | Screenshots reviewed by eye | ✅ | empty state, conversation with chips + tables, error state, mobile |
-| **Real Anthropic API** | ⬜ **STILL NOT VERIFIED** | The mock is *my model of* the API, built from the SDK source and the documented wire format. It cannot prove that the live API accepts these requests (including the SDK 1.x `Authorization: Bearer` API-key style, the tool schemas, and the request with no `thinking` / `effort` set), nor that Opus 5.5 picks the right tools. **A live run with a real key is the one remaining acceptance test** |
+| **Real Anthropic API (stage 5 row)** | ⬜ **STILL NOT VERIFIED** | The mock is *my model of* the API, built from the SDK source and the documented wire format. It cannot prove that the live API accepts these requests (including the SDK 1.x `Authorization: Bearer` API-key style, the tool schemas, and the request with no `thinking` / `effort` set), nor that Opus 5.5 picks the right tools. **A live run with a real key is the one remaining acceptance test** |
 
 ---
 
