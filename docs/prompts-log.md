@@ -156,3 +156,24 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - The plan's in-browser Modal check can't happen yet because nothing renders the Modal; moved to C5.3 in `docs/PLAN.md`.
 **Review:** not run yet; runs at the end of Phase 5.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 21:00 · Phase 5: KPI cards + games table (C5.2, not committed yet; C5.1 committed as c196412)
+**Tool / session:** Claude Code, main + Claude in Chrome (browser check)
+**Prompt (excerpt):** "commit"
+**What Claude did:** Committed C5.1 (`c196412`). Built C5.2: presentational `KpiCard`/`KpiGrid` (with skeletons), `GameRow`, `GamesTable` (sortable headers with `aria-sort`, scrolls inside its own box on small screens), `GamesToolbar` (title search + genre filter); containers `DashboardContainer` (stats with loading/error) and `GamesTableContainer` (filters, sort, deferred search, loading/error/empty states, highlighted rows from `CatalogContext`); `page.tsx` composes them inside `CatalogProvider`, chat panel still a placeholder. Checked in Chrome against a scratch DB: KPIs equal `/api/games/stats` (25, $2,595,600, 630,400, 3.97 → "4.0", 13); 25 rows sorted by revenue; sort by rating (Moonlit Ferry 4.9 first); search with no match → empty state → "Clear filters"; at 500 px wide the layout stacks with no page-level sideways scroll; stopped server → error state with "Try again".
+**Issues:**
+- The browser check showed the error state replaced the rows even though the Phase 4 fix keeps the last good data in the hook. Changed the container: when rows exist, a refresh failure shows an inline alert above them. Re-checked: rows kept during the failure; "Try again" recovers.
+- Testing "Try again" by restarting the dev server didn't work: the Next dev client reloads the page when the server comes back, resetting state. Claude tested it instead by making the page's `fetch` fail temporarily.
+- Chrome's minimum window width is 500 px, so the phone-width check ran at 500, not 390.
+**Review:** not run yet; runs at the end of Phase 5.
+**My call:** _TODO (Cristian)_
+
+### 2026-11-19 21:15 · Phase 5: sort by genre (part of C5.2, not committed yet)
+**Tool / session:** Claude Code, main + Claude in Chrome
+**Prompt (excerpt):** "The genre column is not sortable y genre, lets add the sort by genre function"
+**What Claude did:** Added `genre` to the repository's allowed sort fields (ties within a genre ordered by title), the domain `GameSortBy`, and the table, where "Genre" is now a sortable header that starts A→Z. The API route picks it up from the shared list automatically. AI tool sort options (ARCHITECTURE.md §6.1) unchanged. New repository test for genre sort; 155 tests.
+**Issues:**
+- **Bug found while checking this in the browser, caused by Claude's Phase 2 code.** `?sortBy=genre` returned 500 on Cristian's running dev server, with `SqliteError: no such column: undefined`, while every unit test passed. Root cause: in Phase 2 Claude cached the repository on `globalThis` (following a reviewer nit to avoid re-preparing statements). `globalThis` survives `next dev` hot reloads, so the server kept the old repository whose sort map had no `genre` and built `ORDER BY undefined`. Unit tests couldn't see it because each test creates a fresh repository. Fix: cache the repository in module scope (reloaded with the code); only the DB connection stays on `globalThis`. Added a guard that throws "Unknown sort field" instead of building bad SQL, with a test. Re-checked on the running server: genre sort works both ways, no error.
+- Claude's scratch dev server couldn't start because Cristian had `npm run dev` running (Next 16 allows one dev server per project). Claude didn't stop it and used it for read-only checks (GET requests and clicking sort headers only).
+**Review:** not run yet; runs at the end of Phase 5.
+**My call:** _TODO (Cristian)_

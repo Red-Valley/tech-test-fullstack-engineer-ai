@@ -30,7 +30,7 @@ export type GameStats = {
   ratedAbove4: number;
 };
 
-export type GameSortBy = 'revenue' | 'downloads' | 'rating' | 'title';
+export type GameSortBy = 'revenue' | 'downloads' | 'rating' | 'title' | 'genre';
 
 export type GameQuery = {
   genre?: string;

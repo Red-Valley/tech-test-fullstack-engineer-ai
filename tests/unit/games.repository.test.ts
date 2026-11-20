@@ -70,6 +70,22 @@ describe('list', () => {
     ]);
   });
 
+  it('sorts by genre, then by title within a genre', () => {
+    // Puzzle: Glass Orchard; Roguelike: Ember Road, Hollow Signal; Simulation: Tiny Harbor
+    expect(titles(repo.list({ sortBy: 'genre' }))).toEqual([
+      'Glass Orchard',
+      'Ember Road',
+      'Hollow Signal',
+      'Tiny Harbor',
+    ]);
+    expect(titles(repo.list({ sortBy: 'genre', order: 'desc' }))).toEqual([
+      'Tiny Harbor',
+      'Ember Road',
+      'Hollow Signal',
+      'Glass Orchard',
+    ]);
+  });
+
   it('applies inclusive rating bounds', () => {
     expect(titles(repo.list({ minRating: 3.8, maxRating: 4.1, sortBy: 'rating' }))).toEqual([
       'Glass Orchard',
@@ -160,5 +176,12 @@ describe('table constraints', () => {
   it('rejects invalid rows even if validation were bypassed', () => {
     expect(() => repo.create(game({ title: 'Bad', monthly_downloads: -1 }))).toThrow(/CHECK/);
     expect(() => repo.create(game({ title: 'Bad', average_rating: 7 }))).toThrow(/CHECK/);
+  });
+});
+
+describe('sort guard', () => {
+  it('rejects a sort field outside the allowed list instead of building bad SQL', () => {
+    // @ts-expect-error: deliberately invalid, as an unvalidated caller might pass
+    expect(() => repo.list({ sortBy: 'developer' })).toThrow('Unknown sort field: developer');
   });
 });

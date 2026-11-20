@@ -63,10 +63,10 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 
 ## Phase 5: Dashboard UI _(worktree `feat/ui`)_
 
-- [x] **C5.1 `feat(ui): primitives + format helpers`**: Button, Input, Select, Modal (focus trap, closes on Esc), Badge, Spinner, EmptyState, plus `lib/format.ts` with tests.
+- [x] **C5.1 `feat(ui): primitives + format helpers`** (`c196412`): Button, Input, Select, Modal (focus trap, closes on Esc), Badge, Spinner, EmptyState, plus `lib/format.ts` with tests.
   - **Verify:** `npm test` for USD, thousands separators and one-decimal ratings, plus static-render checks of the accessibility wiring (label↔input, `aria-invalid`, error text, `role=status`). _The in-browser Modal check (Tab stays inside, Esc closes) moved to C5.3, the first step that renders it._
 
-- [ ] **C5.2 `feat(ui): KPI cards + games table`**: dashboard and table containers with loading, error and empty states.
+- [x] **C5.2 `feat(ui): KPI cards + games table`**: dashboard and table containers with loading, error and empty states.
   - **Verify:** in the browser, the KPI values equal `curl /api/games/stats`. Stop the server to see the error state, and empty the DB to see the empty state. At ≤768px the dashboard and chat stack.
 
 - [ ] **C5.3 `feat(ui): create/edit modal + delete`**

@@ -3,7 +3,7 @@ import { getDb, type Db } from '@/server/db/client';
 import { ConflictError } from '@/server/http/errors';
 import type { GameDto, GameInputDto } from '@/shared/types/game.dto';
 
-export const GAME_SORT_FIELDS = ['revenue', 'downloads', 'rating', 'title'] as const;
+export const GAME_SORT_FIELDS = ['revenue', 'downloads', 'rating', 'title', 'genre'] as const;
 export const SORT_ORDERS = ['asc', 'desc'] as const;
 export type GameSortBy = (typeof GAME_SORT_FIELDS)[number];
 export type SortOrder = (typeof SORT_ORDERS)[number];
@@ -38,11 +38,13 @@ const SORT_COLUMNS: Record<GameSortBy, string> = {
   downloads: 'monthly_downloads',
   rating: 'average_rating',
   title: 'title',
+  genre: 'genre',
 };
 
 // Every filter is a bound parameter that is ignored when NULL, so a single static WHERE
 // covers every combination. Column names can't be bound, so ORDER BY comes from the fixed
-// map above (one prepared statement per sort/order pair), never from user input.
+// map above (one prepared statement per sort/order pair), never from user input. Games in
+// the same genre are listed by title so a genre sort reads naturally.
 const LIST_WHERE = `
   WHERE (@genre IS NULL OR genre = @genre)
     AND (@minRating IS NULL OR average_rating >= @minRating)
@@ -70,9 +72,11 @@ export function createGamesRepository(db: Db) {
     const key = `${sortBy}:${order}`;
     let statement = listStatements.get(key);
     if (!statement) {
+      // Callers validate sortBy, but fail loudly here rather than build "ORDER BY undefined".
+      if (!Object.hasOwn(SORT_COLUMNS, sortBy)) throw new Error(`Unknown sort field: ${sortBy}`);
       const direction = order === 'asc' ? 'ASC' : 'DESC';
       statement = db.prepare(
-        `SELECT ${COLUMNS} FROM games ${LIST_WHERE} ORDER BY ${SORT_COLUMNS[sortBy]} ${direction}, id ASC`,
+        `SELECT ${COLUMNS} FROM games ${LIST_WHERE} ORDER BY ${SORT_COLUMNS[sortBy]} ${direction}${sortBy === 'genre' ? ', title ASC' : ''}, id ASC`,
       );
       listStatements.set(key, statement);
     }
@@ -160,10 +164,12 @@ export function createGamesRepository(db: Db) {
 
 export type GamesRepository = ReturnType<typeof createGamesRepository>;
 
-// Prepared statements are compiled once per process, like the connection in getDb().
-const globalForRepo = globalThis as typeof globalThis & { __gamesRepository?: GamesRepository };
+// Cached per module, NOT on globalThis: `next dev` re-evaluates this module when it changes,
+// and a globalThis cache would keep serving the old code (it once kept a sort map without
+// 'genre' and produced "ORDER BY undefined"). The connection itself stays on globalThis.
+let repository: GamesRepository | undefined;
 
 export function getGamesRepository(): GamesRepository {
-  globalForRepo.__gamesRepository ??= createGamesRepository(getDb());
-  return globalForRepo.__gamesRepository;
+  repository ??= createGamesRepository(getDb());
+  return repository;
 }

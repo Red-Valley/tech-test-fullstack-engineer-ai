@@ -306,3 +306,48 @@ All 134 tests pass. There's one lint warning, for the `_id` I strip out in the r
 C4.2 is committed as `36f1ee3`, which finishes Phase 4. Starting C5.1. First a small set of color tokens with dark-mode values, so the primitives don't hardcode colors:
 
 One real failure: the compact formatter printed `$412.0K` instead of `$412K`. The test caught it. `trailingZeroDisplay: 'stripIfInteger'` drops the `.0`:
+
+---
+
+## 2026-11-20 01:31:19 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> commit
+
+**Claude:**
+
+C5.1 is committed as `c196412`. Now C5.2. The presentational components only take props. The containers own the hooks, the context, the filter state and the loading, error and empty states.
+
+Starting a dev server on a scratch copy of the seeded database, so your `data/games.db` is untouched:
+
+The table renders in dark mode with formatted values. The page opened scrolled down, so I'm going back to the top to check the KPIs:
+
+The empty state works, and the focus ring is visible on the search box. Clicking "Clear filters", then confirming the rating sort stuck:
+
+With the server back up: load the page, stop the server, change the sort. The rows should stay, with the error above them. Then restart and use "Try again".
+
+---
+
+## 2026-11-20 01:37:30 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> The genre column is not sortable y genre, lets add the sort by genre function
+
+**Claude:**
+
+Adding genre sorting. It's a small change at each layer:
+- **Repository:** `genre` joins the list of allowed sort fields. Games in the same genre are then ordered by title, so the result is stable.
+- **API:** the route already uses that shared list, so `?sortBy=genre` works without touching the route.
+- **Domain type and table:** "Genre" becomes a clickable header, starting A→Z.
+
+The AI tools in `ARCHITECTURE.md` §6.1 keep their current sort options, so the architecture doesn't change.
+
+154 tests pass, and lint, typecheck and format are clean. Checking the API and the header in the browser:
+
+The server didn't come up (`000`), so the empty response is from that, not the sort. Checking the dev log:
+
+155 tests pass. Your dev server should have hot-reloaded the fixed module, so re-checking the API and the header on port 3000:
+
+Sorting by genre now works in the browser, in both directions and with no error. Closing the tab and recording this, including the bug:

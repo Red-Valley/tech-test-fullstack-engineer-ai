@@ -147,3 +147,11 @@ commit
 ## 2026-11-20 01:27:09 UTC · main · session fc77e5ec
 
 commit
+
+## 2026-11-20 01:33:48 UTC · main · session fc77e5ec
+
+The genre column is not sortable y genre, lets add the sort by genre function
+
+## 2026-11-20 01:40:14 UTC · main · session fc77e5ec
+
+lets comit
