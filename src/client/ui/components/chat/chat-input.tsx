@@ -28,8 +28,9 @@ export function ChatInput({ value, onChange, onSubmit, onStop, isBusy }: ChatInp
         placeholder="Ask about the catalog…"
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => {
-          // Enter sends, Shift+Enter adds a line.
-          if (event.key === 'Enter' && !event.shiftKey) {
+          // Enter sends, Shift+Enter adds a line. While an IME is composing (Japanese, Chinese,
+          // Korean…), Enter confirms the candidate and must not send.
+          if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
             event.preventDefault();
             event.currentTarget.form?.requestSubmit();
           }

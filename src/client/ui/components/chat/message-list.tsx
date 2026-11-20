@@ -9,27 +9,39 @@ type MessageListProps = {
   messages: ChatMessage[];
   /** True between sending and the first streamed part of the answer. */
   isWaiting: boolean;
+  /** True while an answer is being streamed. */
+  isStreaming: boolean;
 };
 
-export function MessageList({ messages, isWaiting }: MessageListProps) {
+const textOf = (message: ChatMessage | undefined) =>
+  message?.parts.flatMap((part) => (part.kind === 'text' ? [part.text] : [])).join(' ') ?? '';
+
+export function MessageList({ messages, isWaiting, isStreaming }: MessageListProps) {
   const endRef = useRef<HTMLDivElement>(null);
   const lastMessage = messages.at(-1);
-  // Re-run on every streamed part so the newest text stays in view.
-  const scrollKey = `${messages.length}:${lastMessage?.parts.length}:${JSON.stringify(lastMessage?.parts.at(-1))?.length}`;
+  // Changes on every streamed part, so the newest text stays in view.
+  const scrollKey = `${messages.length}:${lastMessage?.parts.length}:${textOf(lastMessage).length}`;
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'end' });
+    // Scroll only the chat's own box (scrollIntoView would also scroll the page on mobile).
+    const box = endRef.current?.closest<HTMLElement>('[data-chat-scroll]');
+    if (box) box.scrollTop = box.scrollHeight;
   }, [scrollKey, isWaiting]);
 
+  // Screen readers hear the finished answer once, not every streamed token.
+  const announcement = !isStreaming && lastMessage?.role === 'assistant' ? textOf(lastMessage) : '';
+
   return (
-    // aria-live announces new answers to screen readers without moving focus.
-    <div aria-live="polite" className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <ol className="flex flex-col gap-4">
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
         ))}
       </ol>
       {isWaiting && <Spinner label="Thinking" />}
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
       <div ref={endRef} />
     </div>
   );

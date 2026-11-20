@@ -2,7 +2,12 @@
 
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
-import { toChatErrorMessage, toChatMessages } from '@/client/transformers/chat.transformer';
+import { useCatalog } from '@/client/context/catalog-context';
+import {
+  extractGameIds,
+  toChatErrorMessage,
+  toChatMessages,
+} from '@/client/transformers/chat.transformer';
 import { ChatInput } from '@/client/ui/components/chat/chat-input';
 import { ChatPanel } from '@/client/ui/components/chat/chat-panel';
 import { MessageList } from '@/client/ui/components/chat/message-list';
@@ -17,12 +22,18 @@ const SUGGESTIONS = [
 ] as const;
 
 export function ChatContainer() {
+  const { setHighlightedGameIds } = useCatalog();
   // useChat posts to /api/chat by default and owns the streaming (the one allowed fetch, §4.3).
-  const { messages, sendMessage, status, stop, error, setMessages, clearError } = useChat();
+  const { messages, sendMessage, status, stop, error, setMessages, clearError } = useChat({
+    // Highlight the games this answer is about; an answer without games clears the highlight.
+    onFinish: ({ message, isError }) => {
+      if (!isError) setHighlightedGameIds(extractGameIds(message));
+    },
+  });
   const [input, setInput] = useState('');
 
   const isBusy = status === 'submitted' || status === 'streaming';
-  const chatMessages = toChatMessages(messages);
+  const chatMessages = toChatMessages(messages, isBusy ? messages.at(-1)?.id : undefined);
 
   const send = (text: string) => {
     const trimmed = text.trim();
@@ -38,6 +49,7 @@ export function ChatContainer() {
       onClear={() => {
         setMessages([]);
         clearError();
+        setHighlightedGameIds([]);
       }}
       error={toChatErrorMessage(error)}
       input={
@@ -53,7 +65,11 @@ export function ChatContainer() {
       {chatMessages.length === 0 ? (
         <SuggestionChips suggestions={SUGGESTIONS} onPick={send} disabled={isBusy} />
       ) : (
-        <MessageList messages={chatMessages} isWaiting={status === 'submitted'} />
+        <MessageList
+          messages={chatMessages}
+          isWaiting={status === 'submitted'}
+          isStreaming={isBusy}
+        />
       )}
     </ChatPanel>
   );

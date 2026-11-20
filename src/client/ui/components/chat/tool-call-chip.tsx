@@ -12,6 +12,7 @@ const STATE_LABEL: Record<ToolCallState, string> = {
   running: 'running',
   done: 'done',
   error: 'failed',
+  stopped: 'stopped',
 };
 
 const formatArgs = (args: Record<string, unknown>) =>
@@ -38,6 +39,7 @@ export function ToolCallChip({ name, args, state, errorText }: ToolCallChipProps
           state === 'running' && 'animate-pulse bg-accent',
           state === 'done' && 'bg-success',
           state === 'error' && 'bg-danger',
+          state === 'stopped' && 'bg-muted',
         )}
       />
       <span className="shrink-0 font-medium text-foreground">{name}</span>
