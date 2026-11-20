@@ -224,3 +224,21 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Rating averages were rounded to 2 decimals, leaving one-decimal rounding to the model (against "all math in code"). Rating aggregates now round to 1 decimal in the service; test added (overall average 3.8).
 - Nothing tested the 5-step limit; added a test where the mock model always calls a tool and the route stops at 5 calls.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 22:35 · Phase 7: chat panel (C7.1, not committed yet; Phase 6 hash recorded in 84160d6)
+**Tool / session:** Claude Code, main + Claude in Chrome
+**Prompt (excerpt):** "commit" (Phase 6 was already committed, so Claude committed only the plan hash and moved on to C7.1)
+**What Claude did:** Read the v7 `useChat` and tool-part docs first. Built `client/domain/chat.ts` (ChatMessage with text and tool parts: running/done/error), `client/transformers/chat.transformer.ts` (maps the SDK's UI messages structurally, without importing the SDK type, so presentational components stay SDK-free per §4.1; turns the API's `{ error }` body into readable text), presentational `ChatPanel`, `MessageList` (auto-scroll, `aria-live`), `MessageBubble`, `ToolCallChip` (name, args, state), `ChatInput` (Enter sends, Shift+Enter new line, Stop while busy), `SuggestionChips`; and `ChatContainer`, the only code that uses `useChat`. The chat panel replaces the placeholder (sticky, full height on desktop). 10 transformer tests (197 total).
+**Issues:**
+- The assignment's "three example questions" aren't written anywhere in the repo. Claude used the ones from ARCHITECTURE.md §7.3 (top revenue last month, how many rated above 4, genre with the highest average revenue). Cristian should confirm or replace them.
+- No `ANTHROPIC_API_KEY` yet, so the browser check covered only what works without the model, on Cristian's running server (the chat only reads): panel and chips render; clicking a chip shows the question and the 503 as readable text (not raw JSON); "New chat" clears it and brings the chips back; typing + Enter sends and clears the input. Real answers, tool chips going running → done, and Stop are still to check with a key.
+**Review:** not run yet; runs at the end of Phase 7.
+**My call:** _TODO (Cristian)_
+
+### 2026-11-19 22:40 · Phase 7: example questions from the assignment (part of C7.1)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** Cristian pasted the assignment's chat section: "Which game made the most revenue last month?" / "How many games are rated above 4?" / "Compare revenue of Game A vs Game B."
+**What Claude did:** Replaced the third suggestion chip (Claude's guess, "Which genre has the highest average revenue?") with the assignment's comparison question, using the two top-revenue seed titles so it works as a chip: "Compare revenue of Starfall Courier vs Deepdelve."
+**Issues:** Claude's first version guessed the third question from ARCHITECTURE.md §7.3 instead of the assignment; corrected once Cristian provided the text.
+**Review:** not run (one-line change).
+**My call:** _TODO (Cristian)_

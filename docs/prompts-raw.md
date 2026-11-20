@@ -171,3 +171,25 @@ commit
 ## 2026-11-20 01:59:27 UTC · main · session fc77e5ec
 
 commit
+
+## 2026-11-20 02:13:32 UTC · main · session fc77e5ec
+
+<pasted_content id="bfd4">
+AI Chat Chat UI that answers questions like:
+
+"Which game made the most revenue last month?"
+
+"How many games are rated above 4?"
+
+"Compare revenue of Game A vs Game B."
+
+Must use tool calling / function calling to query the data. Do not dump the full DB into the prompt.
+
+Responses must stream.
+
+UI Dashboard view (table or cards) + chat view. Tailwind is fine.
+</pasted_content id="bfd4">
+
+## 2026-11-20 02:16:58 UTC · main · session fc77e5ec
+
+commit

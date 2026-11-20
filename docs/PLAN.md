@@ -82,7 +82,7 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 
 ## Phase 7: Chat UI _(after both worktrees are merged)_
 
-- [ ] **C7.1 `feat(ui): chat panel`**: MessageList, MessageBubble, ToolCallChip, ChatInput, SuggestionChips, and the chat container with `useChat` and a Stop button.
+- [x] **C7.1 `feat(ui): chat panel`**: MessageList, MessageBubble, ToolCallChip, ChatInput, SuggestionChips, and the chat container with `useChat` and a Stop button.
   - **Verify:** in the browser, the three suggestion chips get correct answers (checked against sqlite), tool chips go from running to done, and Stop works. With no key, the 503 message shows in the UI.
 
 - [ ] **C7.2 `feat(ui): highlight rows from chat`**

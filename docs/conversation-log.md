@@ -433,3 +433,49 @@ The mutation check works: when I wire the route with no tools, the two tool test
 The Phase 6 review is still running. `CLAUDE.md` says to run the reviewer before a phase's commit, so I'll hold the commit until its findings are in, which usually takes about a minute. If you'd rather commit now and fix the findings in a follow-up commit, say so.
 
 In the meantime, I'll write the C6.2 log entry:
+
+---
+
+## 2026-11-20 02:02:01 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> commit
+
+**Claude:**
+
+Phase 6 is already committed (`0ea6508`). The only uncommitted changes are its hash in the plan and the conversation logs, so I'll commit those as a small docs commit and start C7.1, the chat panel.
+
+The key isn't set yet, so I'll build and test C7.1 without the real model first. Reading how `useChat` exposes status and errors, and how tool parts look on the client in v7:
+
+Now the presentational chat components: tool chip, message bubble, message list, input with Stop, and suggestion chips.
+
+Typecheck and lint are clean. Tests for the chat transformer:
+
+Enter sends the message, and the input clears. Logging C7.1, with the part that still needs your key marked as open:
+
+---
+
+## 2026-11-20 02:13:53 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> <pasted_content id="bfd4">
+> AI Chat Chat UI that answers questions like:
+> 
+> "Which game made the most revenue last month?"
+> 
+> "How many games are rated above 4?"
+> 
+> "Compare revenue of Game A vs Game B."
+> 
+> Must use tool calling / function calling to query the data. Do not dump the full DB into the prompt.
+> 
+> Responses must stream.
+> 
+> UI Dashboard view (table or cards) + chat view. Tailwind is fine.
+> </pasted_content id="bfd4">
+
+**Claude:**
+
+That gives me the assignment's actual three questions. The third is a comparison, so I'll swap it in place of my genre question. "Game A vs Game B" needs real titles to work as a chip, so I'll use the top two seed games: Starfall Courier and Deepdelve.
