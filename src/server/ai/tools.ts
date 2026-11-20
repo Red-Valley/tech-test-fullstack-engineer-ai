@@ -37,7 +37,8 @@ const metric = z
 
 async function safely<T>(name: string, run: () => T): Promise<T | { error: string }> {
   try {
-    return run();
+    // await, so a rejected promise is caught here too if a service call ever becomes async.
+    return await run();
   } catch (error) {
     console.error(`[tool ${name}]`, error);
     return { error: `The ${name} tool failed. Tell the user the catalog couldn't be queried.` };
@@ -88,8 +89,10 @@ export function createTools(service: GamesService) {
 
     find_game: tool({
       description:
-        'Look up one game by title. The title may be partial or misspelled. Returns { game, matchedBy } where matchedBy is ' +
-        '"exact", "partial" or "fuzzy" (say it is the closest match if fuzzy), or { notFound: true, suggestions } with up to 3 real titles.',
+        'Look up one game by title. The title may be partial or misspelled. Returns one of: ' +
+        '{ game, matchedBy } with matchedBy "exact", "partial" or "fuzzy" (say it is the closest match if fuzzy); ' +
+        '{ ambiguous: true, candidates } when several real games match: ask which one, do not say it is missing; ' +
+        '{ notFound: true, suggestions } with up to 3 real titles when nothing matches.',
       inputSchema: z.object({
         title: z.string().trim().min(1).max(100).describe('The title as the user wrote it.'),
       }),
@@ -99,7 +102,8 @@ export function createTools(service: GamesService) {
     compare_games: tool({
       description:
         'Compare two games on one metric. Titles may be partial or misspelled. Returns both games, the winner (null on a tie) ' +
-        'and ratio = larger / smaller, computed in code. If a title is not found, returns notFound with suggestions.',
+        'and ratio = larger / smaller, computed in code. If a title cannot be resolved, returns { unresolved: [...] } ' +
+        'with notFound + suggestions or ambiguous + candidates for that title.',
       inputSchema: z.object({
         titleA: z.string().trim().min(1).max(100),
         titleB: z.string().trim().min(1).max(100),

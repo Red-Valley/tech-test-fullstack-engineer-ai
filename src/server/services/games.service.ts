@@ -31,7 +31,11 @@ const round = (value: number, decimals: number) => {
 /** `value` is null when there's nothing to aggregate (count is 0 instead). */
 export type AggregateResult = { value: number | null; n: number };
 
-function computeAggregate(values: number[], operation: AggregateOperation): AggregateResult {
+function computeAggregate(
+  values: number[],
+  operation: AggregateOperation,
+  decimals: number,
+): AggregateResult {
   const n = values.length;
   if (operation === 'count') return { value: n, n };
   if (n === 0) return { value: null, n };
@@ -42,8 +46,11 @@ function computeAggregate(values: number[], operation: AggregateOperation): Aggr
     min: Math.min(...values),
     max: Math.max(...values),
   };
-  return { value: round(results[operation], 2), n };
+  return { value: round(results[operation], decimals), n };
 }
+
+// Ratings are shown with one decimal, so round them here; the model never rounds (§6.1).
+const decimalsFor = (metric: Metric) => (metric === 'rating' ? 1 : 2);
 
 // ---- fuzzy title matching ---------------------------------------------------------------
 // A wrong confident match is worse than "not found": the model would report another game's
@@ -106,7 +113,10 @@ const SUGGESTION_COUNT = 3;
 
 export type MatchKind = 'exact' | 'partial' | 'fuzzy';
 export type FindGameResult =
-  { game: GameDto; matchedBy: MatchKind } | { notFound: true; suggestions: string[] };
+  | { game: GameDto; matchedBy: MatchKind }
+  /** Several real games match a partial title: the model should ask which one, not say "not found". */
+  | { ambiguous: true; candidates: string[] }
+  | { notFound: true; suggestions: string[] };
 
 // ---- service ----------------------------------------------------------------------------
 
@@ -134,10 +144,7 @@ export function createGamesService(repo: GamesRepository) {
       });
       if (partial.length === 1) return { game: partial[0], matchedBy: 'partial' };
       if (partial.length > 1) {
-        return {
-          notFound: true,
-          suggestions: partial.slice(0, SUGGESTION_COUNT).map((g) => g.title),
-        };
+        return { ambiguous: true, candidates: partial.slice(0, MAX_LIMIT).map((g) => g.title) };
       }
     }
 
@@ -212,6 +219,7 @@ export function createGamesService(repo: GamesRepository) {
       return computeAggregate(
         repo.list(filters).map((g) => valueOf(g, metric)),
         operation,
+        decimalsFor(metric),
       );
     },
 
@@ -233,7 +241,10 @@ export function createGamesService(repo: GamesRepository) {
         ]);
       }
       const groups = [...valuesByGenre]
-        .map(([genre, values]) => ({ genre, ...computeAggregate(values, operation) }))
+        .map(([genre, values]) => ({
+          genre,
+          ...computeAggregate(values, operation, decimalsFor(metric)),
+        }))
         .sort(
           (a, b) =>
             (b.value ?? -Infinity) - (a.value ?? -Infinity) || a.genre.localeCompare(b.genre),
@@ -248,12 +259,13 @@ export function createGamesService(repo: GamesRepository) {
       const a = findGame(titleA);
       const b = findGame(titleB);
       if (!('game' in a) || !('game' in b)) {
-        return {
-          notFound: [
-            ...('game' in a ? [] : [{ title: titleA, suggestions: a.suggestions }]),
-            ...('game' in b ? [] : [{ title: titleB, suggestions: b.suggestions }]),
-          ],
-        };
+        const unresolved = (title: string, result: FindGameResult) =>
+          'ambiguous' in result
+            ? [{ title, ambiguous: true, candidates: result.candidates }]
+            : 'notFound' in result
+              ? [{ title, notFound: true, suggestions: result.suggestions }]
+              : [];
+        return { unresolved: [...unresolved(titleA, a), ...unresolved(titleB, b)] };
       }
       if (a.game.id === b.game.id) {
         return { error: `Both titles refer to the same game: ${a.game.title}` };

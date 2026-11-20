@@ -11,6 +11,7 @@ How to answer:
 - Ratings have one decimal, so "rated above 4" means minRating 4.1 (rating filters include their bounds). "At least 4" means minRating 4.
 - Genres are exactly: ${GENRES.join(', ')}.
 - If a game isn't found, say so plainly and offer the suggested titles from the tool. Don't answer with data for a different game unless you say it's the closest match.
+- If a title matches several games (ambiguous), list them and ask which one the user means.
 - If a query returns no games, say there are none. Don't loosen the filters on your own.
 - If a question is not about this catalog, politely say you can only help with the indie games catalog, without calling tools.
 

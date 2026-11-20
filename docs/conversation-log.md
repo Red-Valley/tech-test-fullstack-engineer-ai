@@ -403,3 +403,33 @@ Both `stepCountIs` and `isStepCount` exist, so `ARCHITECTURE.md`'s `stepCountIs(
 `result.toUIMessageStreamResponse()` still exists, so the route can follow `ARCHITECTURE.md` exactly. One more check, on `system` vs `instructions`:
 
 All 174 tests pass, and typecheck, lint and format are clean. Recording C6.1:
+
+---
+
+## 2026-11-20 01:55:26 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> commit
+
+**Claude:**
+
+`safeValidateUIMessages` returns `{ success, data | error }`, which is a clean way to turn a malformed `messages` body into a 400. Last check: how the mock model streams a tool call.
+
+Typecheck and lint are clean. Now the Level 2 tests from `ARCHITECTURE.md` §7.2: the mock model is scripted to call `query_games` first and then answer in text chunks.
+
+The mutation check works: when I wire the route with no tools, the two tool tests fail. I restored the file and all 10 pass again. Now fixing the lint error:
+
+---
+
+## 2026-11-20 01:56:26 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> commit
+
+**Claude:**
+
+The Phase 6 review is still running. `CLAUDE.md` says to run the reviewer before a phase's commit, so I'll hold the commit until its findings are in, which usually takes about a minute. If you'd rather commit now and fix the findings in a follow-up commit, say so.
+
+In the meantime, I'll write the C6.2 log entry:

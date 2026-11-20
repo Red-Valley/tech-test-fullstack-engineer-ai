@@ -200,3 +200,27 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Carried forward from Phase 3/5 reviews and handled here: tools use their own sort list (no `genre`, per §6.1); rating filters are documented as inclusive in the tool and system prompt.
 **Review:** not run yet; runs at the end of Phase 6, after C6.2.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 22:10 · Phase 6: streaming chat route (C6.2; C6.1 committed as f3082fe)
+**Tool / session:** Claude Code, main + subagent code-reviewer
+**Prompt (excerpt):** "commit" (twice; the second while the Phase 6 review was still running, so Claude held the commit until the review was in, per CLAUDE.md)
+**What Claude did:** Committed C6.1 (`f3082fe`). Built C6.2: `server/ai/chat.ts` with `createChatHandler(deps)` (503 when `ANTHROPIC_API_KEY` is missing, checked first; 400 for malformed JSON, missing/empty `messages`, or messages that fail `safeValidateUIMessages`; `streamText` with `instructions`, the tools and `stopWhen: stepCountIs(5)`; `onError` logs; `toUIMessageStreamResponse` with a generic error text), and `app/api/chat/route.ts` that only wires the real model and tools. 10 Level 2 tests with `MockLanguageModelV4` scripted to call `query_games` then answer in 3 text chunks: tool output reaches the stream and the second model call's prompt contains the tool result; response is `text/event-stream` with the text in several chunks; system prompt and the 4 tools are sent; model errors are hidden behind a generic message; 503 (factory and real route with an empty env var); 400 cases. 184 tests.
+**Issues:**
+- All 10 Level 2 tests passed on the first run, so Claude checked they can fail: wiring the route with `tools: {}` made the two tool tests fail; restored.
+- Lint rejected a non-null `!` in the test even with a comment; replaced with an explicit check.
+- Manual check on Cristian's running dev server (no key in `.env.local`): POST → 503 with the setup message, GET → 405. The streaming check with a real key is still to do (needs Cristian's key).
+**Review:** pending at the time of writing; see the next entry.
+**My call:** _TODO (Cristian)_
+
+### 2026-11-19 22:20 · Phase 6: review fixes (part of C6.2 commit)
+**Tool / session:** Claude Code, main + subagent code-reviewer
+**Prompt (excerpt):** "commit"
+**What Claude did:** Applied the Phase 6 review before committing C6.2. 187 tests.
+**Issues:** none new beyond the review findings below.
+**Review:** needs changes → fixed:
+- A chat stopped mid tool call (Phase 7's Stop button) leaves a call with no result in the history; `convertToModelMessages` would then throw `MissingToolResultsError` on every later turn. Fixed with `ignoreIncompleteToolCalls: true`; new Level 2 test with such a history, and a mutation check (removing the option makes it fail).
+- A partial title matching several games (e.g. "Star" → "Star Racer", "Star Miner") came back as `notFound`, so the model would say the game doesn't exist. Now `{ ambiguous: true, candidates }`; `compare_games` returns `unresolved` entries; tool description and system prompt tell the model to ask which one.
+- `safely()` returned without `await`, so it would miss rejections if a service call became async. Fixed.
+- Rating averages were rounded to 2 decimals, leaving one-decimal rounding to the model (against "all math in code"). Rating aggregates now round to 1 decimal in the service; test added (overall average 3.8).
+- Nothing tested the 5-step limit; added a test where the mock model always calls a tool and the route stops at 5 calls.
+**My call:** _TODO (Cristian)_

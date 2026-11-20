@@ -95,6 +95,11 @@ describe('aggregate', () => {
     expect(service.aggregate('revenue', 'sum')).toEqual({ value: 1_665_000, n: 18 });
   });
 
+  it('rounds rating averages to one decimal in code', () => {
+    // All 18 ratings sum to 68.8; 68.8 / 18 = 3.822… → 3.8
+    expect(service.aggregate('rating', 'avg')).toEqual({ value: 3.8, n: 18 });
+  });
+
   it('finds min and max', () => {
     expect(service.aggregate('rating', 'min')).toEqual({ value: 2.1, n: 18 });
     expect(service.aggregate('downloads', 'max')).toEqual({ value: 64_000, n: 18 });
@@ -167,9 +172,14 @@ describe('findGame', () => {
 
   it('suggests the near title for a misspelled single word it cannot be sure about', () => {
     const result = service.findGame('Kitebond');
-    expect('suggestions' in result ? result.suggestions : [result.game.title]).toContain(
-      'Kitebound',
-    );
+    // Either a confident match or a suggestion is fine here; what matters is that it's offered.
+    const offered =
+      'game' in result
+        ? [result.game.title]
+        : 'suggestions' in result
+          ? result.suggestions
+          : result.candidates;
+    expect(offered).toContain('Kitebound');
   });
 
   it('treats a partial word that starts several titles as ambiguous and lists them', () => {
@@ -180,8 +190,8 @@ describe('findGame', () => {
       { ...GAMES_FIXTURE[1], title: 'Star Miner' },
     ]);
     expect(createGamesService(repo).findGame('Star')).toEqual({
-      notFound: true,
-      suggestions: ['Star Miner', 'Star Racer'],
+      ambiguous: true,
+      candidates: ['Star Miner', 'Star Racer'],
     });
   });
 
@@ -215,7 +225,9 @@ describe('compareGames', () => {
   it('reports only the title that was not found, with suggestions', () => {
     const result = service.compareGames('Lantern Drift', 'Crystal Fortress Online', 'revenue');
     expect(result).toEqual({
-      notFound: [{ title: 'Crystal Fortress Online', suggestions: expect.any(Array) }],
+      unresolved: [
+        { title: 'Crystal Fortress Online', notFound: true, suggestions: expect.any(Array) },
+      ],
     });
   });
 
