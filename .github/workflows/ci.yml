@@ -8,14 +8,16 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run format:check
       - run: npm run lint
+      # Next generates global types (RouteContext) during typegen/build; typecheck needs them.
+      - run: npx next typegen
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
