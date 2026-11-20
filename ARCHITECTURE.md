@@ -215,12 +215,12 @@ Errors always have the shape `{ error: string, fieldErrors?: Record<string, stri
 
 ### 6.1 Tools (read-only)
 
-| Tool              | Input                                                                                                                           | Returns                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `query_games`     | optional `genre`, `minRating`, `maxRating`, `sortBy` (revenue / downloads / rating / title), `order`, `limit` (1–10, default 5) | matching games + `total` before the limit                 |
-| `aggregate_games` | `metric`, `operation` (count/sum/avg/min/max), optional filters                                                                 | `{ value, n }`                                            |
-| `find_game`       | `title` (may be misspelled or partial)                                                                                          | `{ game }` or `{ notFound: true, suggestions: string[] }` |
-| `compare_games`   | two titles + a metric                                                                                                           | both games, the winner and the ratio                      |
+| Tool              | Input                                                                                                                           | Returns                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `query_games`     | optional `genre`, `minRating`, `maxRating`, `sortBy` (revenue / downloads / rating / title), `order`, `limit` (1–10, default 5) | matching games + `total` before the limit                                                  |
+| `aggregate_games` | `metric`, `operation` (count/sum/avg/min/max), optional filters, optional `groupBy: 'genre'`                                    | `{ value, n }`, or with `groupBy` `{ groups: [{ genre, value, n }] }` sorted highest first |
+| `find_game`       | `title` (may be misspelled or partial)                                                                                          | `{ game }` or `{ notFound: true, suggestions: string[] }`                                  |
+| `compare_games`   | two titles + a metric                                                                                                           | both games, the winner and the ratio                                                       |
 
 Rules:
 

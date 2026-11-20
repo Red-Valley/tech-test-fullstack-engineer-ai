@@ -36,14 +36,14 @@ Step-by-step plan to build everything in [ARCHITECTURE.md](../ARCHITECTURE.md), 
 - [x] **C2.1 `feat(db): sqlite client, schema, games repository`** (`d318848`): `server/db/client.ts` (reads `DB_PATH`, creates the table if missing, `UNIQUE COLLATE NOCASE` on title), `schema.sql`, `server/http/errors.ts` (`ConflictError`, `NotFoundError`), and `server/repositories/games.repository.ts` (prepared statements only, the only code that runs SQL). Tests run against an in-memory DB.
   - **Verify:** `npm test` covers list with filters and sort, get, create, update and delete, a case-insensitive duplicate title throwing `ConflictError`, and SQL-looking input stored as plain text.
 
-- [x] **C2.2 `feat(db): test fixture + seed`**: `tests/fixtures/games.fixture.ts` (includes the prompt-injection game) and `seed.ts` with ~25 invented games inserted through the repository, no tie for top revenue, and ratings both above and below 4. Adds the `seed` and `db:reset` scripts (run with `tsx`).
+- [x] **C2.2 `feat(db): test fixture + seed`** (`2a8d633`): `tests/fixtures/games.fixture.ts` (includes the prompt-injection game) and `seed.ts` with ~25 invented games inserted through the repository, no tie for top revenue, and ratings both above and below 4. Adds the `seed` and `db:reset` scripts (run with `tsx`).
   - **Verify:** `npm run db:reset`, then `sqlite3 data/games.db "select count(*) from games; select title, monthly_revenue_usd from games order by 2 desc limit 2;"` shows about 25 rows and two different top revenues.
 
 _Order swapped from the first draft: the seed has to go through the repository, because ARCHITECTURE.md makes the repository the only code that runs SQL._
 
 ## Phase 3: Services + REST API
 
-- [ ] **C3.1 `feat(api): games service + http helpers`**: `server/services/games.service.ts` (filter and sort rules, stats, aggregates, fuzzy title match, compare) and `server/http/responses.ts`, with tests.
+- [x] **C3.1 `feat(api): games service + http helpers`**: `server/services/games.service.ts` (filter and sort rules, stats, aggregates, fuzzy title match, compare) and `server/http/responses.ts`, with tests.
   - **Verify:** `npm test` checks exact stats against the fixture, fuzzy match on a misspelled title, and that a compare ratio is computed in code.
 
 - [ ] **C3.2 `feat(api): games route handlers`**: `api/games`, `api/games/[id]`, `api/games/stats`.

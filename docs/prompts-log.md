@@ -90,3 +90,21 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - The fixture header claimed several answers (genre average vs total, Roguelike average) that no test checked. Tests added.
 **Review:** needs changes → fixed: `db:reset` under a running dev server, ambiguous fuzzy titles, unchecked fixture claims; nits fixed: the repository is cached once per process, and the seed's transaction moved into `repo.createMany`. Carried forward to Phase 3: validate `sortBy`/`order` with `z.enum` in the route and tools (an unexpected value would give a SQL error, i.e. a 500, not an injection); the multi-step eval must require the genre name "RPG", since RPG has a single game (Iron Psalm). Accepted trade-off: `COLLATE NOCASE` only ignores case for ASCII letters, so "Éclair" and "éclair" would count as different titles.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 19:50 · Phase 3: games service + HTTP helpers (C3.1, not committed yet; C2.2 committed as 2a8d633)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "lets commit"
+**What Claude did:** Committed C2.2 (`2a8d633`). Built C3.1: `server/services/games.service.ts` (CRUD with `NotFoundError`, dashboard stats, `queryGames` capped at 10 with `total` before the limit, `aggregate` count/sum/avg/min/max, fuzzy `findGame` (exact → unique partial → Levenshtein on the whole title or any word, accepted only if ≥ 0.75 and clearly ahead of the runner-up), and `compareGames` with the winner and ratio computed in code). `server/http/responses.ts` with the status helpers and `errorResponse` (404/409/400 with field errors; anything else is logged and returns a generic 500). 31 new tests; 90 total, all passing on the first run.
+**Issues:**
+- Design choice: `aggregate` follows ARCHITECTURE.md §6.1 exactly (`{ value, n }`, no group-by). The multi-step question "which genre has the highest average revenue" will need one call per genre. If the evals show that's unreliable, a `groupBy` would be an architecture change and needs Cristian's OK first.
+- Empty aggregates return `value: null` instead of `0`, so the model can't report "average revenue is $0" for a genre with no games.
+**Review:** not run yet; runs at the end of Phase 3, after C3.2.
+**My call:** _TODO (Cristian)_
+
+### 2026-11-19 19:55 · Phase 3: group-by-genre aggregate (part of C3.1, not committed yet)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "lets add the group by genre"
+**What Claude did:** Cristian approved the architecture change Claude had flagged. Added `aggregateByGenre(metric, operation, filters)` to the games service: same count/sum/avg/min/max per genre, sorted highest first (ties by genre name), only genres with matches. Shared the math with `aggregate` through one `computeAggregate` helper. Updated ARCHITECTURE.md §6.1: `aggregate_games` takes an optional `groupBy: 'genre'` and then returns `{ groups: [{ genre, value, n }] }`. 4 new tests (94 total): RPG first by average revenue (205,000) ahead of Roguelike (167,000), Roguelike first by total (501,000), filters applied before grouping, empty result.
+**Issues:** none. Without this, "which genre has the highest average revenue" would have needed one tool call per genre (10 genres, with a 5-step limit on the chat), and the model would have compared the numbers itself, against the "all math in code" rule.
+**Review:** not run yet; runs at the end of Phase 3.
+**My call:** _TODO (Cristian)_

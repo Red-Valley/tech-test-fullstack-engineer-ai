@@ -214,3 +214,35 @@ Now the repository. It uses one static statement per sort option, so no user inp
 Now the plan's Verify step for real: reset, query the database with `sqlite3`, then run `seed` again to confirm it doesn't insert duplicates.
 
 Verify passed: 25 rows, top two revenues 412,000 and 356,000 with no tie, re-seeding is a safe no-op, and `data/games.db` is gitignored. This is the end of Phase 2, so running the review:
+
+---
+
+## 2026-11-20 00:35:03 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> lets commit
+
+**Claude:**
+
+C2.2 is committed as `2a8d633`, which finishes Phase 2. Starting C3.1: the games service, with all the math, rules and fuzzy matching, and the HTTP response helpers.
+
+A small change in `validationError` first, to avoid an unexplained `as` cast. Then the tests, with the expected values worked out by hand from the fixture:
+
+All 90 tests passed on the first run, and lint, typecheck and format are clean. Adding the log entry:
+
+---
+
+## 2026-11-20 00:45:47 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> lets add the group by genre
+
+**Claude:**
+
+Adding `groupBy: 'genre'` to the aggregate. This changes `ARCHITECTURE.md` §6.1, which you've now approved, so I'll update that table too.
+
+94 tests pass. Prettier also reformatted `ARCHITECTURE.md`, so I'm checking it only changed that one table:
+
+Only the §6.1 tools table changed; the other rows just have new column padding. Adding the log entry:

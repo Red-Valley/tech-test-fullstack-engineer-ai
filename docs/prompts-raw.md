@@ -123,3 +123,11 @@ Ok lets commit
 ## 2026-11-20 00:33:14 UTC · main · session fc77e5ec
 
 lets commit
+
+## 2026-11-20 00:45:04 UTC · main · session fc77e5ec
+
+lets add the group by genre
+
+## 2026-11-20 00:46:19 UTC · main · session fc77e5ec
+
+lets commit
