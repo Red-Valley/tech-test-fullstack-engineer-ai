@@ -2,8 +2,18 @@
 
 ## Project memory
 
-- Architecture decisions live in `ARCHITECTURE.md` (imported above) and are final. The phase plan lives in `docs/PLAN.md`.
+- Architecture decisions live in `ARCHITECTURE.md` (imported above) and are final. The phase plan lives in `docs/PLAN.md`; tick a step's checkbox in the commit that completes it, and add that commit's hash in the next commit (a commit can't contain its own hash).
 - Every prompt I send is captured automatically in `docs/prompts-raw.md` by a hook. Never edit that file.
+- Every prompt plus your text reply is captured automatically in `docs/conversation-log.md` by a Stop hook. Never edit that file either.
+
+## AI_WORKFLOW.md: keep it current
+
+`AI_WORKFLOW.md` is built while we work, not at the end. After each phase's prompts-log entry, update the sections that phase gives facts for (prompts, reviewer findings, mistakes, worktrees, timestamps). Rules:
+
+- Use only facts that trace to `docs/prompts-log.md`, `docs/prompts-raw.md`, `docs/conversation-log.md`, `git log`, `.claude/`, `CLAUDE.md`, `ARCHITECTURE.md` or `evals/results/latest.md`.
+- Replace a `[MISSING: …]` marker only when the source exists. Otherwise leave it.
+- Reflections in §3 come from my "My call" notes. If they're still `_TODO (Cristian)_`, leave a `[MISSING]` marker; never write them for me.
+- First person, plain, no marketing words.
 
 ## Prompts log: update it after every phase or meaningful task
 

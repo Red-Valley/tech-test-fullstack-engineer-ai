@@ -5,3 +5,4 @@ next-env.d.ts
 data
 evals/results
 docs/prompts-*.md
+docs/conversation-log.md
