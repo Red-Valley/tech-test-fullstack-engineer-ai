@@ -479,3 +479,53 @@ Enter sends the message, and the input clears. Logging C7.1, with the part that 
 **Claude:**
 
 That gives me the assignment's actual three questions. The third is a comparison, so I'll swap it in place of my genre question. "Game A vs Game B" needs real titles to work as a chip, so I'll use the top two seed games: Starfall Courier and Deepdelve.
+
+---
+
+## 2026-11-20 02:17:51 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> commit
+
+**Claude:**
+
+_(no text reply)_
+
+---
+
+## 2026-11-20 02:23:34 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> lets change the llm to groq which is free
+
+**Claude:**
+
+Switching to Groq changes a decision in `ARCHITECTURE.md` (the stack table says `@ai-sdk/anthropic` with Claude Haiku). You've asked for it explicitly, so I'll treat that as approval: add the `@ai-sdk/groq` provider and update the architecture to match.
+
+First I need a version of the Groq provider that works with AI SDK v7, and its current list of model ids. Model catalogs change often, so I won't rely on memory for which models exist.
+
+`@ai-sdk/groq@4.0.85` uses exactly the same provider packages as the Anthropic one already installed, so it's compatible with AI SDK v7. Installing it and reading its model list:
+
+Now the route's missing-key message, the env example, and tests for how the provider gets picked:
+
+All 211 tests pass, and typecheck and lint are clean. Now updating `ARCHITECTURE.md` everywhere it names Anthropic, since you've approved this change:
+
+One more line: §8 says evals stay out of CI because they "cost money". With Groq that's not quite true anymore. Rewording it, then gates and log:
+
+---
+
+## 2026-11-20 02:29:31 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> The assistant ran into a problem. Please try again.
+
+**Claude:**
+
+That's the chat's generic error message: the real cause is only written to the server log, by design. Your dev server writes its log to `.next/dev/logs/`, so I'll look there. I won't print your `.env.local`, only check which variable names are set:
+
+Fixing the code comment that now gives the default as its example, then testing a real question against your running server:
+
+Just the `ARCHITECTURE.md` table padding, from the shorter model name. Formatting it and logging the fix:

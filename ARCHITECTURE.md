@@ -39,8 +39,8 @@ The `monthly_*` figures represent **last month**. That's how the chat answers "l
 | Backend runtime | Node.js via Next.js Route Handlers (`export const runtime = 'nodejs'`)                                    | No separate server needed                                                 |
 | Validation      | Zod                                                                                                       | One schema shared by the API, the AI tools and the form                   |
 | Database        | SQLite through `better-sqlite3`, raw SQL, no ORM                                                          | Simplest SQL setup: one file, no server, synchronous API                  |
-| LLM             | Vercel AI SDK (`ai`, `@ai-sdk/react`) + `@ai-sdk/anthropic`                                               | Built-in tool calling, multi-step loops and streaming with the least code |
-| Model           | Read from `LLM_MODEL` env var, default `claude-haiku-5-5`                                                 | Fast and cheap; can switch to `claude-sonnet-5-5` without code changes    |
+| LLM             | Vercel AI SDK (`ai`, `@ai-sdk/react`) + `@ai-sdk/groq` (default) and `@ai-sdk/anthropic`                  | Built-in tool calling, multi-step loops and streaming with the least code |
+| Model           | `LLM_PROVIDER` (`groq` default, or `anthropic`) + `LLM_MODEL`; Groq default `openai/gpt-oss-120b`         | Groq has a free tier; provider and model switch without code changes      |
 | State           | React state + custom hooks; Context only where justified (§4.5)                                           | **No Zustand, Redux, React Query or SWR**                                 |
 | Tests           | Vitest                                                                                                    | Fast, TypeScript-native                                                   |
 | Lint/format     | ESLint (Next.js + TypeScript rules) + Prettier + `eslint-config-prettier` + `prettier-plugin-tailwindcss` | Consistent code; Tailwind classes sorted automatically                    |
@@ -232,7 +232,7 @@ Rules:
 ### 6.2 Chat route
 
 - `streamText` with the model from `model.ts`, the system prompt, the tools, and `stopWhen: stepCountIs(5)`. Return `toUIMessageStreamResponse()`. Log errors with `onError`.
-- If `ANTHROPIC_API_KEY` is missing, return `503` with a clear message, and the UI shows it.
+- If the current provider's key (`GROQ_API_KEY`, or `ANTHROPIC_API_KEY` with `LLM_PROVIDER=anthropic`) is missing, return `503` with a clear message naming it, and the UI shows it.
 - System prompt: answer only from tool results; say so when something is not found; be concise; format currency and ratings; never invent data.
 
 ### 6.3 Chat UI
@@ -256,7 +256,7 @@ Test `/api/chat` with the AI SDK's mock model from `ai/test` (confirm the exact 
 
 - the tool actually executes and its result goes back to the model;
 - the response is a stream, and the text arrives in chunks;
-- a missing `ANTHROPIC_API_KEY` returns `503` with a clear message;
+- a missing provider API key returns `503` with a clear message;
 - an invalid request body returns `400`.
 
 This level runs in CI and on any reviewer's machine without a key.
@@ -320,7 +320,7 @@ Scripts: `dev`, `build`, `lint`, `format`, `format:check`, `typecheck` (`tsc --n
 
 A phase is done only when `npm run lint`, `npm run typecheck` and `npm test` all pass, and its manual check (curl or a browser check) has been done.
 
-`.github/workflows/ci.yml` runs on every push and PR: install → `format:check` → `lint` → `typecheck` → `test` → `build`. Evals are **not** in CI, because they need an API key and cost money; their latest results are committed in `evals/results/latest.md`.
+`.github/workflows/ci.yml` runs on every push and PR: install → `format:check` → `lint` → `typecheck` → `test` → `build`. Evals are **not** in CI, because they need an API key and are slow and rate-limited (Groq free tier) or cost money (Anthropic); their latest results are committed in `evals/results/latest.md`.
 
 ## 9. Deliverables (part of the grade, not afterthoughts)
 
@@ -336,7 +336,7 @@ A phase is done only when `npm run lint`, `npm run typecheck` and `npm test` all
 - No `any`, no non-null `!` without a comment, no unexplained `as` casts.
 - Validate at the edges (API input, form, tool input); trust types inside.
 - No comments that restate the code. Comment the _why_ when it isn't obvious.
-- Environment: `.env.local` (gitignored) with `ANTHROPIC_API_KEY` and optionally `LLM_MODEL`; `.env.example` committed.
+- Environment: `.env.local` (gitignored) with `GROQ_API_KEY` (or `ANTHROPIC_API_KEY` + `LLM_PROVIDER=anthropic`) and optionally `LLM_MODEL`; `.env.example` committed.
 - Small, focused commits per phase: `feat(api): …`, `feat(ui): …`, `test: …`, `docs: …`.
 
 ## 11. How to work in this repo

@@ -1,7 +1,7 @@
 import { simulateReadableStream } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createChatHandler, MISSING_KEY_MESSAGE } from '@/server/ai/chat';
+import { createChatHandler, missingKeyMessage } from '@/server/ai/chat';
 import { createTools } from '@/server/ai/tools';
 import { openDatabase } from '@/server/db/client';
 import { createGamesRepository } from '@/server/repositories/games.repository';
@@ -91,6 +91,7 @@ beforeEach(() => {
   model = scriptedModel();
   handler = createChatHandler({
     hasKey: () => true,
+    keyVar: () => 'GROQ_API_KEY',
     getModel: () => model,
     getTools: () => createTools(createGamesService(repo)),
   });
@@ -159,9 +160,10 @@ describe('POST /api/chat with a tool call', () => {
 });
 
 describe('POST /api/chat request checks', () => {
-  it('returns 503 with a clear message when ANTHROPIC_API_KEY is missing', async () => {
+  it('returns 503 naming the missing key', async () => {
     const noKey = createChatHandler({
       hasKey: () => false,
+      keyVar: () => 'GROQ_API_KEY',
       getModel: () => model,
       getTools: () => {
         throw new Error('must not be reached');
@@ -169,14 +171,16 @@ describe('POST /api/chat request checks', () => {
     });
     const response = await noKey(post({ messages: [userMessage('hi')] }));
     expect(response.status).toBe(503);
-    expect(await response.json()).toEqual({ error: MISSING_KEY_MESSAGE });
+    expect(await response.json()).toEqual({ error: missingKeyMessage('GROQ_API_KEY') });
   });
 
-  it('the real route also answers 503 when the env var is empty', async () => {
-    vi.stubEnv('ANTHROPIC_API_KEY', '');
+  it('the real route also answers 503 when the provider key is empty', async () => {
+    vi.stubEnv('LLM_PROVIDER', '');
+    vi.stubEnv('GROQ_API_KEY', '');
     const { POST } = await import('@/app/api/chat/route');
     const response = await POST(post({ messages: [userMessage('hi')] }));
     expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain('GROQ_API_KEY');
   });
 
   it.each([

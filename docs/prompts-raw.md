@@ -193,3 +193,15 @@ UI Dashboard view (table or cards) + chat view. Tailwind is fine.
 ## 2026-11-20 02:16:58 UTC · main · session fc77e5ec
 
 commit
+
+## 2026-11-20 02:21:52 UTC · main · session fc77e5ec
+
+lets change the llm to groq which is free
+
+## 2026-11-20 02:27:54 UTC · main · session fc77e5ec
+
+The assistant ran into a problem. Please try again.
+
+## 2026-11-20 02:30:31 UTC · main · session fc77e5ec
+
+commit

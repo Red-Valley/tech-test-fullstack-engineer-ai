@@ -82,10 +82,10 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 
 ## Phase 7: Chat UI _(after both worktrees are merged)_
 
-- [x] **C7.1 `feat(ui): chat panel`**: MessageList, MessageBubble, ToolCallChip, ChatInput, SuggestionChips, and the chat container with `useChat` and a Stop button.
+- [x] **C7.1 `feat(ui): chat panel`** (`d59652d`): MessageList, MessageBubble, ToolCallChip, ChatInput, SuggestionChips, and the chat container with `useChat` and a Stop button.
   - **Verify:** in the browser, the three suggestion chips get correct answers (checked against sqlite), tool chips go from running to done, and Stop works. With no key, the 503 message shows in the UI.
 
-- [ ] **C7.2 `feat(ui): highlight rows from chat`**
+- [x] **C7.2 `feat(ui): highlight rows from chat`** (`1c122a4`)
   - **Verify:** in the browser, ask "Top 3 by downloads?" and those 3 rows are highlighted.
 
 ## Phase 8: Evals (Level 3)

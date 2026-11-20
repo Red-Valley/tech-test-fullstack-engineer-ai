@@ -6,7 +6,7 @@ import {
   type LanguageModel,
 } from 'ai';
 import { z } from 'zod';
-import { getChatModel, hasAnthropicKey } from '@/server/ai/model';
+import { apiKeyVar, getChatModel, hasApiKey } from '@/server/ai/model';
 import { SYSTEM_PROMPT } from '@/server/ai/system-prompt';
 import { getChatTools, type ChatTools } from '@/server/ai/tools';
 import { parseJsonBody } from '@/server/http/request';
@@ -14,8 +14,9 @@ import { badRequest, serverError, serviceUnavailable } from '@/server/http/respo
 
 export const MAX_STEPS = 5;
 
-export const MISSING_KEY_MESSAGE =
-  'The chat is not configured: set ANTHROPIC_API_KEY in .env.local and restart the server.';
+/** Names the env var the current provider needs (GROQ_API_KEY by default). */
+export const missingKeyMessage = (keyVar: string) =>
+  `The chat is not configured: set ${keyVar} in .env.local and restart the server.`;
 
 const STREAM_ERROR_MESSAGE = 'The assistant ran into a problem. Please try again.';
 
@@ -25,6 +26,7 @@ const bodySchema = z.object({
 
 type ChatDeps = {
   hasKey: () => boolean;
+  keyVar: () => string;
   getModel: () => LanguageModel;
   getTools: () => ChatTools;
 };
@@ -36,7 +38,7 @@ type ChatDeps = {
 export function createChatHandler(deps: ChatDeps) {
   return async function POST(request: Request): Promise<Response> {
     // Checked first so a missing key is a clear 503, not a stream that fails halfway.
-    if (!deps.hasKey()) return serviceUnavailable(MISSING_KEY_MESSAGE);
+    if (!deps.hasKey()) return serviceUnavailable(missingKeyMessage(deps.keyVar()));
 
     const body = await parseJsonBody(request, bodySchema);
     if (!body.ok) return body.response;
@@ -66,7 +68,8 @@ export function createChatHandler(deps: ChatDeps) {
 }
 
 export const chatHandler = createChatHandler({
-  hasKey: hasAnthropicKey,
+  hasKey: hasApiKey,
+  keyVar: apiKeyVar,
   getModel: getChatModel,
   getTools: getChatTools,
 });

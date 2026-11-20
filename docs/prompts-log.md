@@ -242,3 +242,35 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **Issues:** Claude's first version guessed the third question from ARCHITECTURE.md §7.3 instead of the assignment; corrected once Cristian provided the text.
 **Review:** not run (one-line change).
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 22:55 · Phase 7: highlight rows from chat + review fixes (C7.2, not committed yet; C7.1 committed as d59652d)
+**Tool / session:** Claude Code, main + subagent code-reviewer + Claude in Chrome
+**Prompt (excerpt):** "commit"
+**What Claude did:** Committed C7.1 (`d59652d`). Built C7.2: `extractGameIds` in the chat transformer (ids from `query_games`/`compare_games` `games` and `find_game` `game`; aggregates, not-found, ambiguous, unresolved and errors give none), and `useChat`'s `onFinish` sets `highlightedGameIds` (an answer without games clears it; "New chat" clears it). Then applied the Phase 7 review. 206 tests.
+**Issues:**
+- Row highlighting with a real answer is still unverified: no `ANTHROPIC_API_KEY` yet.
+- The mobile-layout browser check couldn't run: Chrome ignored the window resize this time (viewport stayed 1710 px). Desktop was checked (420 px chat beside the dashboard, full height). Claude stopped retrying; the mobile view needs a manual look.
+- Changing the transformer to mark non-streaming running calls as "stopped" broke 3 older tests that assumed "running" without saying which message was live; expected, updated to pass the streaming message id.
+**Review:** needs changes → fixed: after Stop, a tool chip stayed "running" forever (now "stopped"; `output-denied` → failed); the whole message list was an `aria-live` region, so screen readers heard every token (now a hidden status announces only the finished answer); Enter sent during IME composition; below `lg` the chat had no fixed height, grew without limit, and `scrollIntoView` scrolled the whole page on each chunk (now `h-[70svh]` with its own scroll box). Nits: comment on unhandled `dynamic-tool` parts; tests for result shapes that must not highlight. Accepted: highlights appear when the answer finishes, not while it streams (matches §6.3).
+**My call:** _TODO (Cristian)_
+
+### 2026-11-19 23:05 · LLM provider switched to Groq (on top of uncommitted C7.2)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "lets change the llm to groq which is free"
+**What Claude did:** Treated the request as Cristian's approval for an ARCHITECTURE.md change and a new dependency. Checked that `@ai-sdk/groq@4.0.85` uses the same provider packages as the installed `@ai-sdk/anthropic` (compatible with AI SDK v7), installed it, and read its model list from the package. `model.ts` now picks the provider with `LLM_PROVIDER` (`groq` default, `anthropic` kept as an option), default Groq model `llama-3.3-70b-versatile`, `LLM_MODEL` still overrides; the key check and the 503 message name the current provider's key (`GROQ_API_KEY`). Updated `.env.example`, ARCHITECTURE.md (stack table, §6.2, §7.2, §8, §10) and tests (5 new model-selection tests; route 503 now names `GROQ_API_KEY`). 211 tests.
+**Issues:**
+- Claude can't confirm which Groq models are currently live on the free tier without a key; the package lists 20. Default `llama-3.3-70b-versatile` (tool calling, long-standing on Groq); `openai/gpt-oss-120b` is a likely alternative via `LLM_MODEL`. The Phase 8 evals should decide.
+- Kept Anthropic behind `LLM_PROVIDER` instead of removing it, so the switch is reversible without code changes. This is Claude's choice, not something Cristian asked for.
+- The system prompt and tools were written and tested against Claude-style tool calling; a smaller open model may follow them less reliably. Not verified yet (no key).
+**Review:** not run (provider wiring); covered by the Phase 7/8 reviews.
+**My call:** _TODO (Cristian)_
+
+### 2026-11-19 23:15 · Groq: wrong default model, first real answers
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "The assistant ran into a problem. Please try again." (Cristian pasted the chat's error after adding a Groq key)
+**What Claude did:** Read the dev server log (the chat shows only a generic error by design): `The model llama-3.3-70b-versatile does not exist or you do not have access to it`. Listed the models Cristian's key can use with a read-only call to Groq's models endpoint (key read from `.env.local`, never printed): `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3.8-27b`, no Llama chat models. Changed the default to `openai/gpt-oss-120b` (model.ts, tests, .env.example, ARCHITECTURE.md). Asked the three example questions against the running server: each used the right tool and answered correctly (Starfall Courier $412,000; 14 rated above 4 on Cristian's DB; Starfall Courier $412,000 vs Deepdelve $356,000, ~1.16×). Added two system-prompt rules after seeing real output: plain text only (the model used `**bold**`, which the chat shows as asterisks) and "give both values and the ratio" for comparisons (it had given only the ratio).
+**Issues:**
+- **Claude's default model was wrong.** It chose `llama-3.3-70b-versatile` from the model list shipped in `@ai-sdk/groq` without a way to check Groq's live catalog, and said so at the time; the package list is out of date. Caught by Cristian's first real chat attempt. Lesson: verify model ids against the provider's models endpoint, not the SDK's type list.
+- The prompt tweaks were checked by hand on 1–3 questions only; the Phase 8 evals are the real check.
+**Review:** not run (config + prompt wording).
+**My call:** _TODO (Cristian)_
