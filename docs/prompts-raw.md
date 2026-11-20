@@ -245,3 +245,41 @@ commit and push
 email: cjimenez0288@gmail.com
 Pue the 3 hours and 11 mins
 send tem as TODO
+
+## 2026-11-20 03:09:58 UTC · submission/cristian-jimenez · session fc77e5ec
+
+<pasted_content id="bfd4">
+## What I built
+
+## How to run
+
+```bash
+```
+
+## Trade-offs
+
+## Checklist
+
+- [ ] Games CRUD
+- [ ] API
+- [ ] Chat with streaming
+- [ ] Assistant uses tool calling
+- [ ] `AI_WORKFLOW.md` included
+</pasted_content id="bfd4">
+
+Give me this
+
+## 2026-11-20 15:19:16 UTC · submission/cristian-jimenez · session fc77e5ec
+
+Having this probem with the pipeline
+
+<pasted_content id="bfd4">
+Annotations
+2 errors and 1 warning
+check
+Process completed with exit code 2.
+check: src/app/api/games/[id]/route.ts#L9
+Cannot find name 'RouteContext'.
+check
+Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+</pasted_content id="bfd4">

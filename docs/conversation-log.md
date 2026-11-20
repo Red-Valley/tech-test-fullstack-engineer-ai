@@ -685,3 +685,63 @@ The compare page is ready. Filling in the title and the PR description from the 
 GitHub reported a stale session and refused to create the PR. I'll reload the compare page once and retry, with the text re-entered:
 
 Signed in as Voltaire2121 with the form intact. I'll re-enter the description and submit:
+
+---
+
+## 2026-11-20 03:10:01 UTC · submission/cristian-jimenez · session fc77e5ec
+
+**Prompt:**
+
+> <pasted_content id="bfd4">
+> ## What I built
+> 
+> ## How to run
+> 
+> ```bash
+> ```
+> 
+> ## Trade-offs
+> 
+> ## Checklist
+> 
+> - [ ] Games CRUD
+> - [ ] API
+> - [ ] Chat with streaming
+> - [ ] Assistant uses tool calling
+> - [ ] `AI_WORKFLOW.md` included
+> </pasted_content id="bfd4">
+> 
+> Give me this
+
+**Claude:**
+
+_(no text reply)_
+
+---
+
+## 2026-11-20 15:19:48 UTC · submission/cristian-jimenez · session fc77e5ec
+
+**Prompt:**
+
+> Having this probem with the pipeline
+> 
+> <pasted_content id="bfd4">
+> Annotations
+> 2 errors and 1 warning
+> check
+> Process completed with exit code 2.
+> check: src/app/api/games/[id]/route.ts#L9
+> Cannot find name 'RouteContext'.
+> check
+> Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+> </pasted_content id="bfd4">
+
+**Claude:**
+
+The CI failure comes from a build-order problem. `RouteContext` is a global type that Next.js generates during `next build` or `next typegen`. CI runs `typecheck` before `build`, so the type doesn't exist yet. I'll reproduce it locally by removing the generated types, then fix the workflow:
+
+Reproduced: the error goes away once `next typegen` has run. The warning about Node 20 is from the action versions, so I'll confirm that the v5 actions run on Node 24 before switching to them:
+
+The fix passes locally in the same order CI uses. Committing it to the branch and pushing:
+
+The push went from `48d250d` on the remote, but my local branch had `033b163` before this commit. I need to check what that remote commit is before going on:

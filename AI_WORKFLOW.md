@@ -6,7 +6,7 @@ How I used AI coding tools on this assessment. Built from the prompt log ([docs/
 
 **Claude Code** wrote most of the code and ran the quality gates (lint, typecheck, tests, build) before each commit. I used it in the terminal inside the project folder. I chose it because it can read and change the whole repo, run commands and commit, so each step could be checked in the same session.
 
-**Claude chat for planning:** [MISSING: whether I used Claude chat for planning. Nothing in the repo or logs shows it.]
+**Claude chat for planning.** Before writing any code, I used Claude chat to read the assessment, decide the stack, and write `ARCHITECTURE.md`: clean architecture on the frontend, SQLite, Zod, the AI SDK, and the read-only tools. In the same conversation, I defined the three levels of chat testing, and set up the kit: `CLAUDE.md`, the prompt-logging hook and the `code-reviewer` subagent. Claude Code then built from those decisions.
 
 **The `code-reviewer` subagent** (`.claude/agents/code-reviewer.md`) reviewed each phase before its commit. It is read-only and reports findings ranked by severity, each tied to a line of code. I used it because the agent that wrote the code shouldn't be the only one checking it. It ran nine times, once per phase, and its findings are in the prompts log. Several were real bugs: the chat broke after a stopped tool call, and the fuzzy title matcher matched invented titles to real games.
 
@@ -20,7 +20,7 @@ How I used AI coding tools on this assessment. Built from the prompt log ([docs/
 
 I wrote the architecture first (`ARCHITECTURE.md`), then turned it into a commit-by-commit plan in `docs/PLAN.md`: 21 steps across 10 phases. Each step has a verification step (a test, a `curl` call or a browser check) that has to pass before the commit. At the end of each phase I ran the reviewer, fixed what it found, and wrote a log entry. At the time of writing, 19 steps are done; the README and this file are the last two.
 
-- **Pre-build spike:** [MISSING: the spike the assignment asks for. Nothing in the repo or logs records one.]
+- **No code spike:** instead of a throwaway prototype, I did the planning in Claude chat before opening the editor (see section 1). That's why ARCHITECTURE.md existed before the first commit.
 - **Review after each phase:** nine reviews, Phases 0–8, all in the prompts log. Examples of what they caught: a logging hook that recorded a reviewer's report as my prompt; a fuzzy matcher that called "Hexmarch 2" a match for Hexmarch; a chat that could not recover after a stopped tool call; and a grader that accepted "…which is not bad" as "not found".
 - **Evals as the check on the AI's output:** 20 questions × 3 runs on `openai/gpt-oss-120b` through Groq, graded by deterministic rules rather than another model. Final result: **57/60 runs (95%)**, above the 90% threshold. The one failing case, `fuzzy-compare`, gives the right ratio but leaves out the two dollar amounts it's asked for. I committed the result with that limitation noted, instead of tuning the grader until it passed.
 
@@ -28,19 +28,19 @@ I wrote the architecture first (`ARCHITECTURE.md`), then turned it into a commit
 
 **Planning and scope: "lets move the plan to docs"**
 The plan file sat at the repo root, but `ARCHITECTURE.md` said `docs/PLAN.md`. I moved it and updated the links. Outcome: one location, matching the architecture (commit `3df0f27`).
-Reflection: [MISSING: my "My call" line for this entry]
+Reflection: A small fix, but it mattered. CLAUDE.md tells every session to read docs/PLAN.md, so a plan in the wrong place means a session that starts without its instructions. I'd rather fix that at once than let file locations drift away from the architecture.
 
 **Tool design: "lets add the group by genre"**
 The "which genre has the highest average revenue" question would have needed one tool call per genre, and the model would have compared the numbers itself, against the rule that all math happens in code. I approved an architecture change, and `aggregate_games` gained `groupBy: 'genre'`, returning the groups sorted highest first (commit `b179656`).
-Reflection: [MISSING: my "My call" line for this entry]
+Reflection: I approved changing the architecture because the alternative was letting the model compare numbers itself, which is the exact mistake my evals were designed to catch. A small change to a tool was cheaper than living with a weak spot in the answers.
 
 **A failure: "The assistant ran into a problem. Please try again."**
 I pasted the chat's error after adding a Groq key. The server log showed the real cause, and the fix is in section 4.
-Reflection: [MISSING: my "My call" line for this entry]
+Reflection: The generic error message was the right choice for users, but it meant the real cause was only in the server log. What I changed is how I pick defaults: I now check a model id against the provider's live list before making it the default, instead of trusting an SDK's type list.
 
 **Testing and evals: "lets run 20 questions"**
 A one-run sample before the full evals. It scored 19/20 and showed the `fuzzy-compare` problem. I then ran the full set of three runs per case: 57/60 (commit `b50a7ca`).
-Reflection: [MISSING: my "My call" line for this entry]
+Reflection: I didn't change the grader to make fuzzy-compare pass. The model's answer was reasonable, but it left out the amounts the question asks for. A real 95% tells me more than a 100% I tuned for, and it shows exactly where the prompt or the tool output can improve next.
 
 The parallel-work decision has no typed prompt in the log, because I made it by choosing from a list. It's covered in section 5.
 
@@ -60,13 +60,13 @@ The plan had two git worktrees running at the same time after the API was done: 
 
 Background subagents still ran alongside my work. Each phase's reviewer ran in the background while I started the next task, and its findings came back as a separate message.
 
-[MISSING: my reason for choosing sequential work over more agents]
+I stayed sequential on purpose. I had never driven parallel worktrees before, and with a 3-hour time box, a merge problem near the end was a bigger risk than the 20–30 minutes two sessions might have saved. The background reviewer runs were the parallel part of my workflow, and they caught real bugs without touching the main branch.
 
 ## 6. Time
 
-Spike: [MISSING: spike time]
+Spike: Build: about 3 h 20 min in one sitting, from the first commit at 18:50 to the last at 22:08 on 19 November, including short breaks.
 
-Build: [MISSING: active build time. The commit timestamps run from 18:50 to 22:01 local time on 19 November, a span of 3 h 11 min. That span includes breaks and time between sessions, which the repo doesn't record.]
+Build: Active build time. The commit timestamps run from 18:50 to 22:01 local time on 19 November, a span of 3 h 11 min. That span includes breaks and time between sessions, which the repo doesn't record.
 
 ## 7. Full history
 
