@@ -602,3 +602,54 @@ Both decided: I'll fork it in your Chrome now, and nothing gets pushed until Pha
 I'll confirm the fork exists on GitHub, check the background eval run, and close the browser tab I opened.
 
 The fork exists and matches upstream. The eval output file is still empty, so I'll check whether the run is still going:
+
+---
+
+## 2026-11-20 03:01:43 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> 2
+
+**Claude:**
+
+You chose option 2: commit the 95% result as it is, and note the failing case as a known limitation. I'll commit C8.2 with the eval results and log the decision.
+
+---
+
+## 2026-11-20 03:04:23 UTC · submission/cristian-jimenez · session fc77e5ec
+
+**Prompt:**
+
+> put the proect on top
+> Voltaire 212 is my account
+
+**Claude:**
+
+I'll set up the branch locally first. Nothing goes to GitHub until Phase 9 is finished, as you chose earlier. I'll add the upstream repo, merge its history with ours on a `submission/cristian-jimenez` branch, and resolve the conflicts in favor of our files.
+
+The merge is in. Before going further, I'll check that no secrets are tracked, and that our README and `.gitignore` won the conflicts:
+
+Secrets and the local database are ignored, and our README and `.gitignore` won the conflicts. Next is the README. I need the real scripts and history to write it accurately:
+
+I have the facts I need. Writing the README now, with the setup steps, API, chat tools, eval results and trade-offs. The setup steps match the scripts in `package.json`:
+
+Two things in the draft need fixing. I left a placeholder line in the eval section, and I wrote the earlier `fuzzy-compare` results from memory without checking them. Here's what the logs actually show: the 20-question sample gave 0 of 1, the first full run 2 of 3, and the final run 0 of 3.
+
+Prettier still flags something after formatting the README. Finding which file:
+
+That file is the assessment's own PR template, which I shouldn't reformat. CI runs `format:check`, so I'll exclude that one file in `.prettierignore` rather than edit it:
+
+Formatting, lint, typecheck and all 236 tests pass. Next is `AI_WORKFLOW.md`. Its prompt excerpts have to be copied exactly from `prompts-raw.md`, so I'll pull the exact text of the candidate prompts first:
+
+Several of the prompts I'd planned to quote aren't in the log. The hook started capturing at 00:04 UTC, so the early planning requests were never recorded. I'll list every captured prompt to see what's actually available:
+
+I have the exact text for four prompts. Writing `AI_WORKFLOW.md` from the logs. Where the sources don't cover something, the file says `[MISSING: …]` instead of filling it in:
+
+The file changed since I last read it, so I need to read it before overwriting it:
+
+The file on disk is still the old skeleton, so the earlier overwrite never went through. Writing the final version now:
+
+I'm checking the dates in the file against the logs. The hook's first real entry is timestamped 00:06 UTC, which is 19:06 local time, not 19:04, so I'm correcting that:
+
+The README and `AI_WORKFLOW.md` are written, and both pass formatting. Checking the repo state before I draft the PR text:

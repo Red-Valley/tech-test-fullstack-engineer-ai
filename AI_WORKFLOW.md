@@ -1,47 +1,75 @@
 # AI workflow
 
-How I used AI tools to build this project. This file is filled in phase by phase from [docs/prompts-log.md](docs/prompts-log.md), [docs/conversation-log.md](docs/conversation-log.md), `docs/prompts-raw.md` and `git log`. A `[MISSING: …]` marker means the history that would fill that part doesn't exist yet.
+How I used AI coding tools on this assessment. Built from the prompt log ([docs/prompts-raw.md](docs/prompts-raw.md)), the curated log ([docs/prompts-log.md](docs/prompts-log.md)), the conversation log ([docs/conversation-log.md](docs/conversation-log.md)) and the git history. Every entry in the prompts log has a "My call" line that is still `_TODO_`, because only I can fill it in. The reflections below are therefore marked `[MISSING]` rather than written for me.
 
 ## 1. Tools and why
 
-**Claude Code.** I used it to write the code, run commands and make commits. It works in the repo and can run the quality gates from `ARCHITECTURE.md` §8 (`lint`, `typecheck`, `test`) itself, so a phase isn't called done until they pass.
+**Claude Code** wrote most of the code and ran the quality gates (lint, typecheck, tests, build) before each commit. I used it in the terminal inside the project folder. I chose it because it can read and change the whole repo, run commands and commit, so each step could be checked in the same session.
 
-**Claude chat for planning.** [MISSING: whether I used Claude chat for planning; nothing in the logs shows it yet]
+**Claude chat for planning:** [MISSING: whether I used Claude chat for planning. Nothing in the repo or logs shows it.]
 
-**`CLAUDE.md` as persistent context.** `CLAUDE.md` imports `ARCHITECTURE.md`, so every session starts with the stack, folder structure, layer rules and conventions already loaded. It also holds the working rules: log every meaningful task in `docs/prompts-log.md`, never write my "My call" notes for me, and run the reviewer before each phase's commit. I wrote the architecture decisions once instead of repeating them in every prompt.
+**The `code-reviewer` subagent** (`.claude/agents/code-reviewer.md`) reviewed each phase before its commit. It is read-only and reports findings ranked by severity, each tied to a line of code. I used it because the agent that wrote the code shouldn't be the only one checking it. It ran nine times, once per phase, and its findings are in the prompts log. Several were real bugs: the chat broke after a stopped tool call, and the fuzzy title matcher matched invented titles to real games.
 
-**`code-reviewer` subagent** (`.claude/agents/code-reviewer.md`). A read-only reviewer that checks the diff for correctness, types, API status codes and Zod validation, the AI-tool rules (no full-catalog dumps, math in code, structured errors, prompt-injection awareness), streaming, `CLAUDE.md` conventions and missing tests. It reports findings ranked by severity, only ones it can point to in the code, and never edits. `CLAUDE.md` makes it a required step before every phase's commit, and its findings go into that phase's log entry.
+**The prompt-logging hooks** (`.claude/settings.json`) write every prompt to `docs/prompts-raw.md`, and every prompt with Claude's reply to `docs/conversation-log.md`. I set them up so this document would come from a record rather than from memory. They started capturing at about 19:05 local time, after the first commit, so the planning conversation before that isn't in the logs.
 
-**Logging hooks** (`.claude/settings.json`). A `UserPromptSubmit` hook (`log-prompt.mjs`) appends every prompt I send to `docs/prompts-raw.md`. A `Stop` hook (`log-conversation.mjs`) appends each prompt together with Claude's text reply to `docs/conversation-log.md`. Both always exit 0, so they can never block a prompt. They're there so this document is built from a record and not from memory. Capture started with commit `3df0f27`; earlier prompts (project setup and planning) were not recorded.
+**`CLAUDE.md`** holds the project rules as persistent context: the architecture is final, log every task, never write my "My call" notes, update this file after each phase, and run the reviewer before each commit. It imports `ARCHITECTURE.md`, so every session starts from the same decisions.
+
+**The AI SDK's bundled docs** (`node_modules/ai/docs`), which I read before writing the chat code. This mattered: the installed SDK version had renamed some options since the architecture was written.
 
 ## 2. How I worked
 
-The architecture was decided first in `ARCHITECTURE.md`, then turned into a commit-by-commit plan in [`docs/PLAN.md`](docs/PLAN.md). Each commit has a verification step (a test, a `curl`, or a browser check) that has to pass before it lands, on top of `lint`, `typecheck` and `test`. Each phase ends with a `code-reviewer` pass and a prompts-log entry.
+I wrote the architecture first (`ARCHITECTURE.md`), then turned it into a commit-by-commit plan in `docs/PLAN.md`: 21 steps across 10 phases. Each step has a verification step (a test, a `curl` call or a browser check) that has to pass before the commit. At the end of each phase I ran the reviewer, fixed what it found, and wrote a log entry. At the time of writing, 19 steps are done; the README and this file are the last two.
 
-- **Pre-build spike:** [MISSING: what the spike was, what it tested, and what it decided]
-- **Review after each phase:** the `code-reviewer` subagent ran before each phase commit, and I fixed its findings before committing. Phase 0: the logging hook took harness messages as prompts, and worktree sessions would have written logs onto their own branches. Phase 1: the partial-update schema accepted an empty update, and the rating check let float noise through. Phase 2: `db:reset` deleted the DB file under a running dev server, and two fixture titles ("Shardfall", "Ashfall Run") were close enough to make the fuzzy-name eval ambiguous. Phase 3: the fuzzy title matcher confidently matched invented titles to real games ("Hexmarch 2" → Hexmarch, "the" → Bellwether), and comparing a game with itself reported a tie. Phase 4: a failed refetch would have emptied the games table instead of keeping the last good rows. Phase 5: the modals opened with focus on the × button, Esc while saving could close a different modal later, and containers held styling the architecture puts in presentational components. Phase 6: a chat stopped mid tool call would have broken every later turn of that conversation, and a partial title matching several games was reported to the model as "not found". Phase 7: after Stop a tool chip could stay "running" forever, screen readers heard every streamed token, and on mobile the chat grew without limit and scrolled the whole page. [MISSING: later phases]
-- **Evals as the check on the AI's output:** [MISSING: eval results from `evals/results/latest.md`]
+- **Pre-build spike:** [MISSING: the spike the assignment asks for. Nothing in the repo or logs records one.]
+- **Review after each phase:** nine reviews, Phases 0–8, all in the prompts log. Examples of what they caught: a logging hook that recorded a reviewer's report as my prompt; a fuzzy matcher that called "Hexmarch 2" a match for Hexmarch; a chat that could not recover after a stopped tool call; and a grader that accepted "…which is not bad" as "not found".
+- **Evals as the check on the AI's output:** 20 questions × 3 runs on `openai/gpt-oss-120b` through Groq, graded by deterministic rules rather than another model. Final result: **57/60 runs (95%)**, above the 90% threshold. The one failing case, `fuzzy-compare`, gives the right ratio but leaves out the two dollar amounts it's asked for. I committed the result with that limitation noted, instead of tuning the grader until it passed.
 
 ## 3. Prompts
 
-[MISSING: 4–5 prompts copied from `docs/prompts-raw.md`, covering architecture/planning, tool design, a failure, testing/evals and parallel work, each with its outcome and one line from my "My call" notes]
+**Planning and scope: "lets move the plan to docs"**
+The plan file sat at the repo root, but `ARCHITECTURE.md` said `docs/PLAN.md`. I moved it and updated the links. Outcome: one location, matching the architecture (commit `3df0f27`).
+Reflection: [MISSING: my "My call" line for this entry]
+
+**Tool design: "lets add the group by genre"**
+The "which genre has the highest average revenue" question would have needed one tool call per genre, and the model would have compared the numbers itself, against the rule that all math happens in code. I approved an architecture change, and `aggregate_games` gained `groupBy: 'genre'`, returning the groups sorted highest first (commit `b179656`).
+Reflection: [MISSING: my "My call" line for this entry]
+
+**A failure: "The assistant ran into a problem. Please try again."**
+I pasted the chat's error after adding a Groq key. The server log showed the real cause, and the fix is in section 4.
+Reflection: [MISSING: my "My call" line for this entry]
+
+**Testing and evals: "lets run 20 questions"**
+A one-run sample before the full evals. It scored 19/20 and showed the `fuzzy-compare` problem. I then ran the full set of three runs per case: 57/60 (commit `b50a7ca`).
+Reflection: [MISSING: my "My call" line for this entry]
+
+The parallel-work decision has no typed prompt in the log, because I made it by choosing from a list. It's covered in section 5.
 
 ## 4. When the AI got it wrong
 
-[MISSING: the clearest real case from the log: symptom, how it was caught, root cause, fix, commit hash]
+**Symptom:** after I added a Groq key, every question showed "The assistant ran into a problem. Please try again."
+
+**How it was caught:** by me, in the chat. The chat shows only a generic message on purpose, so I read the server log. It said: `The model llama-3.3-70b-versatile does not exist or you do not have access to it.`
+
+**Root cause:** I took that model name from the list in the `@ai-sdk/groq` package and didn't check it against Groq's live model list. The package list was out of date. I had noted in the log that I couldn't confirm the live list without a key, and I still used the name as the default.
+
+**Fix:** I asked Groq's models endpoint which models the key could use, without printing the key. The default became `openai/gpt-oss-120b`. I then asked the three example questions against the running server, and each answered correctly. Commit `558c54a`. The lesson I'd keep: check a model id against the provider's own endpoint, not against an SDK's list of types.
 
 ## 5. Parallel work
 
-The plan had two worktrees running at the same time after the API was done: `feat/ui` (`src/client/**`) and `feat/ai` (`src/server/ai/**`, `src/app/api/chat/**`), split by folder so they couldn't conflict, with `feat/ai` merged first. When the backend was finished (`844dac4`), I was offered three options (two sessions I'd drive myself, two background agents, or no parallel work) and chose to stay sequential on `main`. Nothing ran in parallel.
+The plan had two git worktrees running at the same time after the API was done: `feat/ui` for the frontend and `feat/ai` for the chat, split by folder so they couldn't conflict, with `feat/ai` merged first. When the backend was finished (`844dac4`), I was offered three ways to run the parallel work: two sessions I would drive, two background agents, or staying sequential. I chose sequential. No worktrees were created, and every commit is on `main`.
 
-[MISSING: my reason for staying sequential and not using more agents]
+Background subagents still ran alongside my work. Each phase's reviewer ran in the background while I started the next task, and its findings came back as a separate message.
+
+[MISSING: my reason for choosing sequential work over more agents]
 
 ## 6. Time
 
-[MISSING: spike time and build time, from timestamps]
+Spike: [MISSING: spike time]
+
+Build: [MISSING: active build time. The commit timestamps run from 18:50 to 22:01 local time on 19 November, a span of 3 h 11 min. That span includes breaks and time between sessions, which the repo doesn't record.]
 
 ## 7. Full history
 
-- [docs/prompts-log.md](docs/prompts-log.md): curated entries with outcomes, issues and my decisions.
-- [docs/conversation-log.md](docs/conversation-log.md): every prompt and reply.
-- `docs/prompts-raw.md`: every prompt, verbatim.
+- [docs/prompts-log.md](docs/prompts-log.md): each entry, with what I asked, what changed, the issues and the review findings.
+- [docs/conversation-log.md](docs/conversation-log.md): each prompt with Claude's text reply.
+- [docs/prompts-raw.md](docs/prompts-raw.md): every prompt, verbatim, from about 19:05 local time onward.
