@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ComponentProps } from 'react';
 import { cn } from '@/client/lib/cn';
 
 const VARIANTS = {
@@ -14,7 +14,7 @@ const SIZES = {
   icon: 'size-8',
 } as const;
 
-export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+export type ButtonProps = ComponentProps<'button'> & {
   variant?: keyof typeof VARIANTS;
   size?: keyof typeof SIZES;
 };

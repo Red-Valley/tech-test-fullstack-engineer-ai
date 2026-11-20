@@ -2,6 +2,7 @@
 
 import { useCatalog } from '@/client/context/catalog-context';
 import { useGameStats } from '@/client/hooks/use-game-stats';
+import { DashboardHeader } from '@/client/ui/components/games/dashboard-header';
 import { KpiGrid, KpiGridSkeleton } from '@/client/ui/components/games/kpi-grid';
 import { Button } from '@/client/ui/components/primitives/button';
 import { EmptyState } from '@/client/ui/components/primitives/feedback';
@@ -13,10 +14,7 @@ export function DashboardContainer() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Indie Games Catalog</h1>
-        <p className="text-sm text-muted">Revenue and downloads are for last month.</p>
-      </header>
+      <DashboardHeader />
 
       <section aria-label="Key figures">
         {error ? (

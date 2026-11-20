@@ -351,3 +351,39 @@ The server didn't come up (`000`), so the empty response is from that, not the s
 155 tests pass. Your dev server should have hot-reloaded the fixed module, so re-checking the API and the header on port 3000:
 
 Sorting by genre now works in the browser, in both directions and with no error. Closing the tab and recording this, including the bug:
+
+---
+
+## 2026-11-20 01:46:52 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> lets comit
+
+**Claude:**
+
+Now wiring the table container: the "Add game" button, Edit and Delete buttons on each row (with labels that name the game), the delete confirmation, and the form container.
+
+Your server is stopped. Starting mine on a fresh throwaway copy of the seed data:
+
+The "Add game" button and the Edit/Delete buttons on each row are there. Opening the form with a real click, then pressing Enter on the empty form:
+
+Now the presentational pieces for §4.2: `InlineAlert`, `GameRowActions` and `DashboardHeader`, plus moving focus to "Add game" after a delete:
+
+`ButtonProps` is typed from `ButtonHTMLAttributes`, which doesn't include `ref`. Switching to `ComponentProps<'button'>`, which in React 19 includes `ref` as an ordinary prop:
+
+All gates pass. Now the full C5.3 check in Chrome, re-run after the fixes: open, focus, empty submit, create, a duplicate title (409), edit, Esc, focus trapping, drag-to-backdrop, and delete.
+
+After the fix, the Title field gets focus when the form opens, and Enter submits. An empty form shows an error on every field and stays open. Filling it in with the keyboard only:
+
+Each field's error cleared as I typed into it. Submitting with Enter, then checking the new row, the KPIs, and where focus went:
+
+The duplicate title shows "A game titled "deepdelve" already exists" on the Title field. The edit form also opened with the saved values. Next: Tab focus trapping, drag-to-backdrop, and Esc.
+
+The edit saved and the row updated. Now delete: the confirmation should open with focus on Cancel, so a stray Enter can't delete.
+
+The confirmation opens with focus on Cancel and names the game. Confirming the delete of the test game I created (this is the app's own modal, not a browser dialog):
+
+Lint and typecheck are clean. Re-testing the delete focus: I'll create a throwaway game through the API on the scratch DB, then delete it with real clicks.
+
+Fixed: after the delete, focus is on "Add game" and the scratch DB is back to 25 games. Cleaning up, then final gates and the log:

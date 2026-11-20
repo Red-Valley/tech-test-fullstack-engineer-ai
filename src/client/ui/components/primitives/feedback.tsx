@@ -46,3 +46,20 @@ export function EmptyState({ title, description, action, tone = 'neutral' }: Emp
     </div>
   );
 }
+
+type InlineAlertProps = { title: string; message?: string; action?: ReactNode };
+
+/** A one-line error above content that is still shown (e.g. a failed refresh). */
+export function InlineAlert({ title, message, action }: InlineAlertProps) {
+  return (
+    <div
+      role="alert"
+      className="flex items-center justify-between gap-3 rounded-md border border-danger px-3 py-2 text-sm"
+    >
+      <span>
+        <span className="font-medium text-danger">{title}</span> {message}
+      </span>
+      {action}
+    </div>
+  );
+}
