@@ -32,9 +32,9 @@ The architecture was decided first in `ARCHITECTURE.md`, then turned into a comm
 
 ## 5. Parallel work
 
-Planned in `docs/PLAN.md`: worktrees `feat/ui` (`src/client/**`) and `feat/ai` (`src/server/ai/**`, `src/app/api/chat/**`) run at the same time after the API is done, merged `feat/ai` first.
+The plan had two worktrees running at the same time after the API was done: `feat/ui` (`src/client/**`) and `feat/ai` (`src/server/ai/**`, `src/app/api/chat/**`), split by folder so they couldn't conflict, with `feat/ai` merged first. When the backend was finished (`844dac4`), I was offered three options (two sessions I'd drive myself, two background agents, or no parallel work) and chose to stay sequential on `main`. Nothing ran in parallel.
 
-[MISSING: what actually ran in parallel, how it was merged, what went wrong, and why I didn't use more agents]
+[MISSING: my reason for staying sequential and not using more agents]
 
 ## 6. Time
 

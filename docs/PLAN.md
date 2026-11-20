@@ -46,7 +46,7 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 - [x] **C3.1 `feat(api): games service + http helpers`** (`b179656`): `server/services/games.service.ts` (filter and sort rules, stats, aggregates, fuzzy title match, compare) and `server/http/responses.ts`, with tests.
   - **Verify:** `npm test` checks exact stats against the fixture, fuzzy match on a misspelled title, and that a compare ratio is computed in code.
 
-- [x] **C3.2 `feat(api): games route handlers`**: `api/games`, `api/games/[id]`, `api/games/stats`.
+- [x] **C3.2 `feat(api): games route handlers`** (`844dac4`): `api/games`, `api/games/[id]`, `api/games/stats`.
   - **Verify:** with `npm run dev` running, curl each endpoint and check the status code:
     - `GET /api/games?genre=Roguelike&sortBy=revenue&order=desc` → 200
     - `POST` a valid game → 201, the same title in different case → 409, a bad body → 400 with `fieldErrors`
@@ -55,7 +55,7 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 
 ## Phase 4: Frontend data layer _(worktree `feat/ui`, parallel with Phase 6)_
 
-- [ ] **C4.1 `feat(client): domain, http client, api, transformers`**, with transformer tests.
+- [x] **C4.1 `feat(client): domain, http client, api, transformers`**, with transformer tests.
   - **Verify:** `npm test` shows DTO⇄domain round-trips, and an empty form field becomes a validation error instead of `0`.
 
 - [ ] **C4.2 `feat(client): hooks + CatalogContext`**: `use-games`, `use-game-mutations`, `use-game-stats`, and `catalog-context.tsx` (`highlightedGameIds`, `refreshCatalog`).
@@ -108,15 +108,9 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 
 ## Parallel work
 
-After Phase 3 the API contract is fixed, so two worktrees can run at the same time without touching the same files:
-
-| Worktree  | Phases | Owns                                                              |
-| --------- | ------ | ----------------------------------------------------------------- |
-| `feat/ui` | 4–5    | `src/client/**`                                                   |
-| `feat/ai` | 6      | `src/server/ai/**`, `src/app/api/chat/**`, `tests/integration/**` |
-
-Merge `feat/ai` first, then `feat/ui`. Phase 7 needs both, so it runs on `main` after the merge. Each branch gets a `code-reviewer` pass before merging.
+Originally planned: after Phase 3, worktrees `feat/ui` (Phases 4–5, `src/client/**`) and `feat/ai` (Phase 6, `src/server/ai/**`, `src/app/api/chat/**`) in parallel. **Decided after Phase 3 (Cristian): stay sequential on `main`**, one step per commit.
 
 ## Decisions taken in this plan
 
+- **Sequential instead of parallel worktrees** (decided after Phase 3).
 - **C1.1:** turn off `cacheComponents` to keep ARCHITECTURE.md §2 (`runtime = 'nodejs'`) as written.

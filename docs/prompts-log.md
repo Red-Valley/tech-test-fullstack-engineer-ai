@@ -120,3 +120,19 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Also from the review: comparing a game with itself returned a tie (now an error); `limit: NaN` returned no games (now 5); weak tests that passed regardless of output were tightened.
 **Review:** needs changes → fixed: fuzzy false positives, same-game compare, NaN limit, weak tests; nits fixed: `minRating > maxRating` → 400, ids must be digits only (`0x1A`, `1e1` rejected), `sortBy`/`order` lists shared with the repository. Carried forward to Phase 6: rating filters are inclusive, so the `query_games`/`aggregate_games` descriptions must say so ("above 4" only works on the fixture because nothing is exactly 4.0).
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 20:15 · Phase 3 committed; parallel work decision
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "lets commit"
+**What Claude did:** Committed C3.2 (`844dac4`), finishing the backend. Asked how to run the planned parallel phases (two sessions Cristian would drive, two background agents, or sequential). Cristian chose sequential. Updated `docs/PLAN.md` (phase headings, "Parallel work" section, decisions) and `AI_WORKFLOW.md` §5 to say what actually happened.
+**Issues:** none.
+**Review:** not run (no code change).
+**My call:** _TODO (Cristian)_
+
+### 2026-11-19 20:25 · Phase 4: frontend data layer (C4.1, not committed yet)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "No parallel, stay sequential" (answer to Claude's question; the last typed prompt was "lets commit")
+**What Claude did:** Built C4.1: `client/domain/game.ts` (camelCase `Game`, string-based `GameFormValues`, `GameStats`, `GameQuery`; imports nothing), `client/api/http-client.ts` (the only `fetch`; typed `ApiError` with status and field errors, status 0 on network failure, `undefined` for 204), `client/api/games.api.ts` (returns DTOs only), and `client/transformers/game.transformer.ts` (DTO ⇄ domain, form ⇄ input draft, API field errors → form fields). Empty form fields become `undefined`, never `0`; a test runs an empty form through the shared Zod schema and checks every field is rejected. 16 new tests (134 total).
+**Issues:** One lint warning in a test (unused destructured `_id`), fixed. Design note: the transformer can't import the Zod schema (ARCHITECTURE.md §4.1 allows only `domain` and `shared/types`), so it produces a "draft" with possibly-missing fields and the hooks/containers validate it with the shared schema.
+**Review:** not run yet; runs at the end of Phase 4, after C4.2.
+**My call:** _TODO (Cristian)_

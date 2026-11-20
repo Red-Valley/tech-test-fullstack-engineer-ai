@@ -260,3 +260,23 @@ Only the §6.1 tools table changed; the other rows just have new column padding.
 All three routes build as dynamic (`ƒ`), and typecheck, lint and tests pass. The build also printed a line about `stats/route.ts`, so I'm checking what it says:
 
 The build is clean now. Next, the plan's `curl` check against a real dev server. I'm pointing it at a scratch database so your `data/games.db` isn't touched.
+
+---
+
+## 2026-11-20 01:18:26 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> lets commit
+
+**Claude:**
+
+Phase 3 is committed as `844dac4`, so the backend is done: 8 commits and 118 tests. Next in the plan is the parallel part, and how to run it is your call:
+
+Staying sequential, one step per commit. I'll note that decision in the plan and the log, then start C4.1, the frontend data layer.
+
+Now C4.1. The domain types import nothing. The transformers keep empty form fields as `undefined`, so the shared schema rejects them instead of saving a 0:
+
+Now the tests. Besides the round trips, they check the §4.4 rule end to end: an empty form field, run through the shared schema, has to fail with "required" and never come out as 0.
+
+All 134 tests pass. There's one lint warning, for the `_id` I strip out in the round-trip test. Using the id in an assertion clears it:
