@@ -71,8 +71,9 @@ const FIELD_NAMES: Record<keyof GameInputDto, keyof GameFormValues> = {
 export const toFormErrors = (fieldErrors: Record<string, string[] | undefined>): GameFormErrors => {
   const errors: GameFormErrors = {};
   for (const [field, messages] of Object.entries(fieldErrors)) {
-    const formField = FIELD_NAMES[field as keyof GameInputDto]; // unknown keys map to undefined
-    if (formField && messages?.length) errors[formField] = messages[0];
+    // hasOwn guards against inherited keys like "constructor"; after it the cast is safe.
+    if (!Object.hasOwn(FIELD_NAMES, field) || !messages?.length) continue;
+    errors[FIELD_NAMES[field as keyof GameInputDto]] = messages[0];
   }
   return errors;
 };

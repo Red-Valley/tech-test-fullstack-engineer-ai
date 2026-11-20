@@ -55,10 +55,10 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 
 ## Phase 4: Frontend data layer _(worktree `feat/ui`, parallel with Phase 6)_
 
-- [x] **C4.1 `feat(client): domain, http client, api, transformers`**, with transformer tests.
+- [x] **C4.1 `feat(client): domain, http client, api, transformers`** (`88e2494`), with transformer tests.
   - **Verify:** `npm test` shows DTO⇄domain round-trips, and an empty form field becomes a validation error instead of `0`.
 
-- [ ] **C4.2 `feat(client): hooks + CatalogContext`**: `use-games`, `use-game-mutations`, `use-game-stats`, and `catalog-context.tsx` (`highlightedGameIds`, `refreshCatalog`).
+- [x] **C4.2 `feat(client): hooks + CatalogContext`**: `use-games`, `use-game-mutations`, `use-game-stats`, and `catalog-context.tsx` (`highlightedGameIds`, `refreshCatalog`).
   - **Verify:** typecheck and lint pass, including the client-must-not-import-server rule. Checked in the browser in Phase 5.
 
 ## Phase 5: Dashboard UI _(worktree `feat/ui`)_

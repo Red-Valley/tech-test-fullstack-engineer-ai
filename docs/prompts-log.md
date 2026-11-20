@@ -136,3 +136,13 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **Issues:** One lint warning in a test (unused destructured `_id`), fixed. Design note: the transformer can't import the Zod schema (ARCHITECTURE.md §4.1 allows only `domain` and `shared/types`), so it produces a "draft" with possibly-missing fields and the hooks/containers validate it with the shared schema.
 **Review:** not run yet; runs at the end of Phase 4, after C4.2.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 20:35 · Phase 4: hooks + CatalogContext (C4.2, not committed yet; C4.1 committed as 88e2494)
+**Tool / session:** Claude Code, main + subagent code-reviewer
+**Prompt (excerpt):** "lets commit"
+**What Claude did:** Committed C4.1 (`88e2494`). Built C4.2: `use-resource.ts` (generic loader keyed by its inputs: loading is derived from whether the stored result matches the current key, stale responses are dropped, `refetch` bumps a counter; written this way because the project's React Compiler lint rules forbid synchronous `setState` in effects), `use-games.ts`, `use-game-stats.ts`, `use-game-mutations.ts` (validates with the shared Zod schema before sending; 409 → title field, 400 → mapped field errors), and `catalog-context.tsx` (only `highlightedGameIds` and `refreshCatalog`, per §4.5). 141 tests.
+**Issues:**
+- The hooks themselves have no tests: that would need React Testing Library + jsdom, which aren't in the approved stack. Only their pure helpers are tested; the hooks get a browser check in Phase 5.
+- Review fixes to Claude's code: a loader that throws synchronously would have left `isLoading` stuck at true; a failed refetch wiped the data already shown (the table would empty on a 500).
+**Review:** ready to merge; should-fix items fixed (sync throw, keep data on failed refetch). Nits fixed: stable empty array in `useGames`, `Object.hasOwn` in field-error mapping (a `constructor` key passed the old check), `Headers`-instance support and a clear error for a non-JSON 2xx in the HTTP client, a stronger 409 test. Accepted as-is: one shared `isSubmitting` flag (one modal at a time). For Phase 5's browser check: key change mid-request, refetch, refetch after an error, StrictMode.
+**My call:** _TODO (Cristian)_

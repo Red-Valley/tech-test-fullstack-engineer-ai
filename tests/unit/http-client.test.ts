@@ -41,6 +41,20 @@ describe('request', () => {
     });
   });
 
+  it('throws ApiError when a 2xx response is not JSON', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>', { status: 200 })));
+    await expect(request('/x')).rejects.toMatchObject({ status: 200 });
+  });
+
+  it('keeps caller headers given as a Headers instance and adds the JSON content type', async () => {
+    const fetchMock = respond(200, {});
+    vi.stubGlobal('fetch', fetchMock);
+    await request('/x', { headers: new Headers({ 'X-Test': '1' }) });
+    const sent = new Headers(fetchMock.mock.calls[0][1].headers);
+    expect(sent.get('X-Test')).toBe('1');
+    expect(sent.get('Content-Type')).toBe('application/json');
+  });
+
   it('throws ApiError with status 0 when the network fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
     const error = await request('/x').catch((e: unknown) => e);

@@ -98,6 +98,8 @@ describe('toFormErrors', () => {
   });
 
   it('ignores unknown fields and empty message lists', () => {
-    expect(toFormErrors({ id: ['nope'], genre: [], developer: undefined })).toEqual({});
+    expect(
+      toFormErrors({ id: ['nope'], constructor: ['x'], genre: [], developer: undefined }),
+    ).toEqual({});
   });
 });

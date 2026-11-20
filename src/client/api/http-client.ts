@@ -21,10 +21,10 @@ const isApiErrorDto = (body: unknown): body is ApiErrorDto =>
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(path, {
-      ...init,
-      headers: { 'Content-Type': 'application/json', ...init.headers },
-    });
+    // new Headers(...) accepts every HeadersInit form (object, array or Headers instance).
+    const headers = new Headers(init.headers);
+    if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+    response = await fetch(path, { ...init, headers });
   } catch {
     throw new ApiError(0, 'Could not reach the server. Check your connection and try again.');
   }
@@ -36,5 +36,6 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     if (isApiErrorDto(body)) throw new ApiError(response.status, body.error, body.fieldErrors);
     throw new ApiError(response.status, `Request failed (${response.status})`);
   }
+  if (body === null) throw new ApiError(response.status, 'The server sent an unreadable response.');
   return body as T; // the API contract (ARCHITECTURE.md §5.2) defines this shape
 }

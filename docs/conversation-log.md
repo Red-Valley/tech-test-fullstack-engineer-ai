@@ -280,3 +280,15 @@ Now C4.1. The domain types import nothing. The transformers keep empty form fiel
 Now the tests. Besides the round trips, they check the §4.4 rule end to end: an empty form field, run through the shared schema, has to fail with "required" and never come out as 0.
 
 All 134 tests pass. There's one lint warning, for the `_id` I strip out in the round-trip test. Using the id in an assertion clears it:
+
+---
+
+## 2026-11-20 01:22:18 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> lets commit
+
+**Claude:**
+
+139 tests pass, and lint, format and build are clean. That ends Phase 4, so running the review:
