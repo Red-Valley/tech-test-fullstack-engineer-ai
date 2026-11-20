@@ -26,21 +26,49 @@ export type EvalCase = {
 };
 
 // Ways a correct answer can say "it doesn't exist" / "there are none".
-const NOT_FOUND = [
+// Ways a correct answer says "it doesn't exist" / "there are none". Kept specific on purpose:
+// generic phrases like "is not" would also match an invented answer ("…which is not bad").
+// Exported so tests can check they don't match unrelated text.
+export const NOT_FOUND = [
   'not found',
   "couldn't find",
   'could not find',
+  "can't find",
+  'cannot find',
   'no game',
-  "doesn't",
-  'does not',
+  "doesn't exist",
+  'does not exist',
+  "isn't in the catalog",
+  'is not in the catalog',
   'not in the catalog',
-  "isn't",
-  'is not',
+  "doesn't appear",
+  'does not appear',
+  "don't have",
+  'do not have',
   'no record',
   'no match',
 ];
-const NONE = ['no ', 'none', "aren't any", 'are not any', 'zero', "don't have", 'there are 0'];
-const DECLINE = ['only help', 'only answer', 'catalog', "can't help", 'cannot help', 'not able'];
+export const NONE = [
+  'there are no',
+  'there is no',
+  'no horror',
+  'no games',
+  'none',
+  "aren't any",
+  'are not any',
+  "don't have any",
+  "doesn't have any",
+  'there are 0',
+  'zero',
+];
+export const DECLINE = [
+  'only help',
+  'only answer',
+  'catalog',
+  "can't help",
+  'cannot help',
+  'not able',
+];
 
 const top = (
   service: GamesService,
@@ -204,7 +232,8 @@ export const CASES: EvalCase[] = [
     id: 'not-found-revenue',
     category: 'not-found',
     question: 'How much revenue did Shadow Keep Arena make last month?',
-    expected: () => ({ includes: [], includesAny: [NOT_FOUND] }),
+    // No dollar amount at all: any figure for a game that doesn't exist is invented.
+    expected: () => ({ includes: [], includesAny: [NOT_FOUND], excludes: ['$'] }),
     expectTools: ['find_game'],
   },
 

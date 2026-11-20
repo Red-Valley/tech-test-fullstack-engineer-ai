@@ -284,3 +284,33 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Not yet run against the real model; that's C8.2.
 **Review:** not run yet; runs at the end of Phase 8.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 23:50 · Phase 8: eval runner + first results (C8.2, not committed yet; C8.1 committed as 0d5bd70)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "commit", then "lets run 20 questions", then "yes" (to the full 3-run eval)
+**What Claude did:** Committed C8.1 (`0d5bd70`). Built `evals/run-evals.ts` + `npm run eval` (`--runs`, `--only`, `EVAL_BASE_URL`, `EVAL_THRESHOLD` default 90%, `EVAL_DELAY_MS` pacing for the free tier, retries only on stream/HTTP errors). Before running, it checks the app is reachable and on the eval DB by comparing `/api/games/stats` with the eval DB's own stats (no evals endpoint, per §7.3); it refused Cristian's dev server on `data/games.db` with a clear message. To avoid touching Cristian's dev server, ran the evals against a separate production build (`next start -p 3124` with `DB_PATH=data/eval.db`). Sample run, 20 cases × 1 on Groq `openai/gpt-oss-120b`: **19/20 (95%)**, avg latency 3.8 s, avg 1.0 tool calls. Only failure: `fuzzy-compare` ("Compare revenue of Lantren Drift vs Coper Tides"): right tool, titles resolved, ratio 2 correct, but the answer left out the two dollar values the grader requires (the correctly-spelled comparison passed). Full run (20 × 3) started.
+**Issues:**
+- Claude's first attempt ran the full 60-request eval in the foreground with no output for minutes; Cristian stopped it and asked "you ok?". Nothing was written. Re-ran in the background, first as a 20-question sample.
+- The runner labels the model from its own env vars (passed explicitly here), not from what the server actually uses; correct for this run, but could mislabel if they differ.
+**Review:** not run yet; runs at the end of Phase 8.
+**My call:** _TODO (Cristian)_
+
+### 2026-11-20 00:05 · Phase 8: full eval result + review fixes (part of C8.2)
+**Tool / session:** Claude Code, main + subagent code-reviewer
+**Prompt (excerpt):** "yes" (run the full eval)
+**What Claude did:** Full run on Groq `openai/gpt-oss-120b`, 20 cases × 3: **59/60 (98%)**, avg 3.0 s, 1.0 tool calls per answer; only failure `fuzzy-compare` 1/3 (ratio given, dollar values left out), so it's intermittent model behavior, not a tool bug. Then the Phase 8 review (it read all 60 recorded answers and agreed with every verdict) and its fixes. Re-graded the 60 recorded answers offline with the stricter grader: 0 verdicts changed. Re-running the full eval to regenerate the result files.
+**Issues:**
+- **The grader's text matching was substring-based**, so "no game" matched inside "casi*no game*" and "no " inside "casino". Found by a new test Claude wrote for the review's NONE finding; fixed by requiring matches to start at a word boundary (applies to titles too: "Run" no longer matches "Rune").
+- First edit of the number regex wrote a literal `\n` into the source (Claude's scripted edit); caught by reading the result, fixed.
+**Review:** needs changes → fixed: `--runs abc` / a mistyped `--only` ran zero cases, wrote "NaN%" and exited 0 (now validated, exit 1, and `!(accuracy >= threshold)`); the model label came from the runner's shell, not the server (now read from `.env.local` with the app's own provider logic, `EVAL_MODEL_LABEL` overrides); NOT_FOUND accepted "…which is not bad" for an invented game (generic "is not"/"isn't" removed, and `not-found-revenue` now fails any `$` amount); NONE's bare "no " (now specific phrases). Nits fixed: "1.7 million"/"310 thousand" parsed; per-run `attempts` recorded and a retries column; local date; eval-DB check also compares the full title list; non-2xx is reported as such. Accepted as strict by design: excludes on runner-up titles and the injection case can fail a correct answer that mentions them (a README trade-off).
+**My call:** _TODO (Cristian)_
+
+### 2026-11-20 00:30 · Phase 8: final eval result, committed as-is (C8.2)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "2" (chose: commit the 95% result and list the failing case as a known limitation)
+**What Claude did:** Final full run after the review fixes, Groq `openai/gpt-oss-120b`, 20 cases × 3 runs: **57/60 (95%)**, above the 90% threshold; avg 3.0 s, 1.0 tool calls. Committed the results (`evals/results/latest.json`, `latest.md`) and the hardened runner and grader.
+**Issues:**
+- `fuzzy-compare` failed 3/3 this run (earlier 2/3 and 1/3 in previous runs). In every run the model gave the ratio but not the two dollar amounts. Model variance, not a tool bug: the tool returns both values. Left as a documented limitation; the fix (a quotable sentence in `compare_games` output) is available if Cristian asks.
+- Earlier, the full-run first attempt had no output for minutes (see the earlier entry).
+**Review:** Phase 8 review applied before this run (see the entry above). Not re-reviewed after the final run.
+**My call:** _TODO (Cristian)_

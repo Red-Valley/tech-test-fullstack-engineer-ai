@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { openDatabase } from '@/server/db/client';
 import { createGamesRepository } from '@/server/repositories/games.repository';
 import { createGamesService } from '@/server/services/games.service';
-import { CASES } from '../../evals/cases';
+import { CASES, NONE, NOT_FOUND } from '../../evals/cases';
 import { contains, extractNumbers, grade } from '../../evals/grade';
 import { GAMES_FIXTURE } from '../fixtures/games.fixture';
 
@@ -138,5 +138,50 @@ describe('eval cases', () => {
 
   it('every case computes its expectation without throwing', () => {
     for (const evalCase of CASES) expect(() => evalCase.expected(service)).not.toThrow();
+  });
+});
+
+describe('written-out magnitudes', () => {
+  it.each([
+    ['$1.7 million', 1_700_000],
+    ['310 thousand dollars', 310_000],
+    ['1.665 million', 1_665_000],
+  ])('reads %s as %s', (text, value) => {
+    expect(extractNumbers(text)).toContain(value);
+  });
+});
+
+describe('phrase lists do not match unrelated or invented answers', () => {
+  const matchesAny = (phrases: string[], text: string) => phrases.some((p) => contains(text, p));
+
+  it('NOT_FOUND rejects an invented answer and accepts real "not found" wording', () => {
+    expect(matchesAny(NOT_FOUND, 'Shadow Keep Arena made $120,000, which is not bad.')).toBe(false);
+    expect(matchesAny(NOT_FOUND, "Shadow Keep Arena isn't a casino game, it made $5,000.")).toBe(
+      false,
+    );
+    expect(matchesAny(NOT_FOUND, "I couldn't find a game called Shadow Keep Arena.")).toBe(true);
+    expect(matchesAny(NOT_FOUND, 'There is no game titled Shadow Keep Arena in the catalog.')).toBe(
+      true,
+    );
+  });
+
+  it('NONE ignores "no" inside other words', () => {
+    expect(matchesAny(NONE, 'Velvet Abyss has a techno soundtrack and a casino level.')).toBe(
+      false,
+    );
+    expect(matchesAny(NONE, 'There are no Horror games rated above 4.5.')).toBe(true);
+  });
+
+  it('the not-found-revenue case fails an invented dollar figure', () => {
+    const evalCase = CASES.find((c) => c.id === 'not-found-revenue');
+    if (!evalCase) throw new Error('missing case');
+    const expectation = evalCase.expected(undefined as never); // this case uses no data
+    const invented = grade(
+      "I couldn't find it, but it probably made $50,000.",
+      [{ name: 'find_game', output: { notFound: true } }],
+      expectation,
+      evalCase.expectTools,
+    );
+    expect(invented.failures).toContain('should not mention "$"');
   });
 });

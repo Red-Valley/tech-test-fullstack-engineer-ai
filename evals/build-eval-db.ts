@@ -5,8 +5,7 @@ import { openDatabase } from '@/server/db/client';
 import { createGamesRepository } from '@/server/repositories/games.repository';
 import { gameInputSchema } from '@/shared/schemas/game.schema';
 import { GAMES_FIXTURE } from '../tests/fixtures/games.fixture';
-
-export const EVAL_DB_PATH = 'data/eval.db';
+import { EVAL_DB_PATH } from './config';
 
 // Only the eval DB is ever deleted here; this script never touches data/games.db.
 for (const suffix of ['', '-wal', '-shm']) rmSync(`${EVAL_DB_PATH}${suffix}`, { force: true });

@@ -48,7 +48,14 @@ const WORD_NUMBERS: Record<string, number> = {
   twenty: 20,
 };
 
-const SUFFIX: Record<string, number> = { k: 1e3, m: 1e6, b: 1e9 };
+const SUFFIX: Record<string, number> = {
+  k: 1e3,
+  thousand: 1e3,
+  m: 1e6,
+  million: 1e6,
+  b: 1e9,
+  billion: 1e9,
+};
 
 /** Lowercase, unify quotes/dashes/spaces, so text matching ignores typography. */
 export function normalizeText(text: string): string {
@@ -63,12 +70,13 @@ export function normalizeText(text: string): string {
 
 /**
  * Every number written in the text, as a value: "$1,665,000" → 1665000, "$1.7M" → 1700000,
- * "412K" → 412000, "3.8" → 3.8, "nine" → 9. Ratios like "2×" → 2.
+ * "412K" → 412000, "$1.7 million" → 1700000, "3.8" → 3.8, "nine" → 9. Ratios like "2×" → 2.
  */
 export function extractNumbers(text: string): number[] {
   const normalized = normalizeText(text);
   const numbers: number[] = [];
-  const pattern = /(?<![\w.])\$?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d+))?\s*(k|m|b)?(?![a-z])/g;
+  const pattern =
+    /(?<![\w.])\$?(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d+))?\s*(thousand|million|billion|k|m|b)?(?![a-z])/g;
   for (const match of normalized.matchAll(pattern)) {
     const [, whole, decimals, suffix] = match;
     let value = Number(`${whole.replace(/,/g, '')}${decimals ? `.${decimals}` : ''}`);
@@ -88,8 +96,19 @@ export function extractNumbers(text: string): number[] {
  * (so "$1.7M" counts for 1,665,000 but "$1.5M" doesn't).
  */
 export function contains(answer: string, expected: Expected): boolean {
-  if (typeof expected === 'string') return normalizeText(answer).includes(normalizeText(expected));
+  if (typeof expected === 'string')
+    return startsAWord(normalizeText(answer), normalizeText(expected));
   return extractNumbers(answer).some((value) => numbersMatch(value, expected));
+}
+
+const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Text match that must begin at a word boundary, so "no game" doesn't match inside
+ * "casino game" and "Run" doesn't match inside "Rune".
+ */
+function startsAWord(haystack: string, needle: string): boolean {
+  return new RegExp(`(?<![a-z0-9])${escapeRegExp(needle)}`).test(haystack);
 }
 
 export function numbersMatch(actual: number, expected: number): boolean {
