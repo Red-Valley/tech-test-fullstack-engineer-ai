@@ -274,3 +274,13 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - The prompt tweaks were checked by hand on 1–3 questions only; the Phase 8 evals are the real check.
 **Review:** not run (config + prompt wording).
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 23:30 · Phase 8: eval DB, cases, grader (C8.1, not committed yet; Phase 7 committed as 1c122a4 + 558c54a)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "commit"
+**What Claude did:** Committed C7.2 (`1c122a4`) and the Groq switch (`558c54a`) separately, finishing Phase 7. Built C8.1: `evals/build-eval-db.ts` + `npm run eval:db` (rebuilds `data/eval.db` from the test fixture; only ever deletes the eval DB); `evals/grade.ts` (deterministic: numbers normalized from "$1,665,000", "$1.7M", "412K", "nine"; counts exact, decimals ±0.05, large amounts ±1%; text case- and quote-insensitive; `includes` / `includesAny` / `excludes`; expected tools with alternatives, none for out-of-scope; fails any tool output over 10 games); `evals/cases.ts` with 20 cases across all ten §7.3 categories, each computing its expected values from the eval DB through the service at run time. 19 tests for the grader and the cases (230 total).
+**Issues:**
+- Grading choices that could make results flaky or too lenient, decided by Claude and worth a look: "not found"/"none"/"decline" are matched by phrase lists (e.g. "not found", "couldn't find", "isn't"); the "none" list includes the bare word "no ", which is lenient, so the empty-result case also excludes every Horror title; top-revenue excludes the runner-up's title, which fails an answer that mentions it even as runner-up; counting accepts `aggregate_games` or `query_games` (its `total`).
+- Not yet run against the real model; that's C8.2.
+**Review:** not run yet; runs at the end of Phase 8.
+**My call:** _TODO (Cristian)_

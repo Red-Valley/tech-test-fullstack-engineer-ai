@@ -90,7 +90,7 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 
 ## Phase 8: Evals (Level 3)
 
-- [ ] **C8.1 `feat(evals): eval db, cases, grader`**: `eval:db` script (builds the DB from the fixture), `evals/cases.ts` (~20 cases covering every category in ARCHITECTURE.md §7.3, with expected answers computed by code), and `evals/grade.ts` with unit tests.
+- [x] **C8.1 `feat(evals): eval db, cases, grader`**: `eval:db` script (builds the DB from the fixture), `evals/cases.ts` (~20 cases covering every category in ARCHITECTURE.md §7.3, with expected answers computed by code), and `evals/grade.ts` with unit tests.
   - **Verify:** `npm test` shows grader normalization (`$1.2M`, `1,200,000`, `4.5`) and that a runner-up named as the winner fails.
 
 - [ ] **C8.2 `feat(evals): runner + first results`**: `evals/run-evals.ts` (server and eval-DB check, `--runs 3`, `console.table`, `latest.json`/`latest.md`, exit 1 if below threshold).

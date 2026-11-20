@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed": "tsx src/server/db/seed.ts",
-    "db:reset": "tsx src/server/db/seed.ts --reset"
+    "db:reset": "tsx src/server/db/seed.ts --reset",
+    "eval:db": "tsx evals/build-eval-db.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.106",

@@ -529,3 +529,19 @@ That's the chat's generic error message: the real cause is only written to the s
 Fixing the code comment that now gives the default as its example, then testing a real question against your running server:
 
 Just the `ARCHITECTURE.md` table padding, from the shorter model name. Formatting it and logging the fix:
+
+---
+
+## 2026-11-20 02:32:47 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> commit
+
+**Claude:**
+
+Splitting into two commits. `chat.transformer.test.ts` has a little of both (the C7.2 tests, plus an example error string changed from `ANTHROPIC` to `GROQ`), so it goes with C7.2. The docs and logs go with the second commit.
+
+All 19 grader and case tests pass. Running the full gates. `evals/` falls under the typecheck and lint globs too.
+
+All 230 tests pass, and typecheck, lint and format are clean. Logging C8.1:
