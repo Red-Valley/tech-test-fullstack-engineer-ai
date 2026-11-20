@@ -141,6 +141,21 @@ describe('delete', () => {
   });
 });
 
+describe('createMany / deleteAll', () => {
+  it('inserts all games or none', () => {
+    expect(() =>
+      repo.createMany([game({ title: 'Fresh One' }), game({ title: 'ember road' })]),
+    ).toThrow(ConflictError);
+    expect(repo.list().map((g) => g.title)).not.toContain('Fresh One');
+  });
+
+  it('empties the table and restarts ids at 1', () => {
+    repo.deleteAll();
+    expect(repo.list()).toEqual([]);
+    expect(repo.createMany([game({ title: 'First Again' })])[0].id).toBe(1);
+  });
+});
+
 describe('table constraints', () => {
   it('rejects invalid rows even if validation were bypassed', () => {
     expect(() => repo.create(game({ title: 'Bad', monthly_downloads: -1 }))).toThrow(/CHECK/);

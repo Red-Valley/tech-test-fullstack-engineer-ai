@@ -89,6 +89,9 @@ export function createGamesRepository(db: Db) {
      WHERE id = @id`,
   );
   const remove = db.prepare('DELETE FROM games WHERE id = ?');
+  const deleteEverything = db.prepare('DELETE FROM games');
+  // AUTOINCREMENT keeps its counter in sqlite_sequence; clearing it restarts ids at 1.
+  const resetIds = db.prepare("DELETE FROM sqlite_sequence WHERE name = 'games'");
 
   const conflict = (title: string) => new ConflictError(`A game titled "${title}" already exists`);
 
@@ -134,11 +137,31 @@ export function createGamesRepository(db: Db) {
     delete(id: number): boolean {
       return remove.run(id).changes > 0;
     },
+
+    /** Inserts all games or none (single transaction). */
+    createMany(inputs: GameInputDto[]): GameDto[] {
+      return db.transaction(() => inputs.map((input) => this.create(input)))();
+    },
+
+    /**
+     * Empties the table and restarts ids at 1. Used by db:reset instead of deleting the file,
+     * so a running dev server keeps a valid connection and sees the new data immediately.
+     */
+    deleteAll(): void {
+      db.transaction(() => {
+        deleteEverything.run();
+        resetIds.run();
+      })();
+    },
   };
 }
 
 export type GamesRepository = ReturnType<typeof createGamesRepository>;
 
+// Prepared statements are compiled once per process, like the connection in getDb().
+const globalForRepo = globalThis as typeof globalThis & { __gamesRepository?: GamesRepository };
+
 export function getGamesRepository(): GamesRepository {
-  return createGamesRepository(getDb());
+  globalForRepo.__gamesRepository ??= createGamesRepository(getDb());
+  return globalForRepo.__gamesRepository;
 }

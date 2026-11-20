@@ -78,3 +78,15 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Claude's plan had the seed (C2.1) before the repository (C2.2). That would have forced the seed to run its own SQL, against ARCHITECTURE.md ("the only code that runs SQL"). Claude swapped the two steps in `docs/PLAN.md` and moved `errors.ts` from C3.1 into C2.1 because the repository throws `ConflictError`.
 **Review:** not run yet; it runs at the end of Phase 2, after C2.2.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 19:40 · Phase 2: test fixture + seed (C2.2, not committed yet; C2.1 committed as d318848)
+**Tool / session:** Claude Code, main + subagent code-reviewer
+**Prompt (excerpt):** "Ok lets commit"
+**What Claude did:** Committed C2.1 (`d318848`). Built C2.2: `tests/fixtures/games.fixture.ts` (18 invented games, including the prompt-injection game "Mirror Lake"), `src/server/db/seed-data.ts` (25 invented games for the dashboard), `src/server/db/seed.ts`, and the `seed` and `db:reset` scripts (via `tsx`). Added `createMany` and `deleteAll` to the repository and `tests/unit/datasets.test.ts`, which checks that every eval question has exactly one answer in the fixture (59 tests total). Verify: `db:reset` → 25 rows, Starfall Courier 412,000 vs Deepdelve 356,000; re-running `seed` does nothing.
+**Issues:**
+- Claude kept the dashboard seed and the eval fixture as two separate datasets. ARCHITECTURE.md describes both, but it is a choice: dashboard edits can never affect evals, at the cost of two lists to maintain.
+- The first `db:reset` deleted the DB file. The reviewer pointed out that a running `next dev` would keep using the deleted file and show stale data. Changed to emptying the table through the repository (`deleteAll`, which also restarts ids).
+- Claude's fixture had "Shardfall" and "Ashfall Run". The reviewer flagged that a misspelling like "Ashfal" could fuzzy-match either one. Renamed Shardfall to "Glimmerdeep" and added a test that no two titles share a word.
+- The fixture header claimed several answers (genre average vs total, Roguelike average) that no test checked. Tests added.
+**Review:** needs changes → fixed: `db:reset` under a running dev server, ambiguous fuzzy titles, unchecked fixture claims; nits fixed: the repository is cached once per process, and the seed's transaction moved into `repo.createMany`. Carried forward to Phase 3: validate `sortBy`/`order` with `z.enum` in the route and tools (an unexpected value would give a SQL error, i.e. a 500, not an injection); the multi-step eval must require the genre name "RPG", since RPG has a single game (Iron Psalm). Accepted trade-off: `COLLATE NOCASE` only ignores case for ASCII letters, so "Éclair" and "éclair" would count as different titles.
+**My call:** _TODO (Cristian)_

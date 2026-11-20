@@ -200,3 +200,17 @@ Updating the plan for the swap, then writing C2.1:
 Now the repository. It uses one static statement per sort option, so no user input is ever concatenated into SQL:
 
 `tsx` resolves the `@/` alias, `DB_PATH` is respected, and the folder and DB file get created when missing. Adding the prompts-log entry for this step:
+
+---
+
+## 2026-11-20 00:29:37 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> Ok lets commit
+
+**Claude:**
+
+Now the plan's Verify step for real: reset, query the database with `sqlite3`, then run `seed` again to confirm it doesn't insert duplicates.
+
+Verify passed: 25 rows, top two revenues 412,000 and 356,000 with no tie, re-seeding is a safe no-op, and `data/games.db` is gitignored. This is the end of Phase 2, so running the review:
