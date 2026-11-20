@@ -58,19 +58,19 @@ _Order swapped from the first draft: the seed has to go through the repository, 
 - [x] **C4.1 `feat(client): domain, http client, api, transformers`** (`88e2494`), with transformer tests.
   - **Verify:** `npm test` shows DTO⇄domain round-trips, and an empty form field becomes a validation error instead of `0`.
 
-- [x] **C4.2 `feat(client): hooks + CatalogContext`**: `use-games`, `use-game-mutations`, `use-game-stats`, and `catalog-context.tsx` (`highlightedGameIds`, `refreshCatalog`).
+- [x] **C4.2 `feat(client): hooks + CatalogContext`** (`36f1ee3`): `use-games`, `use-game-mutations`, `use-game-stats`, and `catalog-context.tsx` (`highlightedGameIds`, `refreshCatalog`).
   - **Verify:** typecheck and lint pass, including the client-must-not-import-server rule. Checked in the browser in Phase 5.
 
 ## Phase 5: Dashboard UI _(worktree `feat/ui`)_
 
-- [ ] **C5.1 `feat(ui): primitives + format helpers`**: Button, Input, Select, Modal (focus trap, closes on Esc), Badge, Spinner, EmptyState, plus `lib/format.ts` with tests.
-  - **Verify:** `npm test` for USD, thousands separators and one-decimal ratings. In the browser, Tab stays inside the modal and Esc closes it.
+- [x] **C5.1 `feat(ui): primitives + format helpers`**: Button, Input, Select, Modal (focus trap, closes on Esc), Badge, Spinner, EmptyState, plus `lib/format.ts` with tests.
+  - **Verify:** `npm test` for USD, thousands separators and one-decimal ratings, plus static-render checks of the accessibility wiring (label↔input, `aria-invalid`, error text, `role=status`). _The in-browser Modal check (Tab stays inside, Esc closes) moved to C5.3, the first step that renders it._
 
 - [ ] **C5.2 `feat(ui): KPI cards + games table`**: dashboard and table containers with loading, error and empty states.
   - **Verify:** in the browser, the KPI values equal `curl /api/games/stats`. Stop the server to see the error state, and empty the DB to see the empty state. At ≤768px the dashboard and chat stack.
 
 - [ ] **C5.3 `feat(ui): create/edit modal + delete`**
-  - **Verify:** in the browser, create a game (row appears, KPIs update), edit it, enter a duplicate title (409 shown on the field), and delete it.
+  - **Verify:** in the browser, create a game (row appears, KPIs update), edit it, enter a duplicate title (409 shown on the field), and delete it. Modal: Tab stays inside, Esc and the backdrop close it, focus returns to the button that opened it.
 
 ## Phase 6: AI tools + chat route _(worktree `feat/ai`, parallel with Phases 4–5)_
 

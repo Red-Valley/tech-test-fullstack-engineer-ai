@@ -292,3 +292,17 @@ All 134 tests pass. There's one lint warning, for the `_id` I strip out in the r
 **Claude:**
 
 139 tests pass, and lint, format and build are clean. That ends Phase 4, so running the review:
+
+---
+
+## 2026-11-20 01:26:35 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> commit
+
+**Claude:**
+
+C4.2 is committed as `36f1ee3`, which finishes Phase 4. Starting C5.1. First a small set of color tokens with dark-mode values, so the primitives don't hardcode colors:
+
+One real failure: the compact formatter printed `$412.0K` instead of `$412K`. The test caught it. `trailingZeroDisplay: 'stripIfInteger'` drops the `.0`:

@@ -146,3 +146,13 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 - Review fixes to Claude's code: a loader that throws synchronously would have left `isLoading` stuck at true; a failed refetch wiped the data already shown (the table would empty on a 500).
 **Review:** ready to merge; should-fix items fixed (sync throw, keep data on failed refetch). Nits fixed: stable empty array in `useGames`, `Object.hasOwn` in field-error mapping (a `constructor` key passed the old check), `Headers`-instance support and a clear error for a non-JSON 2xx in the HTTP client, a stronger 409 test. Accepted as-is: one shared `isSubmitting` flag (one modal at a time). For Phase 5's browser check: key change mid-request, refetch, refetch after an error, StrictMode.
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 20:45 · Phase 5: UI primitives + format helpers (C5.1, not committed yet; C4.2 committed as 36f1ee3)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "commit"
+**What Claude did:** Committed C4.2 (`36f1ee3`), finishing Phase 4. Built C5.1: semantic color tokens with dark-mode values in `globals.css`; primitives Button, Input, Select (sharing a `Field` wrapper that links label, control and error text), Modal (native `<dialog>` + `showModal()`: the browser makes the page inert, closes on Esc and restores focus, so no hand-written focus trap), Spinner, Badge, EmptyState; `client/lib/format.ts` (USD, compact USD, numbers, one-decimal ratings, fixed `en-US`). Tests: format helpers, plus static-render checks of the accessibility wiring with `react-dom/server` (no new dependencies). 153 tests.
+**Issues:**
+- A format test caught a real bug on the first run: compact USD printed `$412.0K`. Fixed with `trailingZeroDisplay: 'stripIfInteger'`.
+- The plan's in-browser Modal check can't happen yet because nothing renders the Modal; moved to C5.3 in `docs/PLAN.md`.
+**Review:** not run yet; runs at the end of Phase 5.
+**My call:** _TODO (Cristian)_
