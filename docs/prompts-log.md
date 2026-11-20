@@ -68,3 +68,13 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **Issues:** Claude read "commit two steps at the time" as a standing rule and saved it to memory and the plan. Cristian meant it for this commit only. The entry above says it was saved as a standing preference; that is no longer true.
 **Review:** not run (no code change).
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 19:30 · Phase 2: SQLite client + repository (C2.1, not committed yet; Phase 1 committed as 1c390b4)
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "lets commit"
+**What Claude did:** Committed Phase 1 (`1c390b4`), then built C2.1: `server/db/schema.sql` (UNIQUE COLLATE NOCASE title, CHECK constraints), `server/db/client.ts` (`DB_PATH`, creates the table if missing, one connection kept across `next dev` reloads), `server/http/errors.ts`, and `server/repositories/games.repository.ts` (one static prepared statement per sort/order pair, all filters bound, LIKE wildcards escaped). 16 repository tests on an in-memory DB (40 total). Smoke-tested on a real file through `tsx` with a custom `DB_PATH`.
+**Issues:**
+- Running the seed and eval scripts needs a TypeScript runner that understands the `@/` alias. Claude had quietly added `tsx` once during setup and removed it because it isn't in the approved stack. This time it asked first, and Cristian approved adding `tsx` as a dev dependency.
+- Claude's plan had the seed (C2.1) before the repository (C2.2). That would have forced the seed to run its own SQL, against ARCHITECTURE.md ("the only code that runs SQL"). Claude swapped the two steps in `docs/PLAN.md` and moved `errors.ts` from C3.1 into C2.1 because the repository throws `ConflictError`.
+**Review:** not run yet; it runs at the end of Phase 2, after C2.2.
+**My call:** _TODO (Cristian)_
