@@ -1,0 +1,49 @@
+{
+  "name": "indie-games-catalog",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "tsx src/server/db/seed.ts",
+    "db:reset": "tsx src/server/db/seed.ts --reset",
+    "eval:db": "tsx evals/build-eval-db.ts",
+    "eval": "tsx evals/run-evals.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.106",
+    "@ai-sdk/groq": "^4.0.85",
+    "@ai-sdk/react": "^4.0.181",
+    "ai": "^7.0.177",
+    "better-sqlite3": "^13.2.0",
+    "clsx": "^2.1.1",
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.10.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.1.1"
+  }
+}

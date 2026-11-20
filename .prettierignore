@@ -1,0 +1,9 @@
+.next
+node_modules
+package-lock.json
+next-env.d.ts
+data
+evals/results
+docs/prompts-*.md
+docs/conversation-log.md
+.github/PULL_REQUEST_TEMPLATE.md
