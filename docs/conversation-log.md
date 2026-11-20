@@ -69,3 +69,51 @@ I've committed C0.1 as `3df0f27`. Per the `CLAUDE.md` rule, its hash goes in wit
 There's no git remote yet, so CI can only be checked locally for now. I'm pinning Node 22 in `.nvmrc` so CI uses the same version we develop on:
 
 All CI steps pass locally in the same order: format:check, lint, typecheck, test, build. One more check, that the lockfile is in sync, since `npm ci` fails if it isn't:
+
+---
+
+## 2026-11-20 00:14:57 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> lets commit
+
+**Claude:**
+
+Committed `8756c26`, which finishes Phase 0. Starting C1.1: turning off `cacheComponents` so route handlers can keep `runtime = 'nodejs'`.
+
+The docs say `partialPrefetching` requires `cacheComponents` and fails config validation without it. I'm removing both; this app has one page and no links, so prefetching doesn't matter here.
+
+With a temporary `/api/health` route that exports `runtime = 'nodejs'`, the build passes. I've deleted that probe route. Running the gates:
+
+`typecheck ok` didn't print, so I'm checking typecheck directly:
+
+Typecheck is failing on stale route types that the build generated for my deleted probe route. That's a leftover from my test, not a real problem. Rebuilding regenerates them:
+
+---
+
+## 2026-11-20 00:17:02 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> The change is too small lets go to the next step and commit two steps at the time
+
+**Claude:**
+
+Understood: from now on, two plan steps per commit. I'll save that preference and do C1.2 so it goes in with C1.1.
+
+All 22 tests pass, and lint, typecheck and format are clean. Vitest warned that its config file will stop loading in a future Vite version; renaming it to `.mts` fixes that:
+
+The warning is gone. I'm fixing the "rejects a empty title" test name, then running the Phase 1 review, since `CLAUDE.md` requires one before each phase's commit:
+
+---
+
+## 2026-11-20 00:20:01 UTC · main · session fc77e5ec
+
+**Prompt:**
+
+> I just deleted the memory.md file since I dont want to do 2 steps every time, just this once
+
+**Claude:**
+
+Got it, two steps was just for this commit. I'll remove the memory file that's still there and take the rule back out of the plan.

@@ -45,3 +45,15 @@ lets move the plan to docs
 ## 2026-11-20 00:14:16 UTC · main · session fc77e5ec
 
 lets commit
+
+## 2026-11-20 00:16:00 UTC · main · session fc77e5ec
+
+The change is too small lets go to the next step and commit two steps at the time
+
+## 2026-11-20 00:19:47 UTC · main · session fc77e5ec
+
+I just deleted the memory.md file since I dont want to do 2 steps every time, just this once
+
+## 2026-11-20 00:20:38 UTC · main · session fc77e5ec
+
+lets commit

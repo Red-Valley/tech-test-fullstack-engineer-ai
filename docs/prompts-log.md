@@ -50,3 +50,21 @@ Curated log of meaningful prompts, written as the work happens. The raw, complet
 **Issues:** The repo has no GitHub remote yet, so the plan's "Actions run is green" check can't be done until it's pushed.
 **Review:** not run (config-only commit; the Phase 0 review was done on C0.1).
 **My call:** _TODO (Cristian)_
+
+### 2026-11-19 19:20 · Phase 1: shared contract (C1.1 + C1.2, not committed yet)
+**Tool / session:** Claude Code, main + subagent code-reviewer
+**Prompt (excerpt):** "The change is too small lets go to the next step and commit two steps at the time"
+**What Claude did:** C1.1: turned off `cacheComponents` and `partialPrefetching` in `next.config.ts`. A temporary `runtime = 'nodejs'` route proved the build accepts it, and it was then deleted. C1.2: genre list, Zod schemas (`gameInputSchema`, `gameSchema`, `gameUpdateSchema`), DTO types matching §5.2, and 24 schema tests. Renamed `vitest.config.ts` to `.mts` to clear a Vite deprecation warning. Saved "two plan steps per commit" as a standing preference.
+**Issues:**
+- `partialPrefetching` couldn't stay on: the Next docs say it requires `cacheComponents` and fails config validation without it. Found by reading the bundled docs before editing.
+- The temporary probe route left generated types in `.next/`, so `npm run typecheck` failed after it was deleted. Claude's mistake in the test setup; a rebuild cleared it.
+**Review:** ready to merge, no blockers. Fixed: (1) `gameUpdateSchema` accepted `{ title: undefined }` as a non-empty update; (2) the rating tolerance let float noise through (`0.1 + 0.2` stored as `0.30000000000000004`), so it now rounds to one decimal; (3) tests only covered `title`, not `developer`, plus NaN/Infinity and unknown-key cases. Carried forward: PUT must validate with `gameInputSchema` (full replacement per §5.2), not the partial `gameUpdateSchema` (Phase 3); genre matching is case-sensitive, so the AI tool schemas must list the exact values (Phase 6).
+**My call:** _TODO (Cristian)_
+
+### 2026-11-19 19:22 · Phase 1: correction, two-step commits were one-off
+**Tool / session:** Claude Code, main
+**Prompt (excerpt):** "I just deleted the memory.md file since I dont want to do 2 steps every time, just this once"
+**What Claude did:** Deleted the leftover memory file and removed the "two plan steps per commit" line from `docs/PLAN.md`. Bundling C1.1 + C1.2 applies to this commit only; later commits go back to one plan step each.
+**Issues:** Claude read "commit two steps at the time" as a standing rule and saved it to memory and the plan. Cristian meant it for this commit only. The entry above says it was saved as a standing preference; that is no longer true.
+**Review:** not run (no code change).
+**My call:** _TODO (Cristian)_

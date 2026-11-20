@@ -20,15 +20,15 @@ Step-by-step plan to build everything in [ARCHITECTURE.md](../ARCHITECTURE.md), 
   - Update `CLAUDE.md` so the logs and `AI_WORKFLOW.md` are updated after every phase.
   - **Verify:** pipe a test payload into each hook and check the appended markdown. Restart the Claude Code session (hooks load at startup), send one prompt, and confirm it shows up in `docs/prompts-raw.md` and `docs/conversation-log.md`.
 
-- [x] **C0.2 `ci: add GitHub Actions workflow`**: `.github/workflows/ci.yml` runs install → format:check → lint → typecheck → test → build.
+- [x] **C0.2 `ci: add GitHub Actions workflow`** (`8756c26`): `.github/workflows/ci.yml` runs install → format:check → lint → typecheck → test → build.
   - **Verify:** run the same commands locally in that order. After a push, the Actions run is green.
 
 ## Phase 1: Shared contract
 
-- [ ] **C1.1 `chore: next config for nodejs route handlers`**: turn off the scaffold's `cacheComponents`. With it on, Next 16 forbids the `runtime = 'nodejs'` export that ARCHITECTURE.md §2 requires, and it would run synchronous better-sqlite3 queries at build time.
+- [x] **C1.1 `chore: next config for nodejs route handlers`**: turn off the scaffold's `cacheComponents`. With it on, Next 16 forbids the `runtime = 'nodejs'` export that ARCHITECTURE.md §2 requires, and it would run synchronous better-sqlite3 queries at build time.
   - **Verify:** `npm run build` succeeds.
 
-- [ ] **C1.2 `feat(shared): genres, zod schemas, DTO types`**: `shared/constants/genres.ts`, `shared/schemas/game.schema.ts` (`gameSchema`, `gameInputSchema`, `gameUpdateSchema`), `shared/types/game.dto.ts`, plus unit tests.
+- [x] **C1.2 `feat(shared): genres, zod schemas, DTO types`**: `shared/constants/genres.ts`, `shared/schemas/game.schema.ts` (`gameSchema`, `gameInputSchema`, `gameUpdateSchema`), `shared/types/game.dto.ts`, plus unit tests.
   - **Verify:** `npm test` shows passing cases for: title of 0 and 101 characters rejected, genre outside the list rejected, negative or non-integer revenue and downloads rejected, rating 5.1 and 3.25 rejected and 4.5 accepted.
 
 ## Phase 2: Database

@@ -19,7 +19,7 @@ How I used AI tools to build this project. This file is filled in phase by phase
 The architecture was decided first in `ARCHITECTURE.md`, then turned into a commit-by-commit plan in [`docs/PLAN.md`](docs/PLAN.md). Each commit has a verification step (a test, a `curl`, or a browser check) that has to pass before it lands, on top of `lint`, `typecheck` and `test`. Each phase ends with a `code-reviewer` pass and a prompts-log entry.
 
 - **Pre-build spike:** [MISSING: what the spike was, what it tested, and what it decided]
-- **Review after each phase:** [MISSING: reviewer findings per phase]
+- **Review after each phase:** the `code-reviewer` subagent ran before each phase commit, and I fixed its findings before committing. Phase 0: the logging hook took harness messages as prompts, and worktree sessions would have written logs onto their own branches. Phase 1: the partial-update schema accepted an empty update, and the rating check let float noise through. [MISSING: later phases]
 - **Evals as the check on the AI's output:** [MISSING: eval results from `evals/results/latest.md`]
 
 ## 3. Prompts
