@@ -1,52 +1,56 @@
-# Full Stack Engineer (AI) technical assessment
+# Indie Games Dashboard
 
-Candidate repository for a timed take-home: an internal dashboard for a catalog of indie games, plus an AI chat that answers questions about the catalog. `README.md` is the brief, with the requirements, stack, evaluation weights, and submission steps. Read it before planning work.
+Candidate submission for the Full Stack Engineer (AI) take-home: an internal dashboard for a catalog of indie games, plus an AI chat that answers questions about the catalog. `README.md` describes the app, `CHALLENGE.md` is the assessment brief (requirements, stack, evaluation weights, submission steps), and `AI_WORKFLOW.md` is the mandatory record of how AI tools were used.
 
-## Current state
+## Stack and layout
 
-No application exists yet. The tracked files are `README.md` (the brief), `.github/PULL_REQUEST_TEMPLATE.md` (the submission PR body), `.gitignore`, and these instruction files. There is no `package.json`, lockfile, task runner, test framework, or CI workflow. When the app is scaffolded, update this file with the layout, the package manager, and the verified commands.
-
-## Requirements that are easy to miss
-
-- The chat must query the catalog through tool calling. Never put the full catalog in the prompt.
-- Chat responses must stream.
-- The brief fixes the game fields: `title`, `developer`, `genre`, `monthly_revenue_usd`, `monthly_downloads`, `average_rating`.
-- The brief fixes the stack: Next.js 14 or later with the App Router, TypeScript, and Tailwind CSS. Storage (SQLite, JSON, or in-memory) and the LLM layer are the candidate's choice.
-- `AI_WORKFLOW.md` at the repository root is mandatory and carries 30% of the grade. It records how the candidate used AI coding tools: which tools and why, 3 to 5 real prompts with their outcomes, one moment the AI got it wrong and how it was fixed, and any use of parallel agents, subagents, or worktrees. Every entry must come from what actually happened. Never invent a prompt, an outcome, or an incident.
-- README clarity is graded (10%). `README.md` currently holds the brief, so the submission must also explain how to run the app locally.
-- Out of scope: auth, deployment, production error handling, and full test coverage. The time limit is 2 to 3 hours, so prefer the smallest implementation that meets each requirement.
-
-## Scaffolding
-
-Checked against the `create-next-app` 16.2.3 source:
-
-- `create-next-app .` refuses to run at the repository root, because `README.md`, `.github/`, `AGENTS.md`, and `CLAUDE.md` are not on its list of allowed existing files.
-- By default it writes `AGENTS.md` and `CLAUDE.md` and overwrites existing copies. Pass `--no-agents-md` when its output will be moved into this repository.
-
-Scaffold into a temporary directory or a subdirectory, then merge its `.gitignore` with this one. From Next.js 16.4 (checked in 16.4.2), `next dev` inserts a managed `nextjs-agent-rules` block into an existing `AGENTS.md` and keeps the rest of the file. Commit that block with the work.
-
-## Data and secrets
-
-- `.gitignore` excludes `*.db`, `*.sqlite`, `*.sqlite3`, `.env`, `.env.local`, and `.env.*.local`. With SQLite, the database file is never committed, so a reviewer who clones the repository needs seed data that the code creates. `.env.example` is not ignored and can list the required variables.
-- The LLM provider and its API key variable are not chosen yet. Never read or print `.env*` files. A chat run makes paid LLM calls, so run one only when asked.
+- Next.js 16 App Router with Cache Components enabled (`next.config.ts`), React 19, TypeScript, Tailwind CSS 4, npm, Node 22.
+- A page that reads the database is an async server component that calls `await connection()` first and sits inside `<Suspense>` (see `app/page.tsx`). `better-sqlite3` is synchronous, so without `connection()` the query would run at build time.
+- Route handlers do not export `runtime` or `dynamic`: Cache Components rejects route segment config. `GET` handlers that read the database call `await connection()`.
+- `lib/db.ts`: SQLite connection cached on `globalThis`, the schema, and a one-time seed recorded in `PRAGMA user_version`. The default file is `data/games.db` (gitignored). Set `DATABASE_PATH` to change it.
+- `lib/games/`: Zod schemas (`schema.ts`), `createRepository(db)` with CRUD plus the read-only `query` and `aggregate` (`repository.ts`), and seed data. Every SQL identifier comes from a whitelist and every value is a bound parameter.
+- `lib/chat/`: `tools.ts` (two `betaZodTool`s over the repository), `system-prompt.ts` (frozen, because the API ties thinking blocks to the exact system prompt and tool set), `request.ts` (validation of the replayed conversation), `events.ts` (NDJSON event types).
+- `app/api/chat/route.ts`: Anthropic SDK tool runner (`claude-opus-5-5`, `effort: "low"`, `thread: false`, server-side fallback) that streams NDJSON. The route is stateless: the browser replays the conversation it received in the `done` event, unchanged.
+- `components/`: client components for the dashboard table, the add and edit dialog, the chat, and the nav.
+- `PLAN.md`: the plan the work was built from, with the deviations that came up.
 
 ## Commands
 
-None exist yet. Typecheck, lint, test, and build are unavailable until a `package.json` exists. The package manager is not chosen, and `.gitignore` gives no signal (it lists npm, yarn, and pnpm debug logs).
+Run from the repository root. All of these were run and pass, except `dev`, which was run and checked by hand.
+
+- `npm install`
+- `npm run typecheck`: `next typegen && tsc --noEmit`. Typegen must run first, or `RouteContext` and `LayoutProps` do not resolve.
+- `npm run lint`
+- `npm test`: Vitest over `lib/**/*.test.ts` and `tests/`. Needs no API key.
+- `npm run build`: needs no database and no API key.
+- `npm run dev`: open `http://localhost:3000`. Use `localhost`, because the dev server blocks `127.0.0.1`.
+
+## Constraints
+
+- Never read or commit `.env*`. `ANTHROPIC_API_KEY` goes in `.env.local`, and `.env.example` lists the variables.
+- Never put the whole catalog in a prompt. The chat must keep answering through tool calls, and its responses must keep streaming.
+- Keep `AI_WORKFLOW.md` truthful. Every prompt, outcome, and mistake in it must have happened.
+- `app/api/chat/route.ts` accepts only the content block types listed in `lib/chat/request.ts`. A new block type needs that list and a test case updated.
+- `next dev` rewrites the managed block at the end of this file. Commit it with the work.
+- The brief puts auth, deployment, production error handling, and full test coverage out of scope.
 
 ## Verification
 
-No deterministic checks exist yet. Behavioral acceptance comes from the brief: games CRUD works through the UI and the REST API, and the chat streams an answer, produced through tool calls, for each sample question in `README.md`.
+Deterministic checks: typecheck, lint, test, build. Behavioral acceptance: games CRUD works in the UI and through the REST API, and the chat streams an answer through tool calls for each sample question in `CHALLENGE.md`.
+
+A live chat run needs `ANTHROPIC_API_KEY` and makes paid calls, so run it only when asked. The chat route was verified end to end against a local stand-in for the Messages API, and not against the live model. The beta parameters `server-side-fallback-2026-07-01` and `thinking-binding-controls-2026-08-01` are not verified against the live API. If it rejects them, remove `betas`, `fallbacks`, and `block_binding` in `app/api/chat/route.ts`.
 
 ## Submission
 
-- Work goes on a branch named `submission/<your-name>`. The pull request targets `main` of the original assessment repository.
-- `origin` is the candidate's copy. No `upstream` remote is configured, and the original repository's URL is not recorded locally.
-- The PR body follows `.github/PULL_REQUEST_TEMPLATE.md`: name, email, time spent, what was built, how to run, trade-offs, and the requirement checklist. The candidate supplies the name, email, and time spent.
+- Work goes on a branch named `submission/<your-name>`. The pull request targets `main` of the original assessment repository. `origin` is the candidate's fork, and no `upstream` remote is configured.
+- The PR body follows `.github/PULL_REQUEST_TEMPLATE.md`: name, email, time spent, what was built, how to run, trade-offs, and the checklist. The candidate supplies the name, email, and time spent.
 
-## Open decisions
+<!-- BEGIN:nextjs-agent-rules -->
 
-- Whether the app lives at the repository root or in a subdirectory.
-- The storage and the LLM layer.
-- A sample question asks for revenue "last month", but each game has one `monthly_revenue_usd` value and no month dimension.
-- Whether `README.md` replaces the brief or keeps it below the submission documentation.
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
