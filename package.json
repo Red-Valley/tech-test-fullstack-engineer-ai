@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:mock": "node scripts/dev-mock.mjs",
+    "mock:anthropic": "node scripts/mock-anthropic.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

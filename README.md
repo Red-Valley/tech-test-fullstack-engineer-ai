@@ -27,10 +27,24 @@ The first request creates `data/games.db` and seeds it with 18 fictional games. 
 | Command | What it does |
 |---|---|
 | `npm run dev` | Start the dev server |
+| `npm run dev:mock` | Start the dev server with the chat on the offline mock (no credits) |
+| `npm run mock:anthropic` | Start only the offline mock, on `MOCK_PORT` (default 4010) |
 | `npm run build` / `npm start` | Production build and server |
 | `npm run typecheck` | Generate route types and run `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm test` | Vitest (repository, route handler, and request validation tests) |
+
+## Try the chat without API credits
+
+The chat needs an Anthropic API key with credits. The API is prepaid, and a Claude Pro or Max subscription does not include API credits. A question with `claude-opus-5-5` costs roughly a few cents (an estimate). To run the whole app without spending anything, use the offline mock:
+
+```bash
+npm run dev:mock
+```
+
+This starts a local stand-in for the Anthropic Messages API (`scripts/mock-anthropic.mjs`) and the dev server together, with the app pointed at the stand-in. No API call is made, even if a real key is set in `.env` or `.env.local`, because variables set by this command take priority over `.env` files. Add `-- -p 3200` to use another port, or set `MOCK_PORT` to move the stand-in off port 4010.
+
+The mock is a fake model, and everything else is real: the chat route, the tool runner, the two tools, the SQLite database, the streaming, and the UI. It answers the three sample questions on the chat page by asking for a tool call and then writing an answer from the tool's real result. Any other question gets a short notice. This shows that the plumbing works. It cannot show how the real model chooses tool arguments or words an answer. That needs a real key.
 
 ## REST API
 
@@ -83,14 +97,16 @@ lib/
   db.ts                        SQLite connection, schema, seed on first run
   games/                       Zod schemas, repository (CRUD, query, aggregate), seed data, tests
   chat/                        Tool definitions, system prompt, request validation, stream event types
-tests/                         Route handler tests
+scripts/                       Offline mock of the Anthropic API and the `dev:mock` launcher
+tests/                         Route handler tests, including the chat route against the mock
 ```
 
 ## Testing
 
-- `npm test`: 23 Vitest tests. They cover the repository (CRUD, validation, filters, sorting, aggregates, seeding), the REST route handlers and their status codes, and the chat route's request validation.
+- `npm test`: 31 Vitest tests. They cover the repository (CRUD, validation, filters, sorting, aggregates, seeding), the REST route handlers and their status codes, the chat route's request validation, and the chat route end to end against the offline mock (the three sample questions, streaming, tool calls checked against the database, conversation replay, request settings, and the empty-balance error). No API key or credits are needed.
 - `npm run typecheck`, `npm run lint`, and `npm run build` pass.
-- Checked by hand: every REST route and status code with `curl`, the dashboard flows in a browser (add, duplicate-title error, edit, delete, genre filter), and the chat route end to end against a local stand-in for the Messages API. The stand-in is not part of this repository. Chat answers from the real model need an API key and are not covered by automated tests.
+- Checked by hand: every REST route and status code with `curl`, and the dashboard flows in a browser (add, duplicate-title error, edit, delete, genre filter).
+- Run live by the author against the real model (`claude-opus-5-5`): a few questions, with screenshots in [AI_WORKFLOW.md](AI_WORKFLOW.md). Answers from the real model are not covered by automated tests, because they cost credits and vary from run to run.
 
 ## Trade-offs
 

@@ -100,3 +100,4 @@ Changes made while building, with the reason for each.
 - **Chat route settings.** It uses the tool runner with `thread: false` (the default thread mode sends only new messages and adds a beta), `max_tokens: 16000`, and a limit of 6 model calls per question. It accepts only the content block types in `lib/chat/request.ts`.
 - **Added after review:** `lib/chat/request.ts`, `tests/api-routes.test.ts`, `lib/chat/request.test.ts`, and `vitest.config.mts` (the `@/` alias).
 - **Removed:** `next/font/google` (a build-time network dependency) and the unused `create-next-app` SVGs.
+- **Offline mock added.** `scripts/mock-anthropic.mjs`, `scripts/dev-mock.mjs` (`npm run dev:mock`), and `tests/chat-route.test.ts` let the chat run and be tested without API credits. The chat route shows a clear message when the API reports an empty balance.

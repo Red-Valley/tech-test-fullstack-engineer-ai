@@ -1,6 +1,6 @@
 # AI workflow
 
-This file describes how AI coding tools were used to build this submission. Everything below comes from the actual working session: one Claude Code session that orchestrated the whole build. The author's own inputs were short: two slash commands, two plain-language instructions, and answers and approvals at the plan stage. Most prompts below were written by the orchestrating agent, and each entry says who wrote it.
+This file describes how AI coding tools were used to build this submission. Everything below comes from the actual working session: one Claude Code session that orchestrated the whole build. The author's own inputs were short: two slash commands, a few plain-language messages, and answers and approvals at the plan stage. Most prompts below were written by the orchestrating agent, and each entry says who wrote it.
 
 ## 1. Tools, and what each was used for
 
@@ -29,8 +29,27 @@ Reviewer A got the diff and the requirements verbatim: "Assume this diff fails t
 They returned 15 and 14 findings. Fixed: the edit form blocked saving valid REST values such as a 4.25 rating, the chat history went out of sync after Stop or an error, seed games came back after deleting every game, blank tool filters silently matched the whole catalog, the chat endpoint accepted any content block type and any body size, the route handlers had no tests, the `.env*` ignore rule had been dropped, and several smaller accessibility and formatting issues. Rejected with reasons: authentication and rate limiting (out of scope in the brief), an environment override for the model name (a failure shows the API's message in the UI), and one question about partial text after a mid-stream fallback (rare, and cannot be exercised without the live model).
 A second round re-reviewed only the delta of the fixes. It returned 11 findings. The notable ones: a real bug in my own genre-filter fix (the dropdown could show "All genres" while still filtering), a thinking-only turn that would have left an empty chat bubble and a text-less turn in the stored history, and a missing positive test for the request validation (every assertion was a rejection, so it would pass even if all input were rejected). All were fixed except one, rejected with a reason: discarding the unfinished answer when you press Stop is intentional, because the server only returns the conversation when an answer completes. The review protocol caps review at two rounds and treats a new bug in a round-one fix as a stop signal, so no third round was run. The fixes were checked by tests and in the browser instead.
 
-**5. An orchestrator step with no author prompt: test the chat without an API key.**
-There was no `ANTHROPIC_API_KEY` in the agent's environment, so the orchestrator wrote a small local stand-in for the Messages API that speaks the real streaming protocol: it asks for a tool call, then answers from the tool's real result. With it, the actual route, tool runner, SQLite tools, NDJSON stream, and history replay ran end to end. 28 checks passed, including that the answer matched ground truth from the REST API and that a follow-up turn replays the stored history unchanged. This step found the bug described next.
+**5. A mock alternative, then a live run with real credits (author, two prompts).**
+
+First prompt, summarized: "let's add a mock alternative so we can test without adding credits". The agent had laid out three options (an offline mock with an automated test, a mock plus a free real-model provider, or instructions only) and said what a mock can and cannot prove. The author picked the offline mock and asked to review the changes before anything was committed.
+
+The outcome: the local stand-in for the Messages API that the agent had written for its own testing (no key was available in its environment) moved into the repository as `scripts/mock-anthropic.mjs`. `npm run dev:mock` runs the app against it and overrides a real key in `.env`, because variables set on the command win over `.env` files. `tests/chat-route.test.ts` runs the real chat route against it as part of `npm test` (8 tests). The chat also shows a clear message, pointing at the mock, when the API reports an empty balance. The stand-in is what found the bug described next, on the first end-to-end run.
+
+Second prompt, with the three screenshots attached: "the api key now has 5 usd in credits, i already ask a few questions to test it and everything seems fine. These are the images so we can add it to the 2nd requirement from the ai workflow doc ... The mock can stay as an alternative."
+
+The outcome: a live run with the real model. The author added $5 of API credits, asked the chat a few questions against `claude-opus-5-5`, and found everything fine. The mock stays in the repository as an alternative for anyone without credits. Three screenshots from the live run follow. The chips above each answer are the tool calls the model made.
+
+![The chat answering a count question with one aggregate_games call, then a two-genre question with two query_games calls](docs/screenshots/chat-live-1-count-and-genres.png)
+
+Screenshot 1. The count question used one `aggregate_games` call, and the answer notes that games rated exactly 4.00 are not included. The two-genre question used one `query_games` call per genre, and the model pointed out that a game has a single genre, so no game is both. It also flagged two catalog entries whose figures looked implausible, one with $10,000,000,000 of monthly revenue.
+
+![The chat comparing two games with one query_games call](docs/screenshots/chat-live-2-compare.png)
+
+Screenshot 2. A comparison used one `query_games` call with a `titles` filter. The difference ($17,550) and the ratio (about 2.2 times) in the answer match the two revenues listed under them ($31,750 and $14,200).
+
+![The chat ranking games by revenue per rating point](docs/screenshots/chat-live-3-ranking.png)
+
+Screenshot 3. An open-ended question ("top 3 games with the best revenue-rating relation") used one `query_games` call sorted by revenue. The model chose its own measure (revenue per rating point) and worked it out for each game. It also said that one game's figures differed from what it had seen earlier in the conversation, which fits the design: each question reads the current database through the tools.
 
 ## 3. One moment the AI got it wrong
 
@@ -55,6 +74,8 @@ Three smaller mistakes were also caught by running the real thing rather than re
 - **What did not parallelize:** the chat route and the UI depend on the repository's types, so they waited for Task 1.
 - **No git worktrees.** All work happened in place on `submission/cristian-yepes`.
 
-## 5. What was not verified
+## 5. What was verified live, and what was not
 
-The chat was never run against the real model, because no API key was available to the agent. The route, tools, streaming, and history replay were verified against the local stand-in described above. The model ID, effort, and the two beta parameters (`server-side-fallback-2026-07-01` and `thinking-binding-controls-2026-08-01`) come from the current SDK reference and the installed SDK's types. A first run with a real key is the remaining check. If the API rejects a beta parameter, remove `betas`, `fallbacks`, and the `block_binding` setting from `app/api/chat/route.ts`.
+The author ran the chat against the real model (`claude-opus-5-5`) with $5 of API credits, and the screenshots in section 2 are from that run. The live API accepted the request settings, including the two beta parameters (`server-side-fallback-2026-07-01` and `thinking-binding-controls-2026-08-01`), because the chat answered.
+
+Not covered: automated tests against the real model (they would cost credits and vary from run to run), answer quality beyond the few questions shown, and the mid-stream fallback path, which a catalog question is unlikely to trigger. The route, tools, streaming, and conversation replay are also tested against the offline mock in `scripts/`, which is part of the repository and of `npm test`.

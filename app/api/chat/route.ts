@@ -17,6 +17,10 @@ function describeError(err: unknown): string {
   if (err instanceof Anthropic.RateLimitError) {
     return "The Anthropic API rate limit was reached. Wait a moment and try again.";
   }
+  // Anthropic reports an empty balance as a plain 400 whose message mentions the credit balance.
+  if (err instanceof Anthropic.APIError && /credit balance/i.test(err.message)) {
+    return "The Anthropic account has no API credits. To try the chat without spending any, run `npm run dev:mock` (see the README).";
+  }
   if (err instanceof Anthropic.APIError) {
     return `Anthropic API error${err.status ? ` (${err.status})` : ""}: ${err.message}`;
   }

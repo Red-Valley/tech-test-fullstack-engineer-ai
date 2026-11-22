@@ -12,6 +12,7 @@ Candidate submission for the Full Stack Engineer (AI) take-home: an internal das
 - `lib/chat/`: `tools.ts` (two `betaZodTool`s over the repository), `system-prompt.ts` (frozen, because the API ties thinking blocks to the exact system prompt and tool set), `request.ts` (validation of the replayed conversation), `events.ts` (NDJSON event types).
 - `app/api/chat/route.ts`: Anthropic SDK tool runner (`claude-opus-5-5`, `effort: "low"`, `thread: false`, server-side fallback) that streams NDJSON. The route is stateless: the browser replays the conversation it received in the `done` event, unchanged.
 - `components/`: client components for the dashboard table, the add and edit dialog, the chat, and the nav.
+- `scripts/`: `mock-anthropic.mjs` (an offline stand-in for the Messages API that speaks the real streaming protocol, used by `tests/chat-route.test.ts` and `npm run dev:mock`) and `dev-mock.mjs` (the launcher).
 - `PLAN.md`: the plan the work was built from, with the deviations that came up.
 
 ## Commands
@@ -24,6 +25,8 @@ Run from the repository root. All of these were run and pass, except `dev`, whic
 - `npm test`: Vitest over `lib/**/*.test.ts` and `tests/`. Needs no API key.
 - `npm run build`: needs no database and no API key.
 - `npm run dev`: open `http://localhost:3000`. Use `localhost`, because the dev server blocks `127.0.0.1`.
+- `npm run dev:mock`: the dev server with the chat on the offline mock (`scripts/mock-anthropic.mjs`), so no API credits are used. It overrides any key in `.env*`. Extra arguments go to `next dev` (`npm run dev:mock -- -p 3200`).
+- `npm run mock:anthropic`: only the mock, on `MOCK_PORT` (default 4010).
 
 ## Constraints
 
@@ -38,7 +41,7 @@ Run from the repository root. All of these were run and pass, except `dev`, whic
 
 Deterministic checks: typecheck, lint, test, build. Behavioral acceptance: games CRUD works in the UI and through the REST API, and the chat streams an answer through tool calls for each sample question in `CHALLENGE.md`.
 
-A live chat run needs `ANTHROPIC_API_KEY` and makes paid calls, so run it only when asked. The chat route was verified end to end against a local stand-in for the Messages API, and not against the live model. The beta parameters `server-side-fallback-2026-07-01` and `thinking-binding-controls-2026-08-01` are not verified against the live API. If it rejects them, remove `betas`, `fallbacks`, and `block_binding` in `app/api/chat/route.ts`.
+A live chat run needs `ANTHROPIC_API_KEY` with credits and makes paid calls, so run it only when asked. The chat route is tested end to end against the offline mock in `scripts/` (`tests/chat-route.test.ts`, `npm run dev:mock`). The author also ran it against the live model (`claude-opus-5-5`, screenshots in `AI_WORKFLOW.md`), and the live API accepted the request settings, including the two beta parameters `server-side-fallback-2026-07-01` and `thinking-binding-controls-2026-08-01`. Real-model answers are not covered by automated tests.
 
 ## Submission
 
