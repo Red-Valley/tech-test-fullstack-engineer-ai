@@ -22,7 +22,7 @@ npm run dev
 
 Open http://localhost:3000. Use `localhost` and not `127.0.0.1`, because the Next.js dev server blocks other hosts by default.
 
-The first request creates `data/games.db` and seeds it with 18 fictional games. The database is seeded once: if you delete every game, the seed games do not come back. Delete `data/games.db` to start over, or set `DATABASE_PATH` to store the database somewhere else. Without `ANTHROPIC_API_KEY`, the chat page shows a clear error and everything else keeps working.
+The first request creates `data/games.db` and seeds it with 70 fictional games across 13 genres. The database is seeded only once. A database created earlier keeps what it has, and deleting every game does not bring the seed back. Delete `data/games.db` to get the new seed or to start over, or set `DATABASE_PATH` to store the database somewhere else. Without `ANTHROPIC_API_KEY`, the chat page shows a clear error and everything else keeps working.
 
 | Command | What it does |
 |---|---|
@@ -103,7 +103,7 @@ tests/                         Route handler tests, including the chat route aga
 
 ## Testing
 
-- `npm test`: 31 Vitest tests. They cover the repository (CRUD, validation, filters, sorting, aggregates, seeding), the REST route handlers and their status codes, the chat route's request validation, and the chat route end to end against the offline mock (the three sample questions, streaming, tool calls checked against the database, conversation replay, request settings, and the empty-balance error). No API key or credits are needed.
+- `npm test`: 32 Vitest tests. They cover the repository (CRUD, validation, filters, sorting, aggregates, seeding), the REST route handlers and their status codes, the chat route's request validation, and the chat route end to end against the offline mock (the three sample questions, streaming, tool calls checked against the database, conversation replay, request settings, and the empty-balance error). No API key or credits are needed.
 - `npm run typecheck`, `npm run lint`, and `npm run build` pass.
 - Checked by hand: every REST route and status code with `curl`, and the dashboard flows in a browser (add, duplicate-title error, edit, delete, genre filter).
 - Run live by the author against the real model (`claude-opus-5-5`): a few questions, with screenshots in [AI_WORKFLOW.md](AI_WORKFLOW.md). Answers from the real model are not covered by automated tests, because they cost credits and vary from run to run.
@@ -114,7 +114,7 @@ tests/                         Route handler tests, including the chat route aga
 - **"Last month" means the stored figures.** Each game has one `monthly_revenue_usd` and one `monthly_downloads` value, as the brief defines. The system prompt tells the model so and tells it to say when a question needs history that does not exist.
 - **Stateless chat route.** The browser holds the conversation, so the server needs no session store. The cost is a request body that grows with each turn (the route refuses bodies over 512 KB and more than 200 messages), and no history after a page reload.
 - **SQLite with `better-sqlite3`.** Synchronous and simple. It is a native module, so install needs a prebuilt binary for your Node version (Node 22 has one). With Cache Components, each page awaits `connection()` before reading, so the query runs per request and never at build time.
-- **No auth, no rate limit, no pagination.** The brief puts auth out of scope, and the table holds a few dozen rows. `POST /api/chat` spends your API key, so do not expose this server to the public internet.
+- **No auth, no rate limit, no pagination.** The brief puts auth out of scope, and the table holds about 70 rows. `POST /api/chat` spends your API key, so do not expose this server to the public internet.
 - **Server-side fallback and thinking-block binding are on.** If the safety classifiers decline a request on `claude-opus-5-5`, the API retries it on the recommended fallback model. If a mid-stream decline happens, the text from before it stays on screen above the fallback's answer. If the stored conversation ever stops matching what produced its thinking blocks, the API drops them instead of rejecting the request.
 - **Genres are matched ignoring ASCII letter case**, the same way SQLite compares them, so "puzzle" and "Puzzle" are one genre in the dashboard filter, the chat tools, and the database.
 

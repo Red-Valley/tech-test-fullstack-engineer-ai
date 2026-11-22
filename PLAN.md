@@ -34,7 +34,7 @@ npx create-next-app@16.4.6 <tmpdir>/app --ts --tailwind --eslint --app --no-src-
   - `openDatabase(path)` factory: opens `better-sqlite3`, creates the parent directory for file paths, runs the schema below, seeds when the table is empty, and returns the handle. Tests call it with `:memory:`.
   - `getDb()` singleton cached on `globalThis` so dev hot reloads keep one connection. The path is `process.env.DATABASE_PATH ?? "data/games.db"`.
   - Table: `games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE COLLATE NOCASE, developer TEXT NOT NULL, genre TEXT NOT NULL, monthly_revenue_usd REAL NOT NULL CHECK (monthly_revenue_usd >= 0), monthly_downloads INTEGER NOT NULL CHECK (monthly_downloads >= 0), average_rating REAL NOT NULL CHECK (average_rating BETWEEN 0 AND 5), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`.
-- `lib/games/seed.ts`: about 18 fictional indie games across about 6 genres. Vary revenue, downloads, and ratings. Several ratings above 4 and several below. Use invented titles and developers only.
+- `lib/games/seed.ts`: about 18 fictional indie games across about 6 genres (it grew to 70 across 13, see the deviations below). Vary revenue, downloads, and ratings. Several ratings above 4 and several below. Use invented titles and developers only.
 - `lib/games/schema.ts`: Zod `GameInput` (all six fields; strings trimmed and non-empty; revenue >= 0; downloads an integer >= 0; rating from 0 to 5), `GameUpdate` (`GameInput.partial()`, at least one field), and the `Game` type (adds `id`, `created_at`, `updated_at`).
 - `lib/games/repository.ts`: `createRepository(db)` returning:
   - `list()`, `get(id)`, `create(input)`, `update(id, patch)` (also sets `updated_at`), `remove(id)`.
@@ -101,3 +101,4 @@ Changes made while building, with the reason for each.
 - **Added after review:** `lib/chat/request.ts`, `tests/api-routes.test.ts`, `lib/chat/request.test.ts`, and `vitest.config.mts` (the `@/` alias).
 - **Removed:** `next/font/google` (a build-time network dependency) and the unused `create-next-app` SVGs.
 - **Offline mock added.** `scripts/mock-anthropic.mjs`, `scripts/dev-mock.mjs` (`npm run dev:mock`), and `tests/chat-route.test.ts` let the chat run and be tested without API credits. The chat route shows a clear message when the API reports an empty balance.
+- **A larger seed.** The seed grew from 18 to 70 fictional games across 13 genres, on request, so the dashboard and the chat have more to filter and rank. A test checks that every seed game is valid, titles are unique, and revenues have no ties.

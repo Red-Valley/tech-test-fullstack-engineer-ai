@@ -33,6 +33,19 @@ describe("database", () => {
     expect(games.some((g) => g.average_rating < 4)).toBe(true);
   });
 
+  it("ships a large, valid seed: unique titles, no revenue ties", () => {
+    // README, PLAN.md, and AI_WORKFLOW.md state this number, so changing the seed should fail here first.
+    expect(SEED_GAMES.length).toBe(70);
+    // Every seed game must pass the same validation as a game created through the API.
+    for (const game of SEED_GAMES) expect(GameInput.safeParse(game).success, game.title).toBe(true);
+    // A duplicate title would make the first database open throw (the title column is unique).
+    const titles = SEED_GAMES.map((g) => g.title.toLowerCase());
+    expect(new Set(titles).size).toBe(titles.length);
+    // Distinct revenues keep "top N by revenue" questions unambiguous.
+    const revenues = SEED_GAMES.map((g) => g.monthly_revenue_usd);
+    expect(new Set(revenues).size).toBe(revenues.length);
+  });
+
   it("seeds a database file once: deleting every game does not bring the seed back", () => {
     const dir = mkdtempSync(join(tmpdir(), "games-test-"));
     const file = join(dir, "nested", "games.db");
