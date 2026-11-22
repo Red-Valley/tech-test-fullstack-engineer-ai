@@ -1,0 +1,142 @@
+{
+  "_meta": {
+    "notice": "All monthly_revenue_usd and monthly_downloads figures in this dataset are SYNTHETIC DEMONSTRATION METRICS generated for technical assessment purposes. They do not represent confidential, actual, or verified financial records of the respective game developers."
+  },
+  "games": [
+    {
+      "id": "11111111-1111-4111-8111-111111111101",
+      "title": "Celeste",
+      "developer": "Maddy Makes Games",
+      "genre": "Platformer",
+      "monthly_revenue_usd": 1250000,
+      "monthly_downloads": 320000,
+      "average_rating": 4.8
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111102",
+      "title": "Hollow Knight",
+      "developer": "Team Cherry",
+      "genre": "Metroidvania",
+      "monthly_revenue_usd": 980000,
+      "monthly_downloads": 290000,
+      "average_rating": 4.9
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111103",
+      "title": "Dead Cells",
+      "developer": "Motion Twin",
+      "genre": "Roguelike",
+      "monthly_revenue_usd": 850000,
+      "monthly_downloads": 240000,
+      "average_rating": 4.7
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111104",
+      "title": "Hades",
+      "developer": "Supergiant Games",
+      "genre": "Roguelike",
+      "monthly_revenue_usd": 1150000,
+      "monthly_downloads": 310000,
+      "average_rating": 4.9
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111105",
+      "title": "Balatro",
+      "developer": "LocalThunk",
+      "genre": "Deckbuilder",
+      "monthly_revenue_usd": 920000,
+      "monthly_downloads": 275000,
+      "average_rating": 4.8
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111106",
+      "title": "Stardew Valley",
+      "developer": "ConcernedApe",
+      "genre": "Simulation",
+      "monthly_revenue_usd": 1050000,
+      "monthly_downloads": 350000,
+      "average_rating": 4.9
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111107",
+      "title": "Slay the Spire",
+      "developer": "MegaCrit",
+      "genre": "Deckbuilder",
+      "monthly_revenue_usd": 780000,
+      "monthly_downloads": 210000,
+      "average_rating": 4.8
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111108",
+      "title": "Animal Well",
+      "developer": "Shared Memory",
+      "genre": "Metroidvania",
+      "monthly_revenue_usd": 450000,
+      "monthly_downloads": 120000,
+      "average_rating": 4.0
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111109",
+      "title": "Tunic",
+      "developer": "TUNIC Team",
+      "genre": "Action Adventure",
+      "monthly_revenue_usd": 380000,
+      "monthly_downloads": 95000,
+      "average_rating": 4.3
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111110",
+      "title": "Sea of Stars",
+      "developer": "Sabotage Studio",
+      "genre": "RPG",
+      "monthly_revenue_usd": 520000,
+      "monthly_downloads": 140000,
+      "average_rating": 4.4
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "title": "Inscryption",
+      "developer": "Daniel Mullins Games",
+      "genre": "Deckbuilder",
+      "monthly_revenue_usd": 610000,
+      "monthly_downloads": 160000,
+      "average_rating": 4.6
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111112",
+      "title": "Dave the Diver",
+      "developer": "MINTROCKET",
+      "genre": "Simulation",
+      "monthly_revenue_usd": 890000,
+      "monthly_downloads": 260000,
+      "average_rating": 4.7
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111113",
+      "title": "A Short Hike",
+      "developer": "adamgryu",
+      "genre": "Adventure",
+      "monthly_revenue_usd": 150000,
+      "monthly_downloads": 80000,
+      "average_rating": 4.6
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111114",
+      "title": "Undertale",
+      "developer": "Toby Fox",
+      "genre": "RPG",
+      "monthly_revenue_usd": 710000,
+      "monthly_downloads": 190000,
+      "average_rating": 4.8
+    },
+    {
+      "id": "11111111-1111-4111-8111-111111111115",
+      "title": "Pizza Tower",
+      "developer": "Tour De Pizza",
+      "genre": "Platformer",
+      "monthly_revenue_usd": 320000,
+      "monthly_downloads": 90000,
+      "average_rating": 3.8
+    }
+  ]
+}
