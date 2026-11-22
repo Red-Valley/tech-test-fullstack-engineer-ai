@@ -9,6 +9,7 @@ Candidate submission for the Full Stack Engineer (AI) take-home: an internal das
 - Route handlers do not export `runtime` or `dynamic`: Cache Components rejects route segment config. `GET` handlers that read the database call `await connection()`.
 - `lib/db.ts`: SQLite connection cached on `globalThis`, the schema, and a one-time seed recorded in `PRAGMA user_version`. The default file is `data/games.db` (gitignored). Set `DATABASE_PATH` to change it.
 - `lib/games/`: Zod schemas (`schema.ts`), `createRepository(db)` with CRUD plus the read-only `query` and `aggregate` (`repository.ts`), and seed data. Every SQL identifier comes from a whitelist and every value is a bound parameter.
+- `lib/pagination.ts`: pure `paginate` and `pageNumbers` for the dashboard table. Paging is client-side: `app/page.tsx` still loads every game, and `components/games-dashboard.tsx` slices the filtered, sorted rows. `GET /api/games` is not paged.
 - `lib/chat/`: `tools.ts` (two `betaZodTool`s over the repository), `system-prompt.ts` (frozen, because the API ties thinking blocks to the exact system prompt and tool set), `request.ts` (validation of the replayed conversation), `events.ts` (NDJSON event types).
 - `app/api/chat/route.ts`: Anthropic SDK tool runner (`claude-opus-5-5`, `effort: "low"`, `thread: false`, server-side fallback) that streams NDJSON. The route is stateless: the browser replays the conversation it received in the `done` event, unchanged.
 - `components/`: client components for the dashboard table, the add and edit dialog, the chat, and the nav.

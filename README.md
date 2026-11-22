@@ -2,7 +2,7 @@
 
 An internal dashboard for a catalog of indie games, plus an AI chat that answers questions about the catalog. The assessment brief is in [CHALLENGE.md](CHALLENGE.md). How AI tools were used to build it is in [AI_WORKFLOW.md](AI_WORKFLOW.md).
 
-- **Dashboard** (`/`): stat cards, a sortable and filterable table, and an add, edit, and delete flow.
+- **Dashboard** (`/`): stat cards, a sortable, filterable, and paginated table, and an add, edit, and delete flow.
 - **REST API** (`/api/games`): full CRUD over the catalog.
 - **Chat** (`/chat`): ask questions in plain language. The model answers by calling two read-only tools against the database. The answer streams to the browser.
 
@@ -97,15 +97,16 @@ lib/
   db.ts                        SQLite connection, schema, seed on first run
   games/                       Zod schemas, repository (CRUD, query, aggregate), seed data, tests
   chat/                        Tool definitions, system prompt, request validation, stream event types
+  pagination.ts                Page slicing and page-button logic for the dashboard table, with tests
 scripts/                       Offline mock of the Anthropic API and the `dev:mock` launcher
 tests/                         Route handler tests, including the chat route against the mock
 ```
 
 ## Testing
 
-- `npm test`: 32 Vitest tests. They cover the repository (CRUD, validation, filters, sorting, aggregates, seeding), the REST route handlers and their status codes, the chat route's request validation, and the chat route end to end against the offline mock (the three sample questions, streaming, tool calls checked against the database, conversation replay, request settings, and the empty-balance error). No API key or credits are needed.
+- `npm test`: 44 Vitest tests. They cover the repository (CRUD, validation, filters, sorting, aggregates, seeding), the pagination logic (page clamping, partial and empty pages, page-button gaps), the REST route handlers and their status codes, the chat route's request validation, and the chat route end to end against the offline mock (the three sample questions, streaming, tool calls checked against the database, conversation replay, request settings, and the empty-balance error). No API key or credits are needed.
 - `npm run typecheck`, `npm run lint`, and `npm run build` pass.
-- Checked by hand: every REST route and status code with `curl`, and the dashboard flows in a browser (add, duplicate-title error, edit, delete, genre filter).
+- Checked by hand: every REST route and status code with `curl`, and the dashboard flows in a browser (add, duplicate-title error, edit, delete, genre filter). Pagination was checked on a production build in a 500 px wide window: next, previous, and page buttons, all three page sizes, the return to page 1 after a search, genre, sort, or page-size change, deleting the only row on the last page, and editing a game on a later page. A second pass drove headless Chrome with real mouse and key events and covered: deleting the last row of the last page and then adding a game, the "Added" notice, keyboard focus staying on Next at the last page, and scrolling back to the top of the table after a click but not after pressing Enter.
 - Run live by the author against the real model (`claude-opus-5-5`): a few questions, with screenshots in [AI_WORKFLOW.md](AI_WORKFLOW.md). Answers from the real model are not covered by automated tests, because they cost credits and vary from run to run.
 
 ## Trade-offs
@@ -114,10 +115,11 @@ tests/                         Route handler tests, including the chat route aga
 - **"Last month" means the stored figures.** Each game has one `monthly_revenue_usd` and one `monthly_downloads` value, as the brief defines. The system prompt tells the model so and tells it to say when a question needs history that does not exist.
 - **Stateless chat route.** The browser holds the conversation, so the server needs no session store. The cost is a request body that grows with each turn (the route refuses bodies over 512 KB and more than 200 messages), and no history after a page reload.
 - **SQLite with `better-sqlite3`.** Synchronous and simple. It is a native module, so install needs a prebuilt binary for your Node version (Node 22 has one). With Cache Components, each page awaits `connection()` before reading, so the query runs per request and never at build time.
-- **No auth, no rate limit, no pagination.** The brief puts auth out of scope, and the table holds about 70 rows. `POST /api/chat` spends your API key, so do not expose this server to the public internet.
+- **No auth and no rate limit.** The brief puts auth out of scope. `POST /api/chat` spends your API key, so do not expose this server to the public internet.
+- **Pagination happens in the browser.** The page loads every game once and the table shows 10, 25, or 50 rows at a time. Search, genre filter, sort, and the stat cards keep working over the whole catalog, and `GET /api/games` still returns the full list. This is simple and fast at about 70 rows. For thousands of rows the list should be paged in SQL (`LIMIT` and `OFFSET`, with search, sort, and the totals computed there), because the browser would otherwise download every row. The page and page size are not in the URL, like the search and filters, so a reload starts again at page 1. Saving a game can move it onto another page, so the dashboard shows a short "Added" or "Saved" notice.
 - **Server-side fallback and thinking-block binding are on.** If the safety classifiers decline a request on `claude-opus-5-5`, the API retries it on the recommended fallback model. If a mid-stream decline happens, the text from before it stays on screen above the fallback's answer. If the stored conversation ever stops matching what produced its thinking blocks, the API drops them instead of rejecting the request.
 - **Genres are matched ignoring ASCII letter case**, the same way SQLite compares them, so "puzzle" and "Puzzle" are one genre in the dashboard filter, the chat tools, and the database.
 
 ## Next steps
 
-Component tests, an eval set for the chat (the three sample questions with expected answers), pagination for large catalogs, and a history table so "last month" and trend questions can use real month-by-month data.
+Component tests, an eval set for the chat (the three sample questions with expected answers), server-side pagination for large catalogs, and a history table so "last month" and trend questions can use real month-by-month data.

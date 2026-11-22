@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatInteger, formatRating, formatUsd } from "@/lib/format";
 import type { Game } from "@/lib/games/schema";
+import { DEFAULT_PAGE_SIZE, PAGE_SIZES, pageNumbers, paginate } from "@/lib/pagination";
 import { GameFormDialog } from "./game-form-dialog";
 
 type SortKey = "title" | "developer" | "genre" | "monthly_revenue_usd" | "monthly_downloads" | "average_rating";
@@ -16,6 +17,12 @@ const COLUMNS: { key: SortKey; label: string; numeric?: boolean }[] = [
   { key: "monthly_downloads", label: "Downloads", numeric: true },
   { key: "average_rating", label: "Rating", numeric: true },
 ];
+
+// Previous and Next use `aria-disabled`, not `disabled`: a disabled button that has focus drops it, so a keyboard
+// user who pressed Next onto the last page would lose their place.
+const PAGE_BUTTON = "min-w-8 rounded-lg border px-2.5 py-1 text-sm aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
+const PAGE_BUTTON_IDLE = "border-slate-300 text-slate-700 hover:bg-slate-50 aria-disabled:hover:bg-transparent";
+const PAGE_BUTTON_ACTIVE = "border-indigo-600 bg-indigo-600 font-medium text-white";
 
 /** Folds ASCII letters only: the same case-insensitivity as SQLite's NOCASE, which the database and chat tools use. */
 const genreKey = (genre: string) => genre.replace(/[A-Z]/g, (c) => c.toLowerCase());
@@ -34,10 +41,15 @@ export function GamesDashboard({ games }: { games: Game[] }) {
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" }>({ key: "title", dir: "asc" });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
   // `undefined` = dialog closed, `null` = adding a game, a Game = editing it.
   const [editing, setEditing] = useState<Game | null | undefined>(undefined);
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Saving can move a game onto another page, so the dashboard says what was saved.
+  const [notice, setNotice] = useState<string | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Genres are matched ignoring case, as the chat tools and the database do, so "puzzle" and "Puzzle" are one
   // genre. The option value is the folded key and the label is the first spelling seen.
@@ -71,12 +83,45 @@ export function GamesDashboard({ games }: { games: Game[] }) {
     });
   }, [games, search, activeGenre, sort]);
 
+  // `page` can point past the end (the last row of the last page was deleted or edited away). paginate() clamps
+  // it for this render, and the line below stores the clamp, so a later refresh that brings the rows back cannot
+  // jump the table to the old page. The buttons below use `view.page`.
+  const view = paginate(rows, page, pageSize);
+  if (page !== view.page) setPage(view.page);
+
+  // A pending delete confirmation belongs to one row, so it must not follow the user to another page.
+  function goToPage(next: number) {
+    setConfirmingId(null);
+    setNotice(null);
+    setPage(next);
+  }
+
+  // The footer sits below the rows, so after a pointer click on a page button the top of the table is brought back
+  // into view. A keyboard press (`detail` is 0) leaves the view alone, so the focused button stays on screen.
+  function changePage(next: number, event: React.MouseEvent) {
+    goToPage(next);
+    const card = cardRef.current;
+    if (event.detail > 0 && card && card.getBoundingClientRect().top < 0) card.scrollIntoView({ block: "start" });
+  }
+
+  // Opening the form clears the notice, so "Saved A." does not stay on screen while B is edited.
+  function openDialog(game: Game | null) {
+    setNotice(null);
+    setEditing(game);
+  }
+
+  // Search, genre, sort, and page size change which rows exist, so they start again from the first page. This
+  // runs in the handlers and not in an effect, so there is no render with a stale page in between.
+  const firstPage = () => goToPage(1);
+
   function toggleSort(key: SortKey) {
     setSort((prev) => ({ key, dir: prev.key === key && prev.dir === "asc" ? "desc" : "asc" }));
+    firstPage();
   }
 
   async function deleteGame(id: number) {
     setError(null);
+    setNotice(null);
     try {
       const response = await fetch(`/api/games/${id}`, { method: "DELETE" });
       if (!response.ok && response.status !== 404) throw new Error(`Request failed (${response.status})`);
@@ -96,19 +141,25 @@ export function GamesDashboard({ games }: { games: Game[] }) {
         <StatCard label="Average rating" value={games.length ? formatRating(stats.rating) : "n/a"} />
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div ref={cardRef} className="rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
           <input
             type="search"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              firstPage();
+            }}
             placeholder="Search title or developer"
             aria-label="Search games"
             className="min-w-48 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
           <select
             value={activeGenre}
-            onChange={(event) => setGenre(event.target.value)}
+            onChange={(event) => {
+              setGenre(event.target.value);
+              firstPage();
+            }}
             aria-label="Filter by genre"
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500"
           >
@@ -121,7 +172,7 @@ export function GamesDashboard({ games }: { games: Game[] }) {
           </select>
           <button
             type="button"
-            onClick={() => setEditing(null)}
+            onClick={() => openDialog(null)}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
           >
             Add game
@@ -133,6 +184,14 @@ export function GamesDashboard({ games }: { games: Game[] }) {
             {error}
           </p>
         )}
+
+        {/* Always mounted, so a screen reader announces the text when it appears. */}
+        <p
+          role="status"
+          className={notice ? "border-b border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800" : "sr-only"}
+        >
+          {notice}
+        </p>
 
         {/* `relative` makes this wrapper the containing block of the absolutely positioned sr-only header cell. */}
         <div className="relative overflow-x-auto">
@@ -158,7 +217,7 @@ export function GamesDashboard({ games }: { games: Game[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {rows.map((game) => (
+              {view.items.map((game) => (
                 <tr key={game.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-medium text-slate-900">{game.title}</td>
                   <td className="px-4 py-3 text-slate-600">{game.developer}</td>
@@ -195,7 +254,7 @@ export function GamesDashboard({ games }: { games: Game[] }) {
                       <span className="inline-flex items-center gap-3 text-xs">
                         <button
                           type="button"
-                          onClick={() => setEditing(game)}
+                          onClick={() => openDialog(game)}
                           aria-label={`Edit ${game.title}`}
                           className="font-medium text-indigo-600 hover:text-indigo-700"
                         >
@@ -224,6 +283,84 @@ export function GamesDashboard({ games }: { games: Game[] }) {
             </tbody>
           </table>
         </div>
+
+        {rows.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <p aria-live="polite">
+                Showing{" "}
+                <span className="font-medium text-slate-900">
+                  {formatInteger(view.start)}-{formatInteger(view.end)}
+                </span>{" "}
+                of <span className="font-medium text-slate-900">{formatInteger(rows.length)}</span>{" "}
+                {rows.length === 1 ? "game" : "games"}
+              </p>
+              <label className="flex items-center gap-2">
+                <span>Rows per page</span>
+                <select
+                  value={pageSize}
+                  onChange={(event) => {
+                    setPageSize(Number(event.target.value));
+                    firstPage();
+                  }}
+                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-indigo-500"
+                >
+                  {PAGE_SIZES.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            {view.pageCount > 1 && (
+              <nav aria-label="Pagination">
+                <ul className="flex flex-wrap items-center gap-1">
+                  <li>
+                    <button
+                      type="button"
+                      onClick={(event) => view.page > 1 && changePage(view.page - 1, event)}
+                      aria-disabled={view.page <= 1}
+                      className={`${PAGE_BUTTON} ${PAGE_BUTTON_IDLE}`}
+                    >
+                      Previous
+                    </button>
+                  </li>
+                  {pageNumbers(view.page, view.pageCount).map((entry, index) =>
+                    entry === "gap" ? (
+                      <li key={`gap-${index}`} aria-hidden="true" className="px-1 text-slate-400">
+                        …
+                      </li>
+                    ) : (
+                      <li key={entry}>
+                        <button
+                          type="button"
+                          onClick={(event) => entry !== view.page && changePage(entry, event)}
+                          aria-label={`Page ${entry}`}
+                          aria-current={entry === view.page ? "page" : undefined}
+                          className={`${PAGE_BUTTON} ${entry === view.page ? PAGE_BUTTON_ACTIVE : PAGE_BUTTON_IDLE}`}
+                        >
+                          {entry}
+                        </button>
+                      </li>
+                    ),
+                  )}
+                  <li>
+                    <button
+                      type="button"
+                      onClick={(event) => view.page < view.pageCount && changePage(view.page + 1, event)}
+                      aria-disabled={view.page >= view.pageCount}
+                      className={`${PAGE_BUTTON} ${PAGE_BUTTON_IDLE}`}
+                    >
+                      Next
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            )}
+          </div>
+        )}
       </div>
 
       {editing !== undefined && (
@@ -232,7 +369,8 @@ export function GamesDashboard({ games }: { games: Game[] }) {
           game={editing}
           genres={genres.map((g) => g.label)}
           onClose={() => setEditing(undefined)}
-          onSaved={() => {
+          onSaved={(title) => {
+            setNotice(`${editing ? "Saved" : "Added"} ${title}.`);
             setEditing(undefined);
             router.refresh();
           }}

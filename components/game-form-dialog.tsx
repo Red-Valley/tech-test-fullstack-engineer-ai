@@ -24,8 +24,8 @@ type Props = {
   game: Game | null;
   genres: string[];
   onClose: () => void;
-  /** Called after the API accepted the change. */
-  onSaved: () => void;
+  /** Called after the API accepted the change, with the saved title (the API stores it trimmed). */
+  onSaved: (title: string) => void;
 };
 
 export function GameFormDialog({ game, genres, onClose, onSaved }: Props) {
@@ -64,7 +64,7 @@ export function GameFormDialog({ game, genres, onClose, onSaved }: Props) {
       if (response.ok) {
         // Closing the native dialog returns keyboard focus to the button that opened it.
         dialogRef.current?.close();
-        onSaved();
+        onSaved(values.title.trim());
         return;
       }
 
